@@ -2,21 +2,73 @@
 Fall 2026 NGR Capstone
 
 
-# Setup and start
-To start the application, be in the root directory of the project:
-(For Mac and linux)
-chmod +x setup.sh (if its not already executable already)
+## Prerequisites
 
+Before running the application, create the local environment file and install the dependencies.
 
+Mac/Linux:
 
-(For Winows)
+```bash
+cp .env.example .env
+./setup.sh
+```
+
+Windows:
+
+```bat
+copy .env.example .env
 setup.bat
+```
 
+Update `.env` with the required database configuration before starting the application.
 
-if the virtual environment is not activated, do a:
-source .venv/bin/activate (Mac/Linux)
+## FastAPI-only testing
 
-venv\Scripts\activate.bat (Windows)
+Use the regular `start` script when testing the FastAPI application without Kafka messaging.
 
-Run the corresponding "start.*" script based on your platform, ensuring that it is executable first
+Mac/Linux:
+
+```bash
+./start.sh
+```
+
+Windows:
+
+```bat
+start.bat
+```
+
+## Kafka messaging testing
+
+Use the Docker startup script when Kafka messaging is required. Make sure Docker is running and the root `.env` file has been configured.
+
+Mac/Linux:
+
+```bash
+./docker-start.sh
+```
+
+Windows:
+
+```bat
+docker-start.bat
+```
+
+The Docker startup script runs FastAPI and Kafka together, creates the `incident-events` topic if needed, and displays container logs.
+
+To stop the Docker containers:
+
+Mac/Linux:
+
+```bash
+./docker-stop.sh
+```
+
+Windows:
+
+```bat
+docker-stop.bat
+```
+
+The stop scripts remove the containers without deleting the persistent Kafka volume.
 main is master branch, raise PR's here intermittently. Create feature/ branches off of develop and raise PR's to merge feature/ branches to develop, not main.

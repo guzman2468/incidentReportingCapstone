@@ -2,6 +2,9 @@
 
 set -e
 
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+cd "$SCRIPT_DIR"
+
 if [ ! -d ".venv" ]; then
     echo "ERROR: Virtual environment not found."
     echo "Run the setup script first."
@@ -12,4 +15,4 @@ echo "Activating virtual environment..."
 source .venv/bin/activate
 
 echo "Starting application..."
-python -m uvicorn app.main:app --reload
+python -m uvicorn backend.main:app --reload

@@ -1,5 +1,7 @@
 @echo off
 
+cd /d "%~dp0"
+
 if not exist .venv (
     echo ERROR: Virtual environment not found.
     echo Run the setup script first.
@@ -11,4 +13,4 @@ echo Activating virtual environment...
 call .venv\Scripts\activate.bat
 
 echo Starting application...
-python -m uvicorn app.main:app --reload
+python -m uvicorn backend.main:app --reload

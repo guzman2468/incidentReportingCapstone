@@ -1,4 +1,4 @@
-In this folder /api/routes, we can define the end points for user functionality.
+In this folder /api/routes, we can define the end points for user functionality in a file say userRoutes.py
 Ideas could be endpoint for /login, /signup /logout etc...
 
 We can also define another set of routes say for example for mockFeature

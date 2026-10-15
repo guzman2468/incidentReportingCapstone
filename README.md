@@ -72,3 +72,8 @@ docker-stop.bat
 
 The stop scripts remove the containers without deleting the persistent Kafka volume.
 main is master branch, raise PR's here intermittently. Create feature/ branches off of develop and raise PR's to merge feature/ branches to develop, not main.
+
+
+
+
+PLEASE NOTE: the frontend files are going to be served statically to the backend when executing the start script. This functionality has not been implemented yet but a notice will go out when it is up and ready so that you can test your UI and the logic associated with it.

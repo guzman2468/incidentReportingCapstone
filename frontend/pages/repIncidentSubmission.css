@@ -1,0 +1,821 @@
+:root {
+  --ink: #182b35;
+  --muted: #74848a;
+  --line: #e5eeeb;
+  --canvas: #f7faf9;
+  --teal: #087f83;
+  --teal-dark: #07666c;
+  --coral: #ee806d;
+  --shadow: 0 16px 45px rgba(29,64,67,.07);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--canvas);
+  color: var(--ink);
+  font-family: 'DM Sans',sans-serif;
+  font-size: 14px;
+}
+
+button,input,select,textarea {
+  font: inherit;
+}
+
+button,a {
+  cursor: pointer;
+}
+
+.submission-page {
+  min-height: 100vh;
+}
+
+.submission-topbar {
+  align-items: center;
+  background: #fff;
+  border-bottom: 1px solid var(--line);
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  height: 76px;
+  padding: 0 5.5%;
+}
+
+.back-link {
+  color: #6e8084;
+  font-size: 12px;
+  text-decoration: none;
+}
+
+.back-link:hover {
+  color: var(--teal);
+}
+
+.back-link:first-letter {
+  font-size: 18px;
+}
+
+.submission-brand {
+  font: 700 19px 'Space Grotesk';
+  letter-spacing: -.7px;
+}
+
+.submission-brand>span:last-child {
+  color: var(--teal);
+}
+
+.brand-mark {
+  display: inline-flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 18px;
+  margin-right: 8px;
+  vertical-align: -2px;
+}
+
+.brand-mark i {
+  background: var(--teal);
+  border-radius: 4px;
+  display: block;
+  width: 4px;
+}
+
+.brand-mark i:nth-child(1) {
+  height: 9px;
+}
+
+.brand-mark i:nth-child(2) {
+  height: 14px;
+}
+
+.brand-mark i:nth-child(3) {
+  height: 18px;
+}
+
+.user-menu {
+  justify-self: end;
+  position: relative;
+}
+
+.top-avatar {
+  background: #d6efea;
+  border: 0;
+  border-radius: 50%;
+  color: var(--teal);
+  font-size: 10px;
+  font-weight: 700;
+  height: 31px;
+  width: 31px;
+}
+
+.user-dropdown {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  box-shadow: 0 10px 25px rgba(29,64,67,.12);
+  display: none;
+  padding: 6px;
+  position: absolute;
+  right: 0;
+  top: 41px;
+  width: 170px;
+  z-index: 3;
+}
+
+.user-dropdown.open {
+  display: block;
+}
+
+.user-summary {
+  border-bottom: 1px solid var(--line);
+  padding: 8px 9px 10px;
+}
+
+.user-summary strong {
+  color: var(--ink);
+  display: block;
+  font-size: 11px;
+}
+
+.user-summary span {
+  color: var(--muted);
+  display: block;
+  font-size: 10px;
+  margin-top: 4px;
+}
+
+.user-dropdown button {
+  align-items: center;
+  background: transparent;
+  border: 0;
+  border-radius: 6px;
+  color: #51666b;
+  display: flex;
+  font-size: 11px;
+  gap: 8px;
+  padding: 9px;
+  width: 100%;
+  text-align: left;
+}
+
+.user-dropdown button:hover {
+  background: #f1f7f5;
+  color: var(--teal);
+}
+
+.submission-wrap {
+  margin: 0 auto;
+  max-width: 960px;
+  padding: 55px 26px 80px;
+}
+
+.page-heading {
+  margin-bottom: 27px;
+}
+
+.eyebrow {
+  color: #9aa9aa;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.7px;
+  margin: 0 0 12px;
+}
+
+.page-heading h1 {
+  font: 600 34px 'Space Grotesk';
+  letter-spacing: -1.4px;
+  margin: 0 0 8px;
+}
+
+.page-heading p:last-child {
+  color: #78898d;
+  margin: 0;
+}
+
+.incident-form {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  box-shadow: var(--shadow);
+  padding: 31px 35px 26px;
+}
+
+.form-header {
+  align-items: flex-start;
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  justify-content: space-between;
+  padding-bottom: 25px;
+}
+
+.form-step {
+  background: #e5f4f1;
+  border-radius: 7px;
+  color: var(--teal);
+  display: inline-grid;
+  font-size: 10px;
+  font-weight: 700;
+  height: 27px;
+  place-items: center;
+  width: 30px;
+}
+
+.form-header h2 {
+  display: inline-block;
+  font: 600 19px 'Space Grotesk';
+  margin: 0 0 0 11px;
+  vertical-align: middle;
+}
+
+.form-header p {
+  color: #9aa6a8;
+  font-size: 11px;
+  margin: 8px 0 0 42px;
+}
+
+.required-note {
+  color: #a3adaf;
+  font-size: 10px;
+  margin-top: 6px;
+}
+
+.form-grid {
+  display: grid;
+  gap: 20px 17px;
+  grid-template-columns: 1fr 1fr;
+  padding: 27px 0;
+}
+
+.field-wide {
+  grid-column: 1/-1;
+}
+
+.field label {
+  color: #3d555b;
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.field label span {
+  color: var(--coral);
+}
+
+.field input,.field select,.field textarea {
+  background: #fff;
+  border: 1px solid #dce8e5;
+  border-radius: 8px;
+  color: var(--ink);
+  outline: 0;
+  padding: 12px;
+  width: 100%;
+}
+
+.field input::placeholder,.field textarea::placeholder {
+  color: #aab6b7;
+}
+
+.field select {
+  color: #8d9b9d;
+}
+
+.field input:focus,.field select:focus,.field textarea:focus {
+  border-color: #71bdb5;
+  box-shadow: 0 0 0 3px #e7f6f3;
+}
+
+.field textarea {
+  line-height: 1.5;
+  resize: vertical;
+}
+
+.field-hint {
+  color: #9aa8a9;
+  display: block;
+  font-size: 10px;
+  margin-top: 7px;
+}
+
+.form-footer {
+  align-items: center;
+  border-top: 1px solid var(--line);
+  display: flex;
+  justify-content: space-between;
+  padding-top: 22px;
+}
+
+.save-note {
+  color: #98a5a6;
+  font-size: 10px;
+}
+
+.form-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.secondary-button {
+  background: #fff;
+  border: 1px solid #dbe6e4;
+  border-radius: 8px;
+  color: #607276;
+  display: inline-block;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 12px 17px;
+  text-decoration: none;
+}
+
+.primary-button {
+  background: var(--teal);
+  border: 0;
+  border-radius: 9px;
+  box-shadow: 0 8px 18px rgba(8,127,131,.18);
+  color: #fff;
+  display: inline-block;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 13px 18px;
+  text-decoration: none;
+}
+
+.primary-button:hover {
+  background: var(--teal-dark);
+}
+
+.primary-button span {
+  font-size: 15px;
+  margin-left: 5px;
+}
+
+.toast {
+  background: #18343a;
+  border-radius: 8px;
+  bottom: 24px;
+  box-shadow: 0 10px 25px rgba(0,0,0,.16);
+  color: #fff;
+  font-size: 12px;
+  left: 50%;
+  padding: 12px 17px;
+  position: fixed;
+  transform: translateX(-50%);
+  z-index: 10;
+}
+
+@media(max-width:680px) {
+
+  .submission-topbar {
+    grid-template-columns: 1fr auto;
+    height: 68px;
+  }
+
+  .submission-brand {
+    display: none;
+  }
+
+  .submission-wrap {
+    padding: 36px 17px 50px;
+  }
+
+  .page-heading h1 {
+    font-size: 29px;
+  }
+
+  .incident-form {
+    padding: 23px 18px;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .field-wide {
+    grid-column: auto;
+  }
+
+  .form-footer {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 17px;
+  }
+
+  .form-actions {
+    width: 100%;
+  }
+
+  .form-actions>* {
+    flex: 1;
+    text-align: center;
+  }
+}
+
+/* Location control: make the button prominent and align coordinates to the right. */
+
+.location-control {
+  align-items: flex-start;
+  display: flex;
+  gap: 18px;
+}
+
+.location-layout {
+  display: grid;
+  gap: 24px;
+  grid-template-columns: minmax(220px,.85fr) minmax(320px,1.15fr);
+}
+
+.location-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.location-button {
+  background: #e5f4f1;
+  border: 1px solid #c8e5df;
+  border-radius: 8px;
+  color: var(--teal);
+  font-size: 12px;
+  font-weight: 700;
+  padding: 12px 18px;
+  white-space: nowrap;
+}
+
+.location-button:hover {
+  background: #d6eee9;
+}
+
+.location-button:disabled {
+  cursor: wait;
+  opacity: .65;
+}
+
+.location-result {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.coordinates {
+  color: #415b61;
+  display: block;
+  font-size: 15px;
+  font-weight: 700;
+  min-height: 24px;
+  text-align: right;
+}
+
+.coordinates-label {
+  color: #64797d;
+  display: block;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .5px;
+  margin-bottom: 3px;
+  text-align: right;
+  text-transform: uppercase;
+}
+
+.map-card {
+  border: 1px solid #dce8e5;
+  border-radius: 9px;
+  flex: 1;
+  min-height: 300px;
+  margin-top: 9px;
+  overflow: hidden;
+}
+
+.map-card[hidden] {
+  display: none;
+}
+
+.map-card iframe {
+  border: 0;
+  height: 100%;
+  width: 100%;
+}
+
+@media(max-width:680px) {
+
+  .location-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .location-control {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .location-result {
+    margin-left: 0;
+    min-width: 0;
+    text-align: left;
+  }
+
+  .coordinates {
+    text-align: left;
+  }
+
+  .map-card {
+    height: 180px;
+    min-height: 180px;
+  }
+}
+
+/* Give the submission card more room for the larger map preview. */
+
+.submission-topbar {
+  grid-template-columns: 1fr auto;
+}
+
+.submission-wrap {
+  max-width: 1440px;
+}
+
+.incident-form {
+  padding-left: 46px;
+  padding-right: 46px;
+}
+
+@media(max-width:680px) {
+
+  .incident-form {
+    padding-left: 18px;
+    padding-right: 18px;
+  }
+
+  .coordinates-label {
+    text-align: left;
+  }
+}
+
+/* Keep the form fields compact on the left and give the map the dominant column. */
+
+.form-body {
+  align-items: stretch;
+  display: grid;
+  gap: 40px;
+  grid-template-columns: minmax(430px,1.05fr) minmax(520px,1.35fr);
+  padding: 27px 0;
+}
+
+.form-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.form-fields input,.form-fields select,.form-fields textarea {
+  border-radius: 8px;
+}
+
+.form-fields input,.form-fields select {
+  height: 46px;
+}
+
+.form-actions .secondary-button,.form-actions .primary-button {
+  align-items: center;
+  display: inline-flex;
+  height: 42px;
+  justify-content: center;
+  min-width: 132px;
+  padding: 0 18px;
+}
+
+.secondary-button {
+  background: #e5f4f1;
+  border: 1px solid #9dcec8;
+  color: var(--teal);
+}
+
+.secondary-button:hover {
+  background: #d4eee9;
+  border-color: #78bdb5;
+  color: var(--teal-dark);
+}
+
+.form-body .location-result {
+  min-height: 360px;
+}
+
+.form-body .map-card {
+  min-height: 360px;
+}
+
+@media(max-width:900px) {
+
+  .form-body {
+    grid-template-columns: minmax(220px,.8fr) minmax(320px,1.2fr);
+  }
+}
+
+@media(max-width:680px) {
+
+  .form-body {
+    grid-template-columns: minmax(0,1fr);
+  }
+
+  .form-body .location-result,.form-body .map-card {
+    min-height: 180px;
+  }
+
+  .coordinates {
+    overflow-wrap: anywhere;
+  }
+
+  .map-card {
+    width: 100%;
+  }
+}
+
+/* Keep the form actions grouped at the bottom-right of the incident card. */
+
+.form-footer {
+  justify-content: flex-end;
+}
+
+.form-header h2 {
+  margin-left: 0;
+}
+
+.form-header p {
+  margin-left: 0;
+}
+
+.required-star {
+  color: var(--coral);
+  font-weight: 700;
+}
+
+@media(max-width:680px) {
+
+  .form-footer {
+    align-items: flex-end;
+  }
+
+  .form-actions {
+    width: auto;
+  }
+}
+
+/* Scale the map with the browser viewport instead of using one fixed size. */
+
+.form-body .location-result {
+  min-height: 0;
+}
+
+.form-body .map-card {
+  flex: none;
+  height: clamp(260px,32vw,560px);
+  min-height: 0;
+}
+
+@media(max-width:680px) {
+
+  .form-body .location-result {
+    min-height: 0;
+  }
+
+  .form-body .map-card {
+    height: clamp(220px,70vw,380px);
+    min-height: 0;
+  }
+}
+
+/* Styled discard confirmation dialog. */
+
+.confirm-backdrop {
+  align-items: center;
+  background: rgba(24,43,53,.34);
+  display: flex;
+  inset: 0;
+  justify-content: center;
+  padding: 20px;
+  position: fixed;
+  z-index: 10;
+}
+
+.confirm-backdrop[hidden] {
+  display: none;
+}
+
+.confirm-dialog {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 24px 70px rgba(17,47,53,.2);
+  max-width: 380px;
+  padding: 29px;
+  text-align: center;
+  width: 100%;
+}
+
+.confirm-icon {
+  align-items: center;
+  background: #fff1ed;
+  border-radius: 50%;
+  color: var(--coral);
+  display: flex;
+  font-size: 18px;
+  font-weight: 700;
+  height: 38px;
+  justify-content: center;
+  margin: 0 auto 15px;
+  width: 38px;
+}
+
+.confirm-dialog h2 {
+  font: 600 21px 'Space Grotesk';
+  margin: 0 0 8px;
+}
+
+.confirm-dialog p {
+  color: #7f9093;
+  font-size: 12px;
+  margin: 0;
+}
+
+.confirm-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin-top: 24px;
+}
+
+.danger-button {
+  background: #ee806d;
+  border: 0;
+  border-radius: 8px;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 12px 17px;
+}
+
+.danger-button:hover {
+  background: #d96d5b;
+}
+
+/* Prevent the map column from creating horizontal overflow at any viewport size. */
+
+.submission-page,.submission-wrap,.incident-form,.form-body,.form-fields,.location-result {
+  min-width: 0;
+  width: 100%;
+}
+
+.submission-page {
+  overflow-x: hidden;
+}
+
+.form-body {
+  grid-template-columns: minmax(0,1fr) minmax(0,1.3fr);
+}
+
+.map-card {
+  max-width: 100%;
+  width: 100%;
+}
+
+.coordinates {
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+
+@media(max-width:680px) {
+
+  .form-body {
+    grid-template-columns: minmax(0,1fr);
+  }
+}
+
+/* Keep the inner-page header aligned with the dashboard header while retaining the back arrow. */
+
+.submission-topbar {
+  height: 80px;
+  padding-left: 2%;
+  padding-right: 2%;
+}
+
+.submission-topbar .back-link {
+  align-items: center;
+  color: #334950;
+  display: inline-flex;
+  font-weight: 700;
+  gap: 7px;
+  justify-self: start;
+}
+
+.submission-topbar .back-link:first-letter {
+  font-size: 18px;
+  font-weight: 400;
+}
+
+@media(max-width:680px) {
+
+  .submission-topbar {
+    height: 68px;
+    padding-left: 4%;
+    padding-right: 4%;
+  }
+}

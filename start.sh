@@ -11,6 +11,11 @@ if [ ! -d ".venv" ]; then
     exit 1
 fi
 
+if [ ! -d "frontend/pages" ]; then
+    echo "ERROR: Frontend pages directory not found."
+    exit 1
+fi
+
 echo "Activating virtual environment..."
 source .venv/bin/activate
 

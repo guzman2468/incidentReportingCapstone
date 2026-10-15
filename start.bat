@@ -9,6 +9,12 @@ if not exist .venv (
     exit /b 1
 )
 
+if not exist frontend\pages (
+    echo ERROR: Frontend pages directory not found.
+    pause
+    exit /b 1
+)
+
 echo Activating virtual environment...
 call .venv\Scripts\activate.bat
 

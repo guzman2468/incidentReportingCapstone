@@ -8,7 +8,7 @@ from sqlalchemy import text
 from .database import engine
 
 app = FastAPI()
-FRONTEND_DIR = Path(__file__).resolve().parent.parent / "frontend" / "pages"
+FRONTEND_DIR = Path(__file__).resolve().parent.parent / "frontend" / "pages" / "reporter"
 
 
 # TEMPORRARY HOME PAGE FOR TESTING, this will be the signup page in the future.

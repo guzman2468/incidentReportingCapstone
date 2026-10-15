@@ -11,8 +11,8 @@ if [ ! -d ".venv" ]; then
     exit 1
 fi
 
-if [ ! -d "frontend/pages" ]; then
-    echo "ERROR: Frontend pages directory not found."
+if [ ! -d "frontend/pages/reporter" ]; then
+    echo "ERROR: Reporter frontend directory not found."
     exit 1
 fi
 

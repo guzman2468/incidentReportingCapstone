@@ -78,6 +78,6 @@ main is master branch, raise PR's here intermittently. Create feature/ branches 
 Test your UIs with the LiveServer extension in VScode, the below text if for once backend logic is being developed and then you have to use the start scripts to be able to access logic and frontend files like the real app would.
 
 
-The frontend page files are served statically by FastAPI when the application starts. Open http://localhost:8000/ to view the TEMPORARY home page (reporter dashboard). This will be
+The reporter frontend files in `frontend/pages/reporter` are served statically by FastAPI when the application starts. Open http://localhost:8000/ to view the temporary home page (reporter dashboard). This will be
 the sign up page in the future but you can add /yourPageNameHere to the end of the localhost
 URL to view your page.

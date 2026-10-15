@@ -9,8 +9,8 @@ if not exist .venv (
     exit /b 1
 )
 
-if not exist frontend\pages (
-    echo ERROR: Frontend pages directory not found.
+if not exist frontend\pages\reporter (
+    echo ERROR: Reporter frontend directory not found.
     pause
     exit /b 1
 )

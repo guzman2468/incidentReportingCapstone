@@ -7,32 +7,6 @@ document.getElementById('currentDate').textContent = new Intl.DateTimeFormat('en
 }).format(new Date()).toUpperCase();
 
 // -----------------------------
-// Report modal
-// -----------------------------
-const modal = document.getElementById('reportModal');
-
-// Open the report form and place the cursor in the first field.
-const openModal = () => {
-  modal.classList.add('open');
-  modal.setAttribute('aria-hidden', 'false');
-  document.getElementById('reportTitle').focus();
-};
-
-// Close the report form.
-const closeModal = () => {
-  modal.classList.remove('open');
-  modal.setAttribute('aria-hidden', 'true');
-};
-
-// Open the modal from the main report button.
-// Close the modal with the close button or by clicking the backdrop.
-document.getElementById('modalClose').addEventListener('click', closeModal);
-modal.addEventListener('click', (event) => { if (event.target === modal) closeModal(); });
-
-// Allow Escape to close the modal.
-document.addEventListener('keydown', (event) => { if (event.key === 'Escape') closeModal(); });
-
-// -----------------------------
 // Incident search
 // -----------------------------
 const getSubmittedDateText = (metadata) => {
@@ -146,13 +120,6 @@ document.querySelectorAll('.incident-row').forEach((row) => {
     }
   });
 });
-
-// -----------------------------
-// Visual-only report actions
-// -----------------------------
-// These buttons currently show feedback only; backend submission can be added later.
-document.getElementById('saveDraft').addEventListener('click', () => { closeModal(); showToast('Draft saved — you can finish it anytime.'); });
-document.getElementById('continueReport').addEventListener('click', () => { closeModal(); showToast('Report started — next step coming soon.'); });
 
 // -----------------------------
 // User menu

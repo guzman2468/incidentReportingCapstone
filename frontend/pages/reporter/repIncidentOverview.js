@@ -31,7 +31,11 @@ if (title) {
   document.getElementById('titleField').textContent = title;
 }
 if (meta) {
-  const submittedDate = meta.match(/Submitted\s+(.+)$/i)?.[1] || meta;
+  const submitted = 'submitted';
+  const submittedIndex = meta.toLowerCase().indexOf(submitted);
+  const afterSubmitted = submittedIndex === -1 ? '' : meta.slice(submittedIndex + submitted.length);
+  const dateText = afterSubmitted.trimStart();
+  const submittedDate = dateText && dateText.length < afterSubmitted.length ? dateText : meta;
   document.getElementById('incidentMeta').textContent = submittedDate;
 }
 if (status) {

@@ -33,9 +33,9 @@
         <div class="form-header"><div><div class="incident-meta"><span><b>Submitted</b><strong id="incidentMeta">Sep 28, 2026</strong></span><span><b>Resolved date</b><strong id="resolvedDate">Not resolved</strong></span></div></div><span class="status-badge" id="statusBadge">Open</span></div>
         <div class="form-body">
           <div class="form-fields overview-fields">
-            <div class="field"><label>Title</label><div class="readonly-field" id="titleField">Lorem ipsum dolor sit amet</div></div>
-            <div class="field"><label>Severity</label><div class="readonly-field severity-high">HIGH</div></div>
-            <div class="field"><label>Description</label><div class="readonly-field description-field" id="descriptionField">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus sagittis lacus vel augue laoreet rutrum faucibus dolor auctor.</div></div>
+            <div class="field"><div class="field-label">Title</div><div class="readonly-field" id="titleField">Lorem ipsum dolor sit amet</div></div>
+            <div class="field"><div class="field-label">Severity</div><div class="readonly-field severity-high">HIGH</div></div>
+            <div class="field"><div class="field-label">Description</div><div class="readonly-field description-field" id="descriptionField">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus sagittis lacus vel augue laoreet rutrum faucibus dolor auctor.</div></div>
           </div>
           <div class="location-result">
             <span class="coordinates-label">Coordinates</span>
@@ -56,6 +56,7 @@
           <div class="note-item own"><strong>FirstName LastName <small>Today, 10:18 AM</small></strong><p>Thank you. I can provide more information if needed.</p></div>
         </div>
         <div class="note-composer">
+          <label class="visually-hidden" for="noteInput">Add a note</label>
           <textarea id="noteInput" rows="5" placeholder="Write a note..."></textarea>
           <button type="button" class="outline-button" id="addNoteButton">+ Add note</button>
         </div>

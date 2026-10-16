@@ -35,6 +35,16 @@ document.addEventListener('keydown', (event) => { if (event.key === 'Escape') cl
 // -----------------------------
 // Incident search
 // -----------------------------
+const getSubmittedDateText = (metadata) => {
+  const submitted = 'submitted';
+  const submittedIndex = metadata.toLowerCase().indexOf(submitted);
+  if (submittedIndex === -1) return null;
+
+  const afterSubmitted = metadata.slice(submittedIndex + submitted.length);
+  const dateText = afterSubmitted.trimStart();
+  return dateText.length < afterSubmitted.length ? dateText : null;
+};
+
 // Connect one search input and one time filter to one incident list.
 function connectIncidentControls(inputId, listId, emptyId, filterId) {
   const search = document.getElementById(inputId);
@@ -52,7 +62,7 @@ function connectIncidentControls(inputId, listId, emptyId, filterId) {
     let visible = 0;
 
     rows.forEach((row) => {
-      const incidentDateText = row.querySelector('.incident-info span').textContent.match(/Submitted\s+(.+)$/i)?.[1];
+      const incidentDateText = getSubmittedDateText(row.querySelector('.incident-info span').textContent);
       const incidentDate = incidentDateText ? new Date(incidentDateText) : null;
       const matchesSearch = row.dataset.search.includes(query);
       const matchesTime = !cutoff || !incidentDate || incidentDate >= cutoff;
@@ -95,7 +105,7 @@ function connectResolvedSummary() {
     label.textContent = labelByRange[selectedRange] || 'Resolved incidents';
 
     const matchingRows = rows.filter((row) => {
-      const dateText = row.querySelector('.incident-info span').textContent.match(/Submitted\s+(.+)$/i)?.[1];
+      const dateText = getSubmittedDateText(row.querySelector('.incident-info span').textContent);
       const incidentDate = dateText ? new Date(dateText) : null;
       return !cutoff || !incidentDate || incidentDate >= cutoff;
     });

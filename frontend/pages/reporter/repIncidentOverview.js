@@ -25,7 +25,7 @@ document.addEventListener('click', (event) => {
 const params = new URLSearchParams(window.location.search);
 const title = params.get('title');
 const meta = params.get('meta');
-const status = params.get('status');
+const incidentStatus = params.get('status');
 
 if (title) {
   document.getElementById('titleField').textContent = title;
@@ -38,10 +38,10 @@ if (meta) {
   const submittedDate = dateText && dateText.length < afterSubmitted.length ? dateText : meta;
   document.getElementById('incidentMeta').textContent = submittedDate;
 }
-if (status) {
+if (incidentStatus) {
   const statusBadge = document.getElementById('statusBadge');
-  statusBadge.textContent = status;
-  if (status.toLowerCase() !== 'resolved') {
+  statusBadge.textContent = incidentStatus;
+  if (incidentStatus.toLowerCase() !== 'resolved') {
     statusBadge.className = 'status-badge active-status';
   }
 }

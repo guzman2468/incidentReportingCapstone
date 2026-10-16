@@ -133,8 +133,8 @@ document.querySelectorAll('.incident-row').forEach((row) => {
   const openIncident = () => {
     const title = row.querySelector('.incident-info strong').textContent;
     const meta = row.querySelector('.incident-info span').textContent;
-    const status = row.querySelector('.status-pill')?.textContent || 'Open';
-    const params = new URLSearchParams({ title, meta, status });
+    const incidentStatus = row.querySelector('.status-pill')?.textContent || 'Open';
+    const params = new URLSearchParams({ title, meta, status: incidentStatus });
     window.location.href = `repIncidentOverview.html?${params.toString()}`;
   };
 

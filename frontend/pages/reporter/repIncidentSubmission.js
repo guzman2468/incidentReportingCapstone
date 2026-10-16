@@ -25,16 +25,27 @@ document.addEventListener('click', (event) => {
 // -----------------------------
 const form = document.getElementById('incidentForm');
 const cancelConfirm = document.getElementById('cancelConfirm');
+const cancelConfirmBackdrop = document.getElementById('cancelConfirmBackdrop');
+
+const closeCancelConfirm = () => {
+  cancelConfirm.close();
+  cancelConfirmBackdrop.hidden = true;
+};
+
+cancelConfirm.addEventListener('close', () => {
+  cancelConfirmBackdrop.hidden = true;
+});
 
 // Show a styled confirmation dialog before leaving and discarding the form.
 document.getElementById('cancelButton').addEventListener('click', (event) => {
   event.preventDefault();
-  cancelConfirm.hidden = false;
+  cancelConfirmBackdrop.hidden = false;
+  cancelConfirm.showModal();
 });
 
 // Close the confirmation dialog and return to the form.
 document.getElementById('keepEditing').addEventListener('click', () => {
-  cancelConfirm.hidden = true;
+  closeCancelConfirm();
 });
 
 // Leave the page only after the user explicitly confirms.
@@ -44,12 +55,15 @@ document.getElementById('discardChanges').addEventListener('click', () => {
 
 // Clicking outside the dialog keeps the user on the form.
 cancelConfirm.addEventListener('click', (event) => {
-  if (event.target === cancelConfirm) cancelConfirm.hidden = true;
+  const bounds = cancelConfirm.getBoundingClientRect();
+  const clickedOutside = event.clientX < bounds.left || event.clientX > bounds.right
+    || event.clientY < bounds.top || event.clientY > bounds.bottom;
+  if (clickedOutside) closeCancelConfirm();
 });
 
 // Escape closes the confirmation dialog.
 document.addEventListener('keydown', (event) => {
-  if (event.key === 'Escape' && !cancelConfirm.hidden) cancelConfirm.hidden = true;
+  if (event.key === 'Escape' && cancelConfirm.open) closeCancelConfirm();
 });
 
 // This is visual-only for now. Backend submission can be connected later.

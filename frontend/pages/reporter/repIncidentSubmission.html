@@ -70,8 +70,8 @@
       </form>
     </section>
   </main>
-  <div class="confirm-backdrop" id="cancelConfirm" hidden>
-    <section class="confirm-dialog" role="dialog" aria-modal="true" aria-labelledby="confirmTitle">
+  <div class="confirm-backdrop" id="cancelConfirmBackdrop" hidden>
+    <dialog class="confirm-dialog" id="cancelConfirm" aria-labelledby="confirmTitle">
       <div class="confirm-icon">!</div>
       <h2 id="confirmTitle">Leave this report?</h2>
       <p>Are you sure? All changes will be lost.</p>
@@ -79,7 +79,7 @@
         <button type="button" class="secondary-button" id="keepEditing">Keep editing</button>
         <button type="button" class="danger-button" id="discardChanges">Discard changes</button>
       </div>
-    </section>
+    </dialog>
   </div>
   <script src="repIncidentSubmission.js"></script>
 </body>

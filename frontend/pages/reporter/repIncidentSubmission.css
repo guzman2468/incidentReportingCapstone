@@ -31,6 +31,9 @@ button,a {
 
 .submission-page {
   min-height: 100vh;
+  min-width: 0;
+  overflow-x: hidden;
+  width: 100%;
 }
 
 .submission-topbar {
@@ -38,9 +41,9 @@ button,a {
   background: #fff;
   border-bottom: 1px solid var(--line);
   display: grid;
-  grid-template-columns: 1fr auto 1fr;
-  height: 76px;
-  padding: 0 5.5%;
+  grid-template-columns: 1fr auto;
+  height: 80px;
+  padding: 0 2%;
 }
 
 .back-link {
@@ -167,8 +170,10 @@ button,a {
 
 .submission-wrap {
   margin: 0 auto;
-  max-width: 960px;
+  max-width: 1440px;
+  min-width: 0;
   padding: 55px 26px 80px;
+  width: 100%;
 }
 
 .page-heading {
@@ -199,7 +204,9 @@ button,a {
   border: 1px solid var(--line);
   border-radius: 18px;
   box-shadow: var(--shadow);
-  padding: 31px 35px 26px;
+  min-width: 0;
+  padding: 31px 46px 26px;
+  width: 100%;
 }
 
 .form-header {
@@ -225,14 +232,14 @@ button,a {
 .form-header h2 {
   display: inline-block;
   font: 600 19px 'Space Grotesk', sans-serif;
-  margin: 0 0 0 11px;
+  margin: 0;
   vertical-align: middle;
 }
 
 .form-header p {
   color: #9aa6a8;
   font-size: 11px;
-  margin: 8px 0 0 42px;
+  margin: 8px 0 0;
 }
 
 .required-note {
@@ -303,7 +310,7 @@ button,a {
   align-items: center;
   border-top: 1px solid var(--line);
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-end;
   padding-top: 22px;
 }
 
@@ -318,10 +325,10 @@ button,a {
 }
 
 .secondary-button {
-  background: #fff;
-  border: 1px solid #dbe6e4;
+  background: #e5f4f1;
+  border: 1px solid #9dcec8;
   border-radius: 8px;
-  color: #607276;
+  color: var(--teal);
   display: inline-block;
   font-size: 12px;
   font-weight: 700;
@@ -397,13 +404,13 @@ button,a {
   }
 
   .form-footer {
-    align-items: flex-start;
+    align-items: flex-end;
     flex-direction: column;
     gap: 17px;
   }
 
   .form-actions {
-    width: 100%;
+    width: auto;
   }
 
   .form-actions>* {
@@ -463,7 +470,9 @@ button,a {
   display: block;
   font-size: 15px;
   font-weight: 700;
+  max-width: 100%;
   min-height: 24px;
+  overflow-wrap: anywhere;
   text-align: right;
 }
 
@@ -482,9 +491,11 @@ button,a {
   border: 1px solid #dce8e5;
   border-radius: 9px;
   flex: 1;
+  max-width: 100%;
   min-height: 300px;
   margin-top: 9px;
   overflow: hidden;
+  width: 100%;
 }
 
 .map-card[hidden] {
@@ -515,39 +526,17 @@ button,a {
   }
 
   .coordinates {
+    overflow-wrap: anywhere;
     text-align: left;
-  }
-
-  .map-card {
-    height: 180px;
-    min-height: 180px;
-  }
-}
-
-/* Give the submission card more room for the larger map preview. */
-
-.submission-topbar {
-  grid-template-columns: 1fr auto;
-}
-
-.submission-wrap {
-  max-width: 1440px;
-}
-
-.incident-form {
-  padding-left: 46px;
-  padding-right: 46px;
-}
-
-@media(max-width:680px) {
-
-  .incident-form {
-    padding-left: 18px;
-    padding-right: 18px;
   }
 
   .coordinates-label {
     text-align: left;
+  }
+
+  .map-card {
+    height: clamp(220px,70vw,380px);
+    min-height: 0;
   }
 }
 
@@ -557,14 +546,18 @@ button,a {
   align-items: stretch;
   display: grid;
   gap: 40px;
-  grid-template-columns: minmax(430px,1.05fr) minmax(520px,1.35fr);
+  grid-template-columns: minmax(0,1fr) minmax(0,1.3fr);
+  min-width: 0;
   padding: 27px 0;
+  width: 100%;
 }
 
 .form-fields {
   display: flex;
   flex-direction: column;
   gap: 20px;
+  min-width: 0;
+  width: 100%;
 }
 
 .form-fields input,.form-fields select,.form-fields textarea {
@@ -584,12 +577,6 @@ button,a {
   padding: 0 18px;
 }
 
-.secondary-button {
-  background: #e5f4f1;
-  border: 1px solid #9dcec8;
-  color: var(--teal);
-}
-
 .secondary-button:hover {
   background: #d4eee9;
   border-color: #78bdb5;
@@ -597,11 +584,13 @@ button,a {
 }
 
 .form-body .location-result {
-  min-height: 360px;
+  min-height: 0;
 }
 
 .form-body .map-card {
-  min-height: 360px;
+  flex: none;
+  height: clamp(260px,32vw,560px);
+  min-height: 0;
 }
 
 @media(max-width:900px) {
@@ -618,70 +607,15 @@ button,a {
   }
 
   .form-body .location-result,.form-body .map-card {
-    min-height: 180px;
-  }
-
-  .coordinates {
-    overflow-wrap: anywhere;
-  }
-
-  .map-card {
-    width: 100%;
+    min-height: 0;
   }
 }
 
 /* Keep the form actions grouped at the bottom-right of the incident card. */
 
-.form-footer {
-  justify-content: flex-end;
-}
-
-.form-header h2 {
-  margin-left: 0;
-}
-
-.form-header p {
-  margin-left: 0;
-}
-
 .required-star {
   color: var(--coral);
   font-weight: 700;
-}
-
-@media(max-width:680px) {
-
-  .form-footer {
-    align-items: flex-end;
-  }
-
-  .form-actions {
-    width: auto;
-  }
-}
-
-/* Scale the map with the browser viewport instead of using one fixed size. */
-
-.form-body .location-result {
-  min-height: 0;
-}
-
-.form-body .map-card {
-  flex: none;
-  height: clamp(260px,32vw,560px);
-  min-height: 0;
-}
-
-@media(max-width:680px) {
-
-  .form-body .location-result {
-    min-height: 0;
-  }
-
-  .form-body .map-card {
-    height: clamp(220px,70vw,380px);
-    min-height: 0;
-  }
 }
 
 /* Styled discard confirmation dialog. */
@@ -703,6 +637,7 @@ button,a {
 
 .confirm-dialog {
   background: #fff;
+  border: 0;
   border-radius: 16px;
   box-shadow: 0 24px 70px rgba(17,47,53,.2);
   max-width: 380px;
@@ -757,45 +692,7 @@ button,a {
   background: #d96d5b;
 }
 
-/* Prevent the map column from creating horizontal overflow at any viewport size. */
-
-.submission-page,.submission-wrap,.incident-form,.form-body,.form-fields,.location-result {
-  min-width: 0;
-  width: 100%;
-}
-
-.submission-page {
-  overflow-x: hidden;
-}
-
-.form-body {
-  grid-template-columns: minmax(0,1fr) minmax(0,1.3fr);
-}
-
-.map-card {
-  max-width: 100%;
-  width: 100%;
-}
-
-.coordinates {
-  max-width: 100%;
-  overflow-wrap: anywhere;
-}
-
-@media(max-width:680px) {
-
-  .form-body {
-    grid-template-columns: minmax(0,1fr);
-  }
-}
-
 /* Keep the inner-page header aligned with the dashboard header while retaining the back arrow. */
-
-.submission-topbar {
-  height: 80px;
-  padding-left: 2%;
-  padding-right: 2%;
-}
 
 .submission-topbar .back-link {
   align-items: center;

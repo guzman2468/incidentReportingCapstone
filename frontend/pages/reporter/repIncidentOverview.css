@@ -125,7 +125,7 @@ button,a {
 
 .overview-wrap {
   margin: 0 auto;
-  max-width: 1200px;
+  max-width: 1440px;
   padding: 55px 26px 80px;
 }
 
@@ -212,12 +212,6 @@ button,a {
   gap: 46px;
   grid-template-columns: minmax(0,1.25fr) minmax(240px,.75fr);
   padding: 29px 0 31px;
-}
-
-.overview-fields {
-  display: grid;
-  gap: 25px;
-  grid-template-columns: 1fr 1fr;
 }
 
 .detail-field {
@@ -380,10 +374,6 @@ button,a {
     gap: 25px;
   }
 
-  .overview-fields {
-    grid-template-columns: 1fr;
-  }
-
   .detail-field:nth-child(3) {
     grid-column: auto;
   }
@@ -399,10 +389,6 @@ button,a {
 }
 
 /* Match the incident submission page's left-fields/right-map layout. */
-
-.overview-wrap {
-  max-width: 1440px;
-}
 
 .overview-fields {
   display: flex;
@@ -533,18 +519,18 @@ button,a {
 }
 
 .overview-notes .notes-heading strong {
-  color: #947126;
+  color: var(--ink);
   font-size: 12px;
 }
 
 .overview-notes .notes-heading small {
-  color: #b39a66;
+  color: var(--muted);
   font-size: 10px;
   margin-top: 3px;
 }
 
 .notes-empty {
-  color: #9c8866;
+  color: var(--muted);
   font-size: 11px;
   line-height: 1.6;
   margin: 18px 0;
@@ -552,7 +538,7 @@ button,a {
 
 .overview-notes textarea {
   background: #fff;
-  border: 1px solid #eadcbd;
+  border: 1px solid var(--line);
   border-radius: 8px;
   color: var(--ink);
   font-size: 11px;
@@ -632,27 +618,6 @@ button,a {
   color: #c7eeee;
 }
 
-.overview-notes .outline-button {
-  margin-top: 10px;
-  width: 100%;
-}
-
-.overview-notes .notes-heading strong {
-  color: var(--ink);
-}
-
-.overview-notes .notes-heading small {
-  color: var(--muted);
-}
-
-.overview-notes .notes-empty {
-  color: var(--muted);
-}
-
-.overview-notes textarea {
-  border-color: var(--line);
-}
-
 .overview-notes .note-item {
   border-color: var(--line);
 }
@@ -682,7 +647,10 @@ button,a {
   box-shadow: 0 8px 18px rgba(8,127,131,.18);
   color: #fff;
   font-weight: 700;
+  height: 42px;
+  margin-top: 10px;
   padding: 13px 18px;
+  width: 100%;
 }
 
 .overview-notes .outline-button:hover {
@@ -716,11 +684,6 @@ button,a {
   position: absolute;
   white-space: nowrap;
   width: 1px;
-}
-
-.overview-notes .outline-button {
-  height: 42px;
-  margin-top: 10px;
 }
 
 @media(max-width:680px) {

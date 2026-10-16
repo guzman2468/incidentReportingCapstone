@@ -5,13 +5,13 @@ set -e
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 cd "$SCRIPT_DIR"
 
-if [ ! -d ".venv" ]; then
+if [[ ! -d ".venv" ]]; then
     echo "ERROR: Virtual environment not found."
     echo "Run the setup script first."
     exit 1
 fi
 
-if [ ! -d "frontend/pages/reporter" ]; then
+if [[ ! -d "frontend/pages/reporter" ]]; then
     echo "ERROR: Reporter frontend directory not found."
     exit 1
 fi

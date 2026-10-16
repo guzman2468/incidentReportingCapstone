@@ -14,7 +14,7 @@ if ! docker compose version >/dev/null 2>&1; then
     exit 1
 fi
 
-if [ ! -f .env ]; then
+if [[ ! -f .env ]]; then
     echo "ERROR: .env is required in $SCRIPT_DIR." >&2
     exit 1
 fi
@@ -24,7 +24,7 @@ compose_pid=""
 stop_containers() {
     exit_status="$1"
     trap - INT TERM EXIT
-    if [ -n "$compose_pid" ] && kill -0 "$compose_pid" 2>/dev/null; then
+    if [[ -n "$compose_pid" ]] && kill -0 "$compose_pid" 2>/dev/null; then
         kill -INT "$compose_pid" 2>/dev/null || true
         wait "$compose_pid" 2>/dev/null || true
     fi

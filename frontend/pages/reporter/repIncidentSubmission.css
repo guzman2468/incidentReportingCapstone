@@ -679,7 +679,7 @@ button,a {
 }
 
 .danger-button {
-  background: #ee806d;
+  background: #b54f40;
   border: 0;
   border-radius: 8px;
   color: #fff;
@@ -689,7 +689,7 @@ button,a {
 }
 
 .danger-button:hover {
-  background: #d96d5b;
+  background: #963d32;
 }
 
 /* Keep the inner-page header aligned with the dashboard header while retaining the back arrow. */

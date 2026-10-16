@@ -31,7 +31,7 @@ button,a {
 }
 
 .app-shell {
-  display: flex;
+  display: block;
   min-height: 100vh;
 }
 
@@ -43,6 +43,7 @@ button,a {
   display: flex;
   flex-direction: column;
   flex-shrink: 0;
+  display: none;
 }
 
 .brand {
@@ -229,7 +230,7 @@ button,a {
   border-bottom: 1px solid var(--line);
   display: flex;
   align-items: center;
-  padding: 0 5.7%;
+  padding: 0 2%;
   justify-content: space-between;
 }
 
@@ -293,14 +294,14 @@ button,a {
 }
 
 .content-wrap {
-  max-width: 1240px;
-  margin: auto;
-  padding: 53px 5.7% 70px;
+  max-width: none;
+  margin: 0;
+  padding: 53px 1.5% 70px;
 }
 
 .hero-row {
   display: flex;
-  align-items: flex-end;
+  align-items: flex-start;
   justify-content: space-between;
   margin-bottom: 39px;
 }
@@ -358,8 +359,8 @@ button,a {
 
 .stats-grid {
   display: grid;
-  grid-template-columns: repeat(3,1fr);
-  gap: 17px;
+  grid-template-columns: minmax(0,1fr) minmax(0,1fr);
+  gap: 14px;
   margin-bottom: 25px;
 }
 
@@ -373,6 +374,7 @@ button,a {
   display: flex;
   gap: 14px;
   padding: 19px 20px;
+  position: relative;
 }
 
 .accent-coral {
@@ -436,8 +438,9 @@ button,a {
 
 .dashboard-grid {
   display: grid;
-  grid-template-columns: minmax(0,1.8fr) minmax(280px,1fr);
-  gap: 21px;
+  grid-template-columns: minmax(0,1fr) minmax(0,1fr);
+  gap: 14px;
+  align-items: start;
 }
 
 .panel {
@@ -532,6 +535,7 @@ button,a {
   display: flex;
   gap: 13px;
   min-height: 76px;
+  cursor: pointer;
   transition: .15s;
 }
 
@@ -719,126 +723,14 @@ button,a {
   margin: 5px 0 0;
 }
 
-.modal-backdrop {
-  align-items: center;
-  background: rgba(24,43,53,.3);
-  display: none;
-  inset: 0;
-  justify-content: center;
-  padding: 20px;
-  position: fixed;
-  z-index: 5;
-}
-
-.modal-backdrop.open {
-  display: flex;
-}
-
-.report-modal {
-  background: #fff;
-  border-radius: 16px;
-  box-shadow: 0 24px 70px rgba(17,47,53,.2);
-  max-width: 520px;
-  padding: 31px;
-  width: 100%;
-  position: relative;
-}
-
-.modal-close {
-  background: #f4f7f6;
-  border: 0;
-  border-radius: 50%;
-  color: #738486;
-  font-size: 21px;
-  height: 29px;
-  position: absolute;
-  right: 20px;
-  top: 20px;
-  width: 29px;
-}
-
-.modal-kicker {
-  color: var(--teal);
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 1.5px;
-}
-
-.report-modal h2 {
-  font: 600 25px 'Space Grotesk', sans-serif;
-  margin: 10px 0 6px;
-}
-
-.report-modal>p {
-  color: #849497;
-  font-size: 12px;
-  margin: 0 0 23px;
-}
-
-.report-modal label {
-  color: #40565b;
-  display: block;
-  font-size: 11px;
-  font-weight: 700;
-  margin: 14px 0 7px;
-}
-
-.report-modal input,.report-modal textarea {
-  border: 1px solid #dde8e5;
-  border-radius: 7px;
-  outline: 0;
-  padding: 11px 12px;
-  width: 100%;
-  font-size: 12px;
-  resize: vertical;
-}
-
-.report-modal input:focus,.report-modal textarea:focus {
-  border-color: #6dbeb5;
-  box-shadow: 0 0 0 3px #e5f5f2;
-}
-
-.modal-fields {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 13px;
-}
-
-.modal-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 9px;
-  margin-top: 23px;
-}
-
-.secondary-button {
-  background: #fff;
-  border: 1px solid #dbe6e4;
-  border-radius: 8px;
-  color: #607276;
-  font-size: 12px;
-  font-weight: 700;
-  padding: 11px 16px;
-}
-
-.modal-actions .primary-button span {
-  font-size: 14px;
-  margin: 0 0 0 5px;
-}
-
 @media(max-width:900px) {
 
   .sidebar {
     width: 220px;
   }
 
-  .content-wrap {
-    padding-left: 4%;
-    padding-right: 4%;
-  }
-
   .topbar {
-    padding: 0 4%;
+    padding: 0 2%;
   }
 
   .dashboard-grid {
@@ -917,34 +809,9 @@ button,a {
     gap: 9px;
   }
 
-  .modal-fields {
-    grid-template-columns: 1fr;
-  }
 }
 
 /* Reporter dashboard: side-by-side active and past incident queues */
-
-.content-wrap {
-  max-width: none;
-  margin: 0;
-  padding-left: 1.5%;
-  padding-right: 1.5%;
-}
-
-.hero-row {
-  align-items: flex-start;
-}
-
-.stats-grid {
-  grid-template-columns: minmax(0,1fr) minmax(0,1fr);
-  gap: 14px;
-}
-
-.dashboard-grid {
-  grid-template-columns: minmax(0,1fr) minmax(0,1fr);
-  gap: 14px;
-  align-items: start;
-}
 
 .incident-column {
   min-width: 0;
@@ -975,10 +842,6 @@ button,a {
   gap: 10px;
   padding-right: 8px;
   min-height: 84px;
-}
-
-.incident-row {
-  cursor: pointer;
 }
 
 .incident-row:focus-visible {
@@ -1064,10 +927,6 @@ button,a {
     padding-right: 4%;
   }
 
-  .stats-grid {
-    grid-template-columns: 1fr;
-  }
-
   .support-row .quick-panel {
     grid-template-columns: 1fr;
   }
@@ -1087,10 +946,6 @@ button,a {
   padding: 0 9px;
 }
 
-.stat-card {
-  position: relative;
-}
-
 .stat-content {
   min-width: 0;
 }
@@ -1104,19 +959,6 @@ button,a {
 
 /* Minimal header mode: the sidebar is replaced by a small user menu. */
 
-.sidebar {
-  display: none;
-}
-
-.app-shell {
-  display: block;
-}
-
-.topbar {
-  padding-left: 2%;
-  padding-right: 2%;
-}
-
 .user-menu {
   position: relative;
 }
@@ -1126,16 +968,13 @@ button,a {
   border: 1px solid var(--line);
   border-radius: 9px;
   box-shadow: 0 10px 25px rgba(29,64,67,.12);
-  right: 0;
+  display: none;
   padding: 6px;
   position: absolute;
+  right: 0;
   top: 43px;
   width: 170px;
   z-index: 3;
-}
-
-.user-dropdown {
-  display: none;
 }
 
 .user-dropdown.open {

@@ -646,20 +646,6 @@ button,a {
   width: 100%;
 }
 
-.confirm-icon {
-  align-items: center;
-  background: #fff1ed;
-  border-radius: 50%;
-  color: var(--coral);
-  display: flex;
-  font-size: 18px;
-  font-weight: 700;
-  height: 38px;
-  justify-content: center;
-  margin: 0 auto 15px;
-  width: 38px;
-}
-
 .confirm-dialog h2 {
   font: 600 21px 'Space Grotesk', sans-serif;
   margin: 0 0 8px;

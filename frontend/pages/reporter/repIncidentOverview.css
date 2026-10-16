@@ -51,7 +51,7 @@ button,a {
 }
 
 .overview-label {
-  font: 600 17px 'Space Grotesk';
+  font: 600 17px 'Space Grotesk', sans-serif;
 }
 
 .user-menu {
@@ -145,7 +145,7 @@ button,a {
 }
 
 .overview-heading h1 {
-  font: 600 34px 'Space Grotesk';
+  font: 600 34px 'Space Grotesk', sans-serif;
   letter-spacing: -1.3px;
   margin: 0;
 }
@@ -188,7 +188,7 @@ button,a {
 }
 
 .incident-card-header h2 {
-  font: 600 25px 'Space Grotesk';
+  font: 600 25px 'Space Grotesk', sans-serif;
   letter-spacing: -.7px;
   margin: 10px 0 7px;
 }
@@ -408,6 +408,14 @@ button,a {
   display: flex;
   flex-direction: column;
   gap: 20px;
+}
+
+.overview-fields .field-label {
+  color: #3d555b;
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  margin-bottom: 8px;
 }
 
 .readonly-field {
@@ -695,6 +703,19 @@ button,a {
 
 .note-composer {
   margin-top: auto;
+}
+
+.visually-hidden {
+  border: 0;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  padding: 0;
+  position: absolute;
+  white-space: nowrap;
+  width: 1px;
 }
 
 .overview-notes .outline-button {

@@ -58,7 +58,7 @@ button,a {
 }
 
 .submission-brand {
-  font: 700 19px 'Space Grotesk';
+  font: 700 19px 'Space Grotesk', sans-serif;
   letter-spacing: -.7px;
 }
 
@@ -184,7 +184,7 @@ button,a {
 }
 
 .page-heading h1 {
-  font: 600 34px 'Space Grotesk';
+  font: 600 34px 'Space Grotesk', sans-serif;
   letter-spacing: -1.4px;
   margin: 0 0 8px;
 }
@@ -224,7 +224,7 @@ button,a {
 
 .form-header h2 {
   display: inline-block;
-  font: 600 19px 'Space Grotesk';
+  font: 600 19px 'Space Grotesk', sans-serif;
   margin: 0 0 0 11px;
   vertical-align: middle;
 }
@@ -726,7 +726,7 @@ button,a {
 }
 
 .confirm-dialog h2 {
-  font: 600 21px 'Space Grotesk';
+  font: 600 21px 'Space Grotesk', sans-serif;
   margin: 0 0 8px;
 }
 

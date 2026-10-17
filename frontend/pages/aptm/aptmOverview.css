@@ -1,0 +1,59 @@
+@import url('../reporter/repIncidentSubmission.css');
+@import url('../reporter/repIncidentOverview.css');
+
+.assignment-field {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  margin-top: 20px;
+}
+
+.assignment-field label {
+  margin-bottom: 0;
+}
+
+.assignment-field select {
+  background: #fff;
+  border: 1px solid #dbe6e4;
+  border-radius: 7px;
+  color: #607276;
+  font: inherit;
+  font-size: 12px;
+  max-width: 280px;
+  min-height: 38px;
+  padding: 0 12px;
+}
+
+.assignment-button {
+  background: var(--teal);
+  border: 0;
+  border-radius: 8px;
+  color: #fff;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 700;
+  min-height: 40px;
+  padding: 0 16px;
+  margin-top: 8px;
+  width: fit-content;
+}
+
+.assignment-button:hover {
+  background: var(--teal-dark);
+}
+
+.assignment-confirm {
+  background: var(--teal);
+  border: 0;
+  border-radius: 8px;
+  color: #fff;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 12px 17px;
+}
+
+.assignment-confirm:hover {
+  background: var(--teal-dark);
+}
+

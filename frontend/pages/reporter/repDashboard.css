@@ -189,6 +189,13 @@ button,a {
   position: relative;
 }
 
+.stats-grid > .stat-card {
+  align-self: start;
+  height: 110px;
+  min-height: 110px;
+  max-height: 110px;
+}
+
 .accent-coral {
   border-left-color: var(--coral);
 }
@@ -428,6 +435,11 @@ button,a {
   color: #2d6a45;
 }
 
+.closed {
+  background: #eef0f1;
+  color: #5f6d72;
+}
+
 .row-arrow {
   color: #b0bcbc;
   font-size: 20px;
@@ -663,6 +675,13 @@ button,a {
   white-space: nowrap;
 }
 
+.status-counts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: flex-end;
+}
+
 .active-count {
   background: #fff3df;
   color: #805a00;
@@ -671,6 +690,16 @@ button,a {
 .past-count {
   background: #e6f7ee;
   color: #2d6a45;
+}
+
+.closed-count {
+  background: #eef0f1;
+  color: #5f6d72;
+}
+
+.new-count {
+  background: #fff3df;
+  color: #805a00;
 }
 
 .support-row {

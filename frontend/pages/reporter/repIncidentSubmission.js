@@ -27,6 +27,7 @@ const form = document.getElementById('incidentForm');
 const cancelConfirm = document.getElementById('cancelConfirm');
 const cancelConfirmBackdrop = document.getElementById('cancelConfirmBackdrop');
 
+
 const closeCancelConfirm = () => {
   cancelConfirm.close();
   cancelConfirmBackdrop.hidden = true;
@@ -35,6 +36,7 @@ const closeCancelConfirm = () => {
 cancelConfirm.addEventListener('close', () => {
   cancelConfirmBackdrop.hidden = true;
 });
+
 
 // Show a styled confirmation dialog before leaving and discarding the form.
 document.getElementById('cancelButton').addEventListener('click', (event) => {
@@ -48,6 +50,7 @@ document.getElementById('keepEditing').addEventListener('click', () => {
   closeCancelConfirm();
 });
 
+
 // Leave the page only after the user explicitly confirms.
 document.getElementById('discardChanges').addEventListener('click', () => {
   window.location.href = 'repDashboard.html';
@@ -56,10 +59,16 @@ document.getElementById('discardChanges').addEventListener('click', () => {
 // Clicking outside the dialog keeps the user on the form.
 cancelConfirm.addEventListener('click', (event) => {
   const bounds = cancelConfirm.getBoundingClientRect();
-  const clickedOutside = event.clientX < bounds.left || event.clientX > bounds.right
-    || event.clientY < bounds.top || event.clientY > bounds.bottom;
-  if (clickedOutside) closeCancelConfirm();
+  const clickedOutside = event.clientX < bounds.left
+    || event.clientX > bounds.right
+    || event.clientY < bounds.top
+    || event.clientY > bounds.bottom;
+
+  if (clickedOutside) {
+    closeCancelConfirm();
+  }
 });
+
 
 // Escape closes the confirmation dialog.
 document.addEventListener('keydown', (event) => {
@@ -70,11 +79,14 @@ document.addEventListener('keydown', (event) => {
 form.addEventListener('submit', (event) => {
   event.preventDefault();
   const toast = document.createElement('div');
+
   toast.className = 'toast';
   toast.textContent = 'Incident report ready to submit.';
   document.body.appendChild(toast);
+
   setTimeout(() => toast.remove(), 2600);
 });
+
 
 // -----------------------------
 // Location lookup
@@ -100,7 +112,9 @@ locationButton.addEventListener('click', () => {
       const { latitude, longitude } = position.coords;
       const latitudeDirection = latitude >= 0 ? 'N' : 'S';
       const longitudeDirection = longitude >= 0 ? 'E' : 'W';
-      coordinates.textContent = `${Math.abs(latitude).toFixed(6)}° ${latitudeDirection}, ${Math.abs(longitude).toFixed(6)}° ${longitudeDirection}`;
+
+      coordinates.textContent = `${Math.abs(latitude).toFixed(6)}° ${latitudeDirection}, `
+        + `${Math.abs(longitude).toFixed(6)}° ${longitudeDirection}`;
 
       // Build a small OpenStreetMap view with a marker at the retrieved point.
       const mapPadding = 0.01;
@@ -108,7 +122,11 @@ locationButton.addEventListener('click', () => {
       const right = longitude + mapPadding;
       const bottom = latitude - mapPadding;
       const top = latitude + mapPadding;
-      mapFrame.src = `https://www.openstreetmap.org/export/embed.html?bbox=${left},${bottom},${right},${top}&layer=mapnik&marker=${latitude},${longitude}`;
+
+      mapFrame.src = 'https://www.openstreetmap.org/export/embed.html'
+        + `?bbox=${left},${bottom},${right},${top}`
+        + `&layer=mapnik&marker=${latitude},${longitude}`;
+        
       mapCard.hidden = false;
       locationButton.disabled = false;
       locationButton.textContent = 'Update location';
@@ -123,8 +141,10 @@ locationButton.addEventListener('click', () => {
 
 document.getElementById('logoutButton').addEventListener('click', () => {
   const toast = document.createElement('div');
+
   toast.className = 'toast';
   toast.textContent = 'Log out selected.';
   document.body.appendChild(toast);
+
   setTimeout(() => toast.remove(), 2600);
 });

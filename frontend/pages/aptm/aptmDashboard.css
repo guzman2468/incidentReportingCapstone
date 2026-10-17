@@ -1,0 +1,49 @@
+@import url('../reporter/repDashboard.css');
+
+/* APTM pages share the reporter dashboard visual system. */
+.panel-header h2 {
+  max-width: 30rem;
+}
+
+.stats-grid .stat-card {
+  height: 110px;
+  min-height: 110px;
+}
+
+.closed {
+  background: #eef0f1;
+  color: #5f6d72;
+}
+
+.past-counts {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.past-count strong {
+  font-size: inherit;
+}
+
+.summary-filters {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin-left: auto;
+}
+
+.resolved-count {
+  background: #e6f7ee;
+  color: #2d6a45;
+}
+
+.closed-count {
+  background: #eef0f1;
+  color: #5f6d72;
+}
+
+.incident-info span .date-label {
+  display: inline;
+}

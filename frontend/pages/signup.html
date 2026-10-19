@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <!-- Page metadata -->
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Request access</title>
+
+    <!-- Fonts (DM Sans + Space Grotesk) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Reuse the login styles for consistent look -->
+    <link rel="stylesheet" href="login.css" />
+  </head>
+
+  <body>
+
+      <!-- Signup card -->
+      <main class="login-card" role="main">
+
+        <h1>Sign Up</h1>
+        <p class="lead">Fill out your details and a site administrator will review your request.</p>
+
+        <form id="signupForm">
+          <!-- First name -->
+          <label for="firstName">First name</label>
+          <input id="firstName" name="firstName" type="text" required />
+            
+          <!-- Last name -->
+          <label for="lastName">Last name</label>
+          <input id="lastName" name="lastName" type="text" required />
+
+          <!-- Email -->
+          <label for="email">Email</label>
+          <input id="email" name="email" type="email" required autocomplete="email" />
+
+          <!-- Password -->
+          <label for="password">Password</label>
+          <input id="password" name="password" type="password" required autocomplete="new-password" />
+
+          <!-- Confirm password -->
+          <label for="confirmPassword">Confirm password</label>
+          <input id="confirmPassword" name="confirmPassword" type="password" required />
+
+          <!-- Optional role / note -->
+          <label for="note">Notes (optional)</label>
+          <input id="note" name="note" type="text" placeholder="Team, department, or short note" />
+
+          <button class="primary" type="submit">Request access</button>
+        </form>
+
+        <p class="signup">Already requested an account? <a href="login.html">Sign in</a></p>
+      </main>
+    </div>
+
+    <script>
+      (function(){
+        var form = document.getElementById('signupForm');
+        var submitBtn = form.querySelector('button[type="submit"]');
+
+        form.addEventListener('submit', function(e){
+          e.preventDefault();
+
+          // Basic client-side validation: passwords must match.
+          var pw = form.password.value;
+          var confirm = form.confirmPassword.value;
+
+          if (pw !== confirm) {
+            alert('Passwords do not match');
+            return;
+          }
+
+          // Simulate network request for demo purposes
+          submitBtn.disabled = true;
+          var originalText = submitBtn.textContent;
+          submitBtn.textContent = 'Requesting...';
+
+          setTimeout(function(){
+            alert('Access request submitted. You will receive an email when it is approved.');
+            // Redirect back to login page after submitting request
+            window.location.href = 'login.html';
+          }, 900);
+        });
+      })();
+    </script>
+  </body>
+</html>

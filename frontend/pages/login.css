@@ -1,0 +1,191 @@
+/* ==================================================
+   login.css — styles for the sign-in page
+   - Organized and commented for readability
+   - Variables provide an easy theming surface
+   ================================================== */
+
+:root {
+  /* Color / theme variables */
+  --bg: #f4f7fb;                       /* page background */
+  --card: #ffffff;                     /* card background */
+  --muted: #6b7280;                    /* secondary text */
+  --accent: #0b74ff;                   /* primary brand color */
+  --radius: 12px;                      /* base border radius */
+  --shadow: 0 8px 30px rgba(8,15,36,0.08); /* subtle card shadow */
+}
+
+/* Reset / base styles */
+* {
+  box-sizing: border-box;
+  font-family: 'DM Sans', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(180deg, #f7fbff 0%, var(--bg) 100%);
+}
+
+/* Top page title shown above the viewport */
+.page-header {
+  width: 100%;
+  text-align: center;
+  margin-bottom: 10px;
+}
+n.page-title {
+  margin: 0;
+  font-family: 'Space Grotesk', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+  font-size: 20px;
+  font-weight: 600;
+  color: #0b74ff;
+}
+
+/* Layout: viewport contains brand panel + login card */
+.login-viewport {
+  width: 100%;
+  max-width: 980px;
+  padding: 28px;
+  display: grid;
+  grid-template-columns: 1fr 420px;
+  gap: 28px;
+  align-items: center;
+}
+
+/* ==================================================
+   Brand panel (left column)
+   ================================================== */
+.brand {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: 36px;
+  border-radius: var(--radius);
+  background: linear-gradient(180deg, #0b74ff 0%, #2b9bff 100%);
+  color: #fff;
+  box-shadow: var(--shadow);
+}
+
+
+.logo {
+  width: 72px;
+  height: 72px;
+  border-radius: 14px;
+  background: rgba(255,255,255,0.14);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 28px;
+}
+
+/* When the logo is shown on the card, center it above the form */
+.logo-centered {
+  margin: 0 auto 18px; /* center horizontally and add spacing below */
+  background: rgba(11,116,255,0.12); /* slight tint to match brand */
+  color: #062b53; /* darker text for better contrast on white card */
+}
+
+.brand-text {
+  display: flex;
+  flex-direction: column;
+  font-family: 'Space Grotesk', sans-serif;
+}
+.brand-text strong { font-size: 20px; }
+.brand-text span   { opacity: 0.9; font-size: 13px; }
+
+/* ==================================================
+   Login card (right column)
+   ================================================== */
+.login-card {
+  background: var(--card);
+  padding: 34px;
+  border-radius: 14px;
+  box-shadow: var(--shadow);
+}
+
+n.login-card h1 {
+  margin: 0 0 6px 0;
+  font-size: 22px;
+}
+
+n.login-card .lead {
+  margin: 0 0 18px 0;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+/* Form labels & inputs */
+.login-card label {
+  display: block;
+  margin: 12px 0 6px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.login-card input[type="email"],
+.login-card input[type="password"] {
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 8px;
+  border: 1px solid #e6e9ef;
+  background: #fbfdff;
+}
+
+/* Utility rows */
+.row.between {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.row.small { margin-top: 10px; }
+
+.remember { font-size: 13px; color: var(--muted); }
+
+/* Links and primary button */
+a.muted {
+  color: var(--accent);
+  font-size: 13px;
+  text-decoration: none;
+}
+
+.primary {
+  display: inline-block;
+  margin-top: 18px;
+  width: 100%;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  padding: 12px 14px;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.signup {
+  margin-top: 12px;
+  font-size: 13px;
+  color: var(--muted);
+}
+.signup a { color: var(--accent); text-decoration: none; }
+
+/* ==================================================
+   Responsive adjustments
+   ================================================== */
+@media (max-width: 920px) {
+  .login-viewport {
+    grid-template-columns: 1fr;
+    padding: 20px;
+  }
+}
+
+/* Fallback/override for the page title in case older malformed selector exists above */
+.page-title {
+  margin: 0;
+  font-family: 'Space Grotesk', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+  font-size: 20px;
+  font-weight: 600;
+  color: #0b74ff;
+}

@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    
+    <title>Sign in</title>
+
+    <!-- Fonts (DM Sans + Space Grotesk) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Local styles for the login page -->
+    <link rel="stylesheet" href="login.css" />
+  </head>
+
+  <body>
+   
+
+    <!-- Top-level viewport that holds the brand panel and the signin card -->
+    <div class="login-viewport">
+
+    	
+
+      <!-- Main sign-in card (right) -->
+      <main class="login-card" role="main">
+
+        <!-- Heading and short description -->
+        <h1>Sign in to your account</h1>
+        <p class="lead">Securely report incidents and keep your workplace safe.</p>
+
+        <!-- Login form: keeps markup semantic and accessible -->
+        <form id="loginForm">
+
+          <!-- Email field -->
+          <label for="email">Email</label>
+          <input id="email" name="email" type="email" required autocomplete="email" />
+
+          <!-- Password field -->
+          <label for="password">Password</label>
+          <input id="password" name="password" type="password" required autocomplete="current-password" />
+
+          <!-- Row with remember checkbox and forgot link -->
+          <div class="row between small">
+            <label class="remember">
+              <input type="checkbox" id="remember" />
+              Remember me
+            </label>
+
+            <a class="muted" href="#">Forgot password?</a>
+          </div>
+
+          <!-- Primary action -->
+          <button class="primary" type="submit">Sign in</button>
+        </form>
+
+        <!-- Secondary action: request account access -->
+        <p class="signup">Don't have an account? <a href="signup.html">Sign Up</a></p>
+
+      </main>
+
+    </div>
+
+    <!-- Page behavior: demo authentication handler that calls the backend -->
+    <script>
+      (function() {
+        var form = document.getElementById('loginForm');
+        var submitBtn = form.querySelector('button[type="submit"]');
+
+        // Submit handler uses fetch() to POST to the demo /api/login endpoint.
+        form.addEventListener('submit', function(e) {
+          e.preventDefault();
+
+          // Provide quick UI feedback while the request is in-flight.
+          submitBtn.disabled = true;
+          var originalText = submitBtn.textContent;
+          submitBtn.textContent = 'Signing in...';
+
+          var payload = {
+            email: form.email.value,
+            password: form.password.value
+          };
+
+          fetch('/api/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          })
+            .then(function(res) {
+              if (!res.ok) throw res;
+              return res.json();
+            })
+            .then(function(data) {
+              // On success, navigate to the reporter dashboard.
+              if (data && data.success) {
+                window.location.href = 'reporter/repDashboard.html';
+              } else {
+                alert(data.message || 'Login failed');
+                submitBtn.disabled = false;
+                submitBtn.textContent = originalText;
+              }
+            })
+            .catch(function(err) {
+              // Try to extract helpful error details from the response.
+              
+              err.json && err.json().then(function(json){
+                alert(json.detail || json.message || 'Login failed');
+              }).catch(function(){
+                alert('Login failed');
+              }).finally(function(){
+                submitBtn.disabled = false;
+                submitBtn.textContent = originalText;
+              });
+            });
+        });
+      })();
+    </script>
+  </body>
+</html>

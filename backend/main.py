@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy import text
@@ -8,7 +8,7 @@ from sqlalchemy import text
 from .database import engine
 
 app = FastAPI()
-FRONTEND_DIR = Path(__file__).resolve().parent.parent / "frontend" / "pages" / "reporter"
+FRONTEND_DIR = Path(__file__).resolve().parent.parent / "frontend" / "pages"
 
 
 # TEMPORRARY HOME PAGE FOR TESTING, this will be the signup page in the future.
@@ -28,6 +28,11 @@ def database_test():
             "status": "connected",
             "database": result.scalar()
         }
+
+
+@app.get("/login")
+def home():
+    return FileResponse(FRONTEND_DIR / "login.html")
 
 
 # Serve the page HTML, CSS, and JavaScript after the API routes are registered.

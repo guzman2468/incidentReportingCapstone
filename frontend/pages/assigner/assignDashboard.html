@@ -1,0 +1,164 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Assigner Dashboard</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="assignDashboard.css" />
+</head>
+<body>
+  <main class="assigner-page">
+    <header class="assigner-topbar">
+      <div class="breadcrumbs"><strong>Dashboard</strong></div>
+
+      <div class="assigner-topbar-actions">
+        <span class="role-label">Assigner</span>
+        <div class="user-menu">
+          <button id="userButton" class="top-avatar"
+            type="button" aria-label="Open user menu"
+            aria-expanded="false">AS</button>
+          <div id="userDropdown" class="user-dropdown" aria-hidden="true">
+            <div class="user-summary">
+              <strong>FirstName LastName</strong>
+              <span>Assigner</span>
+            </div>
+            <button type="button" id="logoutButton"><span>Log out</span></button>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <section class="dashboard-wrap">
+      <div class="dashboard-heading">
+        <div>
+          <p class="eyebrow" id="currentDate">ASSIGNER WORKSPACE</p>
+          <h1>Incident dashboard</h1>
+          <p class="hero-copy">
+            Review disaster reports and route them to the closest available county responders.
+          </p>
+        </div>
+        <div class="dashboard-summary">
+          <span class="summary-dot"></span>
+          <span id="totalCount">0 incidents</span>
+        </div>
+      </div>
+
+      <section class="stats-grid" aria-label="Incident counts">
+        <article class="stat-card accent-green">
+          <div class="stat-icon">✓</div>
+          <div>
+            <span>Past incidents</span>
+            <strong id="pastCount">0</strong>
+            <small>Resolved or closed</small>
+          </div>
+        </article>
+        <article class="stat-card accent-amber">
+          <div class="stat-icon">↻</div>
+          <div>
+            <span>Active incidents</span>
+            <strong id="activeCount">0</strong>
+            <small>Currently being handled</small>
+          </div>
+        </article>
+        <article class="stat-card accent-coral">
+          <div class="stat-icon">!</div>
+          <div>
+            <span>New incidents</span>
+            <strong id="newCount">0</strong>
+            <small>Awaiting assignment</small>
+          </div>
+        </article>
+      </section>
+
+      <section class="incident-columns" aria-label="Incidents by status">
+        <article class="incident-panel">
+          <div class="panel-heading">
+            <div>
+              <h2>Past</h2>
+              <p>Resolved and closed incidents</p>
+            </div>
+            <span class="column-count" id="pastColumnCount">0</span>
+          </div>
+          <div class="column-search">
+            <input id="pastSearch" type="search"
+              placeholder="Search past incidents..."
+              aria-label="Search past incidents">
+            <select id="pastFilter" class="time-filter" aria-label="Filter past incidents by time">
+              <option value="all">All time</option>
+              <option value="day">Past day</option>
+              <option value="week">Past week</option>
+              <option value="month">Past month</option>
+              <option value="six-months">Past 6 months</option>
+              <option value="year">Past year</option>
+              <option value="five-years">Past 5 years</option>
+            </select>
+          </div>
+          <div class="incident-list" id="pastList"></div>
+          <p class="empty-state" id="pastEmpty">No past incidents found.</p>
+        </article>
+
+        <article class="incident-panel">
+          <div class="panel-heading">
+            <div>
+              <h2>Active</h2>
+              <p>Incidents being handled</p>
+            </div>
+            <span class="column-count" id="activeColumnCount">0</span>
+          </div>
+          <div class="column-search">
+            <input id="activeSearch" type="search"
+              placeholder="Search active incidents..."
+              aria-label="Search active incidents">
+            <select id="activeFilter" class="time-filter" aria-label="Filter active incidents by time">
+              <option value="all">All time</option>
+              <option value="day">Past day</option>
+              <option value="week">Past week</option>
+              <option value="month">Past month</option>
+              <option value="six-months">Past 6 months</option>
+              <option value="year">Past year</option>
+              <option value="five-years">Past 5 years</option>
+            </select>
+          </div>
+          <div class="incident-list" id="activeList"></div>
+          <p class="empty-state" id="activeEmpty">No active incidents found.</p>
+        </article>
+
+        <article class="incident-panel">
+          <div class="panel-heading">
+            <div>
+              <h2>New</h2>
+              <p>Awaiting a responder</p>
+            </div>
+            <span class="column-count new-count" id="newColumnCount">0</span>
+          </div>
+          <div class="column-search">
+            <input id="newSearch" type="search"
+              placeholder="Search new incidents..."
+              aria-label="Search new incidents">
+            <select id="newFilter" class="time-filter" aria-label="Filter new incidents by time">
+              <option value="all">All time</option>
+              <option value="day">Past day</option>
+              <option value="week">Past week</option>
+              <option value="month">Past month</option>
+              <option value="six-months">Past 6 months</option>
+              <option value="year">Past year</option>
+              <option value="five-years">Past 5 years</option>
+            </select>
+          </div>
+          <div class="incident-list" id="newList"></div>
+          <p class="empty-state" id="newEmpty">No new incidents found.</p>
+        </article>
+      </section>
+    </section>
+  </main>
+
+  <script src="assignerDemoData.js"></script>
+  <script src="assignDashboard.js"></script>
+</body>
+</html>

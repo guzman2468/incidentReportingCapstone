@@ -2,6 +2,8 @@
 <html lang="en">
   <head>
     
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Sign in</title>
 
     <!-- Fonts (DM Sans + Space Grotesk) -->
@@ -14,30 +16,35 @@
   </head>
 
   <body>
-   
+    <div class="auth-page">
+      <header class="auth-topbar">
+        <div class="auth-brand">Incident Management Application</div>
+      </header>
 
-    <!-- Top-level viewport that holds the brand panel and the signin card -->
-    <div class="login-viewport">
-
-    	
-
-      <!-- Main sign-in card (right) -->
-      <main class="login-card" role="main">
+      <main class="auth-main">
+        <section class="login-card">
 
         <!-- Heading and short description -->
         <h1>Sign in to your account</h1>
-        <p class="lead">Securely report incidents and keep your workplace safe.</p>
+        <p class="lead">Reporters can create an account below. All other roles should sign in with their provisioned credentials.</p>
 
         <!-- Login form: keeps markup semantic and accessible -->
-        <form id="loginForm">
+        <form id="loginForm" novalidate>
 
           <!-- Email field -->
           <label for="email">Email</label>
-          <input id="email" name="email" type="email" required autocomplete="email" />
+          <input id="email" name="email" type="email" required autocomplete="email" pattern="[^@\s]+@[^@\s]+\.[^@\s]+" title="Enter an email in the format name@domain.extension" />
+          <span class="field-error" id="emailError" role="alert"></span>
 
           <!-- Password field -->
           <label for="password">Password</label>
-          <input id="password" name="password" type="password" required autocomplete="current-password" />
+          <div class="password-field">
+            <input id="password" name="password" type="password" required autocomplete="current-password" />
+            <button class="password-toggle" type="button" data-password-target="password" aria-label="Show password" aria-pressed="false">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12Z"></path><circle cx="12" cy="12" r="2.5"></circle></svg>
+            </button>
+          </div>
+          <span class="field-error" id="passwordError" role="alert"></span>
 
           <!-- Row with remember checkbox and forgot link -->
           <div class="row between small">
@@ -53,66 +60,14 @@
           <button class="primary" type="submit">Sign in</button>
         </form>
 
-        <!-- Secondary action: request account access -->
-        <p class="signup">Don't have an account? <a href="signup.html">Sign Up</a></p>
+        <!-- Secondary action: create an account -->
+        <p class="signup">New reporter? <a href="signup.html">Create an account</a></p>
 
+        </section>
       </main>
-
     </div>
 
-    <!-- Page behavior: demo authentication handler that calls the backend -->
-    <script>
-      (function() {
-        var form = document.getElementById('loginForm');
-        var submitBtn = form.querySelector('button[type="submit"]');
-
-        // Submit handler uses fetch() to POST to the demo /api/login endpoint.
-        form.addEventListener('submit', function(e) {
-          e.preventDefault();
-
-          // Provide quick UI feedback while the request is in-flight.
-          submitBtn.disabled = true;
-          var originalText = submitBtn.textContent;
-          submitBtn.textContent = 'Signing in...';
-
-          var payload = {
-            email: form.email.value,
-            password: form.password.value
-          };
-
-          fetch('/api/login', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-          })
-            .then(function(res) {
-              if (!res.ok) throw res;
-              return res.json();
-            })
-            .then(function(data) {
-              // On success, navigate to the reporter dashboard.
-              if (data && data.success) {
-                window.location.href = 'reporter/repDashboard.html';
-              } else {
-                alert(data.message || 'Login failed');
-                submitBtn.disabled = false;
-                submitBtn.textContent = originalText;
-              }
-            })
-            .catch(function(err) {
-              // Try to extract helpful error details from the response.
-              
-              err.json && err.json().then(function(json){
-                alert(json.detail || json.message || 'Login failed');
-              }).catch(function(){
-                alert('Login failed');
-              }).finally(function(){
-                submitBtn.disabled = false;
-                submitBtn.textContent = originalText;
-              });
-            });
-        });
-      })();
-    </script>
+    <script src="authHelpers.js"></script>
+    <script src="login.js"></script>
   </body>
 </html>

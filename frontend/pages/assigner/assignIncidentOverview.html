@@ -9,7 +9,9 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+    crossorigin="anonymous" />
 
   <link rel="stylesheet" href="assignIncidentOverview.css" />
 </head>
@@ -106,7 +108,7 @@
             <select id="providerSelect" required>
               <option value="">Finding available responders...</option>
             </select>
-            <p class="responder-recommendation" id="closestProviderHint" role="status"></p>
+            <output class="responder-recommendation" id="closestProviderHint"></output>
 
             <div class="current-assignment" id="assignmentSummary">
               No provider has been assigned yet.
@@ -154,7 +156,7 @@
   </main>
 
   <div class="confirm-backdrop" id="confirmBackdrop" hidden>
-    <section class="confirm-dialog" role="dialog" aria-modal="true"
+    <dialog open class="confirm-dialog"
       aria-labelledby="confirmTitle">
       <div class="confirm-icon">?</div>
       <h2 id="confirmTitle">Confirm assignment</h2>
@@ -167,10 +169,12 @@
           Confirm assignment
         </button>
       </div>
-    </section>
+    </dialog>
   </div>
 
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+    crossorigin="anonymous"></script>
   <script src="assignerDemoData.js"></script>
   <script src="assignIncidentOverview.js"></script>
 </body>

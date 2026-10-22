@@ -2,10 +2,29 @@
 const { incidents } = window.assignerDemoData;
 
 const listSettings = [
-  { status: 'past', listId: 'pastList', searchId: 'pastSearch', emptyId: 'pastEmpty', countId: 'pastColumnCount' },
-  { status: 'active', listId: 'activeList', searchId: 'activeSearch', emptyId: 'activeEmpty', countId: 'activeColumnCount' },
-  { status: 'new', listId: 'newList', searchId: 'newSearch', emptyId: 'newEmpty', countId: 'newColumnCount' }
+  { status: 'past', listId: 'pastList', searchId: 'pastSearch', filterId: 'pastFilter', emptyId: 'pastEmpty', countId: 'pastColumnCount' },
+  { status: 'active', listId: 'activeList', searchId: 'activeSearch', filterId: 'activeFilter', emptyId: 'activeEmpty', countId: 'activeColumnCount' },
+  { status: 'new', listId: 'newList', searchId: 'newSearch', filterId: 'newFilter', emptyId: 'newEmpty', countId: 'newColumnCount' }
 ];
+
+const rangeInDays = {
+  day: 1,
+  week: 7,
+  month: 30,
+  'six-months': 182,
+  year: 365,
+  'five-years': 1825
+};
+
+function isWithinTimeRange(submitted, selectedRange) {
+  const days = rangeInDays[selectedRange];
+  if (!days) return true;
+
+  const incidentDate = new Date(submitted);
+  if (Number.isNaN(incidentDate.getTime())) return true;
+
+  return incidentDate >= new Date(Date.now() - days * 86400000);
+}
 
 function getColumn(incident) {
   if (['resolved', 'closed'].includes(incident.status)) return 'past';
@@ -24,13 +43,16 @@ function escapeHTML(value) {
 }
 
 function renderIncident(incident, column) {
-  const symbolClass = column === 'past'
-    ? 'past'
-    : column === 'active' ? 'active' : '';
+  let symbolClass = '';
+  let symbol = '!';
 
-  const symbol = column === 'past'
-    ? '✓'
-    : column === 'active' ? '↻' : '!';
+  if (column === 'past') {
+    symbolClass = 'past';
+    symbol = '✓';
+  } else if (column === 'active') {
+    symbolClass = 'active';
+    symbol = '↻';
+  }
 
   const statusLabel = {
     new: 'New',
@@ -72,7 +94,9 @@ function renderDashboard() {
     );
 
     const searchInput = document.getElementById(settings.searchId);
+    const filterInput = document.getElementById(settings.filterId);
     const query = searchInput.value.trim().toLowerCase();
+    const selectedRange = filterInput.value;
 
     const filtered = matchingIncidents.filter((incident) => {
       const searchableText = [
@@ -85,7 +109,8 @@ function renderDashboard() {
         incident.assignedProvider
       ].join(' ').toLowerCase();
 
-      return searchableText.includes(query);
+      return searchableText.includes(query) &&
+        isWithinTimeRange(incident.submitted, selectedRange);
     });
 
     document.getElementById(settings.listId).innerHTML =
@@ -112,8 +137,9 @@ function renderDashboard() {
 }
 
 // Each column has an independent search box.
-listSettings.forEach(({ searchId }) => {
+listSettings.forEach(({ searchId, filterId }) => {
   document.getElementById(searchId).addEventListener('input', renderDashboard);
+  document.getElementById(filterId).addEventListener('change', renderDashboard);
 });
 
 // Event delegation means newly rendered incident buttons still work.

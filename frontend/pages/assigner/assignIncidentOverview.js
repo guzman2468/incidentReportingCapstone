@@ -148,15 +148,24 @@ function updateAvailableProviders() {
 function updateCurrentProvider() {
   const provider = incident.assignedProvider || '';
   const assignedCounty = incident.assignedCounty || '';
+  let currentProviderText = 'Not assigned';
+  let assignmentSummaryText = 'No provider has been assigned yet.';
 
-  document.getElementById('currentProvider').textContent =
-    provider
-      ? `${provider}${assignedCounty ? ` · ${assignedCounty} County` : ''}`
-      : 'Not assigned';
+  if (provider) {
+    currentProviderText = provider;
+    assignmentSummaryText = `Currently assigned to ${provider}`;
 
-  document.getElementById('assignmentSummary').textContent = provider
-    ? `Currently assigned to ${provider}${assignedCounty ? ` in ${assignedCounty} County` : ''}. You can select another available responder to reassign this incident.`
-    : 'No provider has been assigned yet.';
+    if (assignedCounty) {
+      currentProviderText += ` · ${assignedCounty} County`;
+      assignmentSummaryText += ` in ${assignedCounty} County`;
+    }
+
+    assignmentSummaryText +=
+      '. You can select another available responder to reassign this incident.';
+  }
+
+  document.getElementById('currentProvider').textContent = currentProviderText;
+  document.getElementById('assignmentSummary').textContent = assignmentSummaryText;
 
   const assignedResponder = availableResponders.find(
     (responder) => responder.name === provider

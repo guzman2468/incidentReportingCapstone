@@ -1,6 +1,20 @@
 window.assignerDemoData = {
   incidents: [
     {
+      id: 'INC-0238',
+      title: 'Hazardous materials leak near Omaha refinery',
+      type: 'Hazmat incident',
+      severity: 'CRITICAL',
+      description: 'A hazardous materials leak has been reported near an industrial site. Residents may need immediate evacuation and emergency medical support.',
+      status: 'new',
+      submitted: 'Oct 22, 2026',
+      county: 'Douglas',
+      latitude: 41.2700,
+      longitude: -95.9500,
+      assignedProvider: '',
+      assignedCounty: ''
+    },
+    {
       id: 'INC-0237',
       title: 'Tornado damage near Bellevue',
       type: 'Tornado',

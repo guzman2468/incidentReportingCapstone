@@ -169,14 +169,14 @@ button, a {
   padding: 7px 12px;
   border-radius: 20px;
   background: #fff0ec;
-  color: #d16f60;
+  color: #a84c40;
   font-size: 10px;
   font-weight: 700;
 }
 
 .status-badge.active {
   background: #fff8e7;
-  color: #99721c;
+  color: #7a5a0b;
 }
 
 .status-badge.resolved,
@@ -243,13 +243,29 @@ button, a {
 }
 
 .severity-badge.low {
-  background: #ecf9f0;
-  color: #2d8b58;
+  background: #c9a400;
+  color: #ffffff;
 }
 
 .severity-badge.medium {
-  background: #fff8e7;
-  color: #99721c;
+  background: #f6a23a;
+  color: #ffffff;
+}
+
+.severity-badge.high {
+  background: #d94a4a;
+  color: #ffffff;
+}
+
+.severity-badge.severe {
+  background: #8652b8;
+  color: #ffffff;
+}
+
+.severity-badge.critical {
+  background: #111111;
+  border: 1px solid #000000;
+  color: #ffffff;
 }
 
 .incident-details {
@@ -383,6 +399,7 @@ button, a {
 }
 
 .responder-recommendation {
+  display: block;
   margin: 9px 0 0;
   color: var(--teal-dark);
   font-size: 10px;
@@ -396,7 +413,7 @@ button, a {
   border: 1px solid #e5eeeb;
   border-radius: 8px;
   background: #f7faf9;
-  color: #718388;
+  color: #5d6e73;
   font-size: 11px;
   line-height: 1.6;
 }

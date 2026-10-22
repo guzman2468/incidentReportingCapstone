@@ -4,7 +4,7 @@
     <!-- Page metadata -->
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Request access</title>
+    <title>Create account</title>
 
     <!-- Fonts (DM Sans + Space Grotesk) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -16,74 +16,62 @@
   </head>
 
   <body>
+    <div class="auth-page">
+      <header class="auth-topbar">
+        <div class="auth-brand">Incident Management Application</div>
+      </header>
 
-      <!-- Signup card -->
-      <main class="login-card" role="main">
+      <main class="auth-main">
+        <section class="login-card">
 
-        <h1>Sign Up</h1>
-        <p class="lead">Fill out your details and a site administrator will review your request.</p>
+        <h1>Create your account</h1>
+        <p class="lead">Enter your details to create an account and start reporting incidents.</p>
 
-        <form id="signupForm">
+        <form id="signupForm" novalidate>
           <!-- First name -->
           <label for="firstName">First name</label>
           <input id="firstName" name="firstName" type="text" required />
+          <span class="field-error" id="firstNameError" role="alert"></span>
             
           <!-- Last name -->
           <label for="lastName">Last name</label>
           <input id="lastName" name="lastName" type="text" required />
+          <span class="field-error" id="lastNameError" role="alert"></span>
 
           <!-- Email -->
           <label for="email">Email</label>
-          <input id="email" name="email" type="email" required autocomplete="email" />
+          <input id="email" name="email" type="email" required autocomplete="email" pattern="[^@\s]+@[^@\s]+\.[^@\s]+" title="Enter an email in the format name@domain.extension" />
+          <span class="field-error" id="emailError" role="alert"></span>
 
           <!-- Password -->
           <label for="password">Password</label>
-          <input id="password" name="password" type="password" required autocomplete="new-password" />
+          <div class="password-field">
+            <input id="password" name="password" type="password" required autocomplete="new-password" />
+            <button class="password-toggle" type="button" data-password-target="password" aria-label="Show password" aria-pressed="false">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12Z"></path><circle cx="12" cy="12" r="2.5"></circle></svg>
+            </button>
+          </div>
+          <span class="field-error" id="passwordError" role="alert"></span>
 
           <!-- Confirm password -->
           <label for="confirmPassword">Confirm password</label>
-          <input id="confirmPassword" name="confirmPassword" type="password" required />
+          <div class="password-field">
+            <input id="confirmPassword" name="confirmPassword" type="password" required />
+            <button class="password-toggle" type="button" data-password-target="confirmPassword" aria-label="Show password" aria-pressed="false">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12Z"></path><circle cx="12" cy="12" r="2.5"></circle></svg>
+            </button>
+          </div>
+          <span class="field-error" id="confirmPasswordError" role="alert"></span>
 
-          <!-- Optional role / note -->
-          <label for="note">Notes (optional)</label>
-          <input id="note" name="note" type="text" placeholder="Team, department, or short note" />
-
-          <button class="primary" type="submit">Request access</button>
+          <button class="primary" type="submit">Create account</button>
         </form>
 
-        <p class="signup">Already requested an account? <a href="login.html">Sign in</a></p>
+        <p class="signup">Already have an account? <a href="login.html">Sign in</a></p>
+        </section>
       </main>
     </div>
 
-    <script>
-      (function(){
-        var form = document.getElementById('signupForm');
-        var submitBtn = form.querySelector('button[type="submit"]');
-
-        form.addEventListener('submit', function(e){
-          e.preventDefault();
-
-          // Basic client-side validation: passwords must match.
-          var pw = form.password.value;
-          var confirm = form.confirmPassword.value;
-
-          if (pw !== confirm) {
-            alert('Passwords do not match');
-            return;
-          }
-
-          // Simulate network request for demo purposes
-          submitBtn.disabled = true;
-          var originalText = submitBtn.textContent;
-          submitBtn.textContent = 'Requesting...';
-
-          setTimeout(function(){
-            alert('Access request submitted. You will receive an email when it is approved.');
-            // Redirect back to login page after submitting request
-            window.location.href = 'login.html';
-          }, 900);
-        });
-      })();
-    </script>
+    <script src="authHelpers.js"></script>
+    <script src="signup.js"></script>
   </body>
 </html>

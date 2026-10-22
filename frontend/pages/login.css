@@ -1,191 +1,208 @@
-/* ==================================================
-   login.css — styles for the sign-in page
-   - Organized and commented for readability
-   - Variables provide an easy theming surface
-   ================================================== */
-
 :root {
-  /* Color / theme variables */
-  --bg: #f4f7fb;                       /* page background */
-  --card: #ffffff;                     /* card background */
-  --muted: #6b7280;                    /* secondary text */
-  --accent: #0b74ff;                   /* primary brand color */
-  --radius: 12px;                      /* base border radius */
-  --shadow: 0 8px 30px rgba(8,15,36,0.08); /* subtle card shadow */
+  --ink: #182b35;
+  --muted: #74848a;
+  --line: #e5eeeb;
+  --canvas: #f7faf9;
+  --teal: #087f83;
+  --teal-dark: #07666c;
+  --shadow: 0 16px 45px rgba(29, 64, 67, .07);
 }
 
-/* Reset / base styles */
-* {
-  box-sizing: border-box;
-  font-family: 'DM Sans', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
-}
+* { box-sizing: border-box; }
 
 body {
   margin: 0;
   min-height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: linear-gradient(180deg, #f7fbff 0%, var(--bg) 100%);
-}
-
-/* Top page title shown above the viewport */
-.page-header {
-  width: 100%;
-  text-align: center;
-  margin-bottom: 10px;
-}
-n.page-title {
-  margin: 0;
-  font-family: 'Space Grotesk', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
-  font-size: 20px;
-  font-weight: 600;
-  color: #0b74ff;
-}
-
-/* Layout: viewport contains brand panel + login card */
-.login-viewport {
-  width: 100%;
-  max-width: 980px;
-  padding: 28px;
-  display: grid;
-  grid-template-columns: 1fr 420px;
-  gap: 28px;
-  align-items: center;
-}
-
-/* ==================================================
-   Brand panel (left column)
-   ================================================== */
-.brand {
-  display: flex;
-  flex-direction: column;
-  gap: 18px;
-  padding: 36px;
-  border-radius: var(--radius);
-  background: linear-gradient(180deg, #0b74ff 0%, #2b9bff 100%);
-  color: #fff;
-  box-shadow: var(--shadow);
-}
-
-
-.logo {
-  width: 72px;
-  height: 72px;
-  border-radius: 14px;
-  background: rgba(255,255,255,0.14);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 700;
-  font-size: 28px;
-}
-
-/* When the logo is shown on the card, center it above the form */
-.logo-centered {
-  margin: 0 auto 18px; /* center horizontally and add spacing below */
-  background: rgba(11,116,255,0.12); /* slight tint to match brand */
-  color: #062b53; /* darker text for better contrast on white card */
-}
-
-.brand-text {
-  display: flex;
-  flex-direction: column;
-  font-family: 'Space Grotesk', sans-serif;
-}
-.brand-text strong { font-size: 20px; }
-.brand-text span   { opacity: 0.9; font-size: 13px; }
-
-/* ==================================================
-   Login card (right column)
-   ================================================== */
-.login-card {
-  background: var(--card);
-  padding: 34px;
-  border-radius: 14px;
-  box-shadow: var(--shadow);
-}
-
-n.login-card h1 {
-  margin: 0 0 6px 0;
-  font-size: 22px;
-}
-
-n.login-card .lead {
-  margin: 0 0 18px 0;
-  color: var(--muted);
+  background: var(--canvas);
+  color: var(--ink);
+  font-family: 'DM Sans', sans-serif;
   font-size: 14px;
 }
 
-/* Form labels & inputs */
+button, input { font: inherit; }
+button, a { cursor: pointer; }
+
+.auth-page { min-height: 100vh; }
+
+.auth-topbar {
+  align-items: center;
+  background: #fff;
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  height: 80px;
+  justify-content: center;
+  padding: 0 2%;
+}
+
+.auth-brand {
+  color: var(--ink);
+  font: 700 19px 'Space Grotesk', sans-serif;
+  letter-spacing: -.7px;
+  text-align: center;
+}
+
+.auth-main {
+  display: flex;
+  justify-content: center;
+  padding: 55px 26px 80px;
+}
+
+.login-card {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  box-shadow: var(--shadow);
+  padding: 34px 40px 29px;
+  width: min(100%, 500px);
+}
+
+.login-card h1 {
+  font: 600 30px 'Space Grotesk', sans-serif;
+  letter-spacing: -1.2px;
+  margin: 0 0 8px;
+}
+
+.login-card .lead {
+  color: #78898d;
+  line-height: 1.5;
+  margin: 0 0 26px;
+}
+
 .login-card label {
+  color: #3d555b;
   display: block;
-  margin: 12px 0 6px;
-  color: var(--muted);
-  font-size: 13px;
+  font-size: 11px;
+  font-weight: 700;
+  margin: 0 0 8px;
 }
 
-.login-card input[type="email"],
-.login-card input[type="password"] {
-  width: 100%;
-  padding: 12px 14px;
+.login-card input[type='email'],
+.login-card input[type='password'],
+.login-card input[type='text'] {
+  background: #fff;
+  border: 1px solid #dce8e5;
   border-radius: 8px;
-  border: 1px solid #e6e9ef;
-  background: #fbfdff;
+  color: var(--ink);
+  margin-bottom: 18px;
+  outline: 0;
+  padding: 12px;
+  width: 100%;
 }
 
-/* Utility rows */
+.login-card input:focus {
+  border-color: #71bdb5;
+  box-shadow: 0 0 0 3px #e7f6f3;
+}
+
+.login-card input::placeholder { color: #aab6b7; }
+
+.password-field {
+  position: relative;
+}
+
+.password-field input {
+  margin-bottom: 18px;
+  padding-right: 42px;
+}
+
+.password-toggle {
+  align-items: center;
+  background: transparent;
+  border: 0;
+  color: #8b9b9d;
+  display: flex;
+  height: 40px;
+  justify-content: center;
+  padding: 0;
+  position: absolute;
+  right: 6px;
+  top: 0;
+  width: 34px;
+}
+
+.password-toggle:hover,
+.password-toggle:focus-visible {
+  color: var(--teal);
+}
+
+.password-toggle svg {
+  fill: none;
+  height: 18px;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.8;
+  width: 18px;
+}
+
+.login-card input.input-error {
+  border-color: #d95d5d;
+  box-shadow: 0 0 0 3px #fdeaea;
+}
+
+.field-error {
+  color: #c74444;
+  display: block;
+  font-size: 11px;
+  margin: -12px 0 14px;
+  min-height: 0;
+}
+
+.field-error:not(:empty) { min-height: 16px; }
+
 .row.between {
+  align-items: center;
   display: flex;
   justify-content: space-between;
-  align-items: center;
 }
-.row.small { margin-top: 10px; }
 
-.remember { font-size: 13px; color: var(--muted); }
+.row.small { margin-top: -2px; }
 
-/* Links and primary button */
-a.muted {
-  color: var(--accent);
-  font-size: 13px;
+.login-card .remember {
+  align-items: center;
+  color: var(--muted);
+  display: flex;
+  font-size: 12px;
+  font-weight: 400;
+  gap: 7px;
+  margin: 0;
+}
+
+.remember input { accent-color: var(--teal); margin: 0; }
+
+a.muted, .signup a {
+  color: var(--teal);
   text-decoration: none;
 }
 
+a.muted { font-size: 12px; }
+
 .primary {
-  display: inline-block;
-  margin-top: 18px;
-  width: 100%;
-  background: var(--accent);
+  background: var(--teal);
+  border: 0;
+  border-radius: 9px;
+  box-shadow: 0 8px 18px rgba(8, 127, 131, .18);
   color: #fff;
-  border: none;
-  padding: 12px 14px;
-  border-radius: 10px;
-  font-weight: 600;
-  cursor: pointer;
+  font-size: 12px;
+  font-weight: 700;
+  margin-top: 25px;
+  padding: 13px 18px;
+  transition: .2s;
+  width: 100%;
 }
+
+.primary:hover { background: var(--teal-dark); transform: translateY(-1px); }
+.primary:disabled { cursor: wait; opacity: .7; transform: none; }
 
 .signup {
-  margin-top: 12px;
-  font-size: 13px;
   color: var(--muted);
-}
-.signup a { color: var(--accent); text-decoration: none; }
-
-/* ==================================================
-   Responsive adjustments
-   ================================================== */
-@media (max-width: 920px) {
-  .login-viewport {
-    grid-template-columns: 1fr;
-    padding: 20px;
-  }
+  font-size: 12px;
+  margin: 22px 0 0;
+  text-align: center;
 }
 
-/* Fallback/override for the page title in case older malformed selector exists above */
-.page-title {
-  margin: 0;
-  font-family: 'Space Grotesk', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
-  font-size: 20px;
-  font-weight: 600;
-  color: #0b74ff;
+@media (max-width: 560px) {
+  .auth-topbar { height: 68px; }
+  .auth-main { padding: 28px 16px 50px; }
+  .login-card { padding: 28px 22px 24px; }
 }

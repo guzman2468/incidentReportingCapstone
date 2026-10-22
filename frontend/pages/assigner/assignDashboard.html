@@ -89,6 +89,15 @@
             <input id="pastSearch" type="search"
               placeholder="Search past incidents..."
               aria-label="Search past incidents">
+            <select id="pastFilter" class="time-filter" aria-label="Filter past incidents by time">
+              <option value="all">All time</option>
+              <option value="day">Past day</option>
+              <option value="week">Past week</option>
+              <option value="month">Past month</option>
+              <option value="six-months">Past 6 months</option>
+              <option value="year">Past year</option>
+              <option value="five-years">Past 5 years</option>
+            </select>
           </div>
           <div class="incident-list" id="pastList"></div>
           <p class="empty-state" id="pastEmpty">No past incidents found.</p>
@@ -106,6 +115,15 @@
             <input id="activeSearch" type="search"
               placeholder="Search active incidents..."
               aria-label="Search active incidents">
+            <select id="activeFilter" class="time-filter" aria-label="Filter active incidents by time">
+              <option value="all">All time</option>
+              <option value="day">Past day</option>
+              <option value="week">Past week</option>
+              <option value="month">Past month</option>
+              <option value="six-months">Past 6 months</option>
+              <option value="year">Past year</option>
+              <option value="five-years">Past 5 years</option>
+            </select>
           </div>
           <div class="incident-list" id="activeList"></div>
           <p class="empty-state" id="activeEmpty">No active incidents found.</p>
@@ -123,6 +141,15 @@
             <input id="newSearch" type="search"
               placeholder="Search new incidents..."
               aria-label="Search new incidents">
+            <select id="newFilter" class="time-filter" aria-label="Filter new incidents by time">
+              <option value="all">All time</option>
+              <option value="day">Past day</option>
+              <option value="week">Past week</option>
+              <option value="month">Past month</option>
+              <option value="six-months">Past 6 months</option>
+              <option value="year">Past year</option>
+              <option value="five-years">Past 5 years</option>
+            </select>
           </div>
           <div class="incident-list" id="newList"></div>
           <p class="empty-state" id="newEmpty">No new incidents found.</p>

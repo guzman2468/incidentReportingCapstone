@@ -41,7 +41,7 @@
     submitBtn.textContent = 'Creating...';
 
     try {
-      var createResponse = await fetch('/api/users', {
+      var createResponse = await fetch('/api/users/createUser', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

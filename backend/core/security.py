@@ -5,6 +5,11 @@ import json
 import os
 import time
 
+from dotenv import load_dotenv
+
+
+load_dotenv()
+
 
 SESSION_COOKIE = "incident_session"
 SESSION_MAX_AGE = 60 * 60 * 8

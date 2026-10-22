@@ -58,11 +58,11 @@
     submitBtn.textContent = 'Signing in...';
 
     var payload = {
-      email: form.email.value,
+      email: form.email.value.trim().toLowerCase(),
       password: form.password.value
     };
 
-    fetch('/api/login', {
+    fetch('/api/users/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)

@@ -75,7 +75,7 @@ function showToast(message) {
 }
 
 
-document.getElementById('logoutButton').addEventListener('click', () => showToast('Log out selected.'));
+document.getElementById('logoutButton').addEventListener('click', window.logoutUser);
 
 
 // Add a note to the page for visual testing until persistence is connected.
@@ -92,7 +92,7 @@ document.getElementById('addNoteButton').addEventListener('click', () => {
   // Notes added from this reporter are styled as the user's chat bubbles.
   // Notes loaded from other users can use the "other" class later.
   note.className = 'note-item own';
-  note.innerHTML = `<strong>FirstName LastName <small>just now</small></strong><p></p>`;
+  note.innerHTML = `<strong>${window.currentUserDisplayName || 'User'} <small>just now</small></strong><p></p>`;
 
   note.querySelector('p').textContent = noteText;
   const notesList = document.getElementById('notesList');

@@ -16,9 +16,9 @@
         <div class="breadcrumbs"><strong>Dashboard</strong></div>
         <div class="topbar-actions">
           <div class="user-menu">
-            <button type="button" class="top-avatar" id="userButton" aria-label="Open user menu" aria-expanded="false">FL</button>
+            <button type="button" class="top-avatar" id="userButton" data-user-initials aria-label="Open user menu" aria-expanded="false"></button>
             <div class="user-dropdown" id="userDropdown" aria-hidden="true">
-              <div class="user-summary"><strong>FirstName LastName</strong><span>Reporter</span></div>
+              <div class="user-summary"><strong data-user-name></strong><span>Reporter</span></div>
               <button type="button" id="logoutButton"><span>Log out</span></button>
             </div>
           </div>
@@ -29,7 +29,7 @@
         <section class="hero-row">
           <div>
             <p class="eyebrow" id="currentDate">TODAY</p>
-            <h1>Good morning, FirstName</h1>
+            <h1>Good morning, <span data-user-first-name></span></h1>
             <p class="hero-copy">Keep your workplace safe by reporting what you see.</p>
           </div>
           <a class="primary-button" id="newReportButton" href="repIncidentSubmission.html"><span>+</span> Report an incident</a>
@@ -79,6 +79,7 @@
     </main>
   </div>
 
+  <script src="../authHelpers.js"></script>
   <script src="repDashboard.js"></script>
 </body>
 </html>

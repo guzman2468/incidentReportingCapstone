@@ -150,6 +150,14 @@ button, a { cursor: pointer; }
 
 .field-error:not(:empty) { min-height: 16px; }
 
+.success-message {
+  color: #2d6a45;
+  font-size: 12px;
+  min-height: 18px;
+  margin: 10px 0 0;
+  text-align: center;
+}
+
 .row.between {
   align-items: center;
   display: flex;

@@ -70,7 +70,7 @@ const showToast = (message) => {
   setTimeout(() => toast.remove(), 2600);
 };
 
-document.getElementById('logoutButton').addEventListener('click', () => showToast('Log out selected.'));
+document.getElementById('logoutButton').addEventListener('click', window.logoutUser);
 
 
 // Apply the selected aid provider assignment until persistence is connected.
@@ -142,7 +142,7 @@ document.getElementById('addNoteButton').addEventListener('click', () => {
   // Notes added from this APTM user are styled as the user's chat bubbles.
   // Notes loaded from other users can use the "other" class later.
   note.className = 'note-item own';
-  note.innerHTML = '<strong>FirstName LastName <small>just now</small></strong><p></p>';
+  note.innerHTML = '<strong>' + (window.currentUserDisplayName || 'User') + ' <small>just now</small></strong><p></p>';
   note.querySelector('p').textContent = noteText;
 
   document.getElementById('notesList').appendChild(note);

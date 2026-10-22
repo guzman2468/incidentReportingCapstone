@@ -357,17 +357,17 @@
 
 .severity-low {
   background: #c9a400;
-  color: #ffffff;
+  color: #111111;
 }
 
 .severity-medium {
   background: #f6a23a;
-  color: #ffffff;
+  color: #111111;
 }
 
 .severity-high {
   background: #d94a4a;
-  color: #ffffff;
+  color: #111111;
 }
 
 .severity-severe {

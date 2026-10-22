@@ -244,17 +244,17 @@ button, a {
 
 .severity-badge.low {
   background: #c9a400;
-  color: #ffffff;
+  color: #111111;
 }
 
 .severity-badge.medium {
   background: #f6a23a;
-  color: #ffffff;
+  color: #111111;
 }
 
 .severity-badge.high {
   background: #d94a4a;
-  color: #ffffff;
+  color: #111111;
 }
 
 .severity-badge.severe {

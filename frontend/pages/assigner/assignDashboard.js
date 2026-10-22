@@ -170,28 +170,7 @@ document.addEventListener('click', (event) => {
   }
 });
 
-document.getElementById('logoutButton').addEventListener('click', () => {
-  const toast = document.createElement('div');
-
-  toast.textContent = 'Log out selected.';
-  toast.setAttribute('role', 'status');
-  toast.setAttribute('aria-live', 'polite');
-  toast.style.cssText = `
-    position: fixed;
-    bottom: 24px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: #18343a;
-    color: #fff;
-    border-radius: 8px;
-    padding: 12px 17px;
-    font: 12px DM Sans, sans-serif;
-    z-index: 10;
-  `;
-  document.body.appendChild(toast);
-
-  setTimeout(() => toast.remove(), 2600);
-});
+document.getElementById('logoutButton').addEventListener('click', window.logoutUser);
 
 document.getElementById('currentDate').textContent =
   new Intl.DateTimeFormat('en-US', {

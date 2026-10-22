@@ -227,8 +227,7 @@ document.addEventListener('click', (event) => {
   }
 });
 
-// Logout is a placeholder until authentication logic is connected.
-document.getElementById('logoutButton').addEventListener('click', () => showToast('Log out selected.'));
+document.getElementById('logoutButton').addEventListener('click', window.logoutUser);
 
 // Display a temporary confirmation message at the bottom of the screen.
 function showToast(message) {

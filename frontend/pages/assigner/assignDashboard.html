@@ -22,10 +22,10 @@
         <div class="user-menu">
           <button id="userButton" class="top-avatar"
             type="button" aria-label="Open user menu"
-            aria-expanded="false">AS</button>
+            data-user-initials aria-expanded="false"></button>
           <div id="userDropdown" class="user-dropdown" aria-hidden="true">
             <div class="user-summary">
-              <strong>FirstName LastName</strong>
+              <strong data-user-name></strong>
               <span>Assigner</span>
             </div>
             <button type="button" id="logoutButton"><span>Log out</span></button>
@@ -158,6 +158,7 @@
     </section>
   </main>
 
+  <script src="../authHelpers.js"></script>
   <script src="assignerDemoData.js"></script>
   <script src="assignDashboard.js"></script>
 </body>

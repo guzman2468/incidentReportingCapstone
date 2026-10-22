@@ -15,9 +15,9 @@
     <header class="submission-topbar">
       <a class="back-link" href="repDashboard.html">← <span>Dashboard</span></a>
       <div class="user-menu">
-        <button type="button" class="top-avatar" id="userButton" aria-label="Open user menu" aria-expanded="false">FL</button>
+        <button type="button" class="top-avatar" id="userButton" data-user-initials aria-label="Open user menu" aria-expanded="false"></button>
         <div class="user-dropdown" id="userDropdown" aria-hidden="true">
-          <div class="user-summary"><strong>FirstName LastName</strong><span>Reporter</span></div>
+          <div class="user-summary"><strong data-user-name></strong><span>Reporter</span></div>
           <button type="button" id="logoutButton">↪ <span>Log out</span></button>
         </div>
       </div>
@@ -53,7 +53,7 @@
           <p class="notes-empty" style="display:none">No notes have been added to this incident.</p>
           <div class="note-item other"><strong>Reviewer Name <small>Today, 9:14 AM</small></strong><p>Inspection requested for the reported area.</p></div>
           <div class="note-item other"><strong>Safety Team <small>Today, 10:02 AM</small></strong><p>Maintenance has been notified and is reviewing the issue.</p></div>
-          <div class="note-item own"><strong>FirstName LastName <small>Today, 10:18 AM</small></strong><p>Thank you. I can provide more information if needed.</p></div>
+          <div class="note-item own"><strong data-user-name><small>Today, 10:18 AM</small></strong><p>Thank you. I can provide more information if needed.</p></div>
         </div>
         <div class="note-composer">
           <label class="visually-hidden" for="noteInput">Add a note</label>
@@ -64,6 +64,7 @@
       </div>
     </section>
   </main>
+  <script src="../authHelpers.js"></script>
   <script src="repIncidentOverview.js"></script>
 </body>
 </html>

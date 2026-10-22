@@ -20,7 +20,28 @@ copy .env.example .env
 setup.bat
 ```
 
-Update `.env` with the required database configuration before starting the application.
+Update `.env` with the required database configuration and generate a strong session secret before starting the application:
+
+```bash
+openssl rand -hex 32
+```
+
+Add the generated value to `.env`:
+
+```dotenv
+DATABASE_URL=your_database_connection_string
+SESSION_SECRET=your_generated_secret
+```
+
+On Windows PowerShell, if OpenSSL is unavailable, generate one with:
+
+```powershell
+$bytes = New-Object byte[] 32
+[Security.Cryptography.RandomNumberGenerator]::Fill($bytes)
+[Convert]::ToHexString($bytes).ToLower()
+```
+
+Never commit `.env`; it contains database credentials and the session-signing secret.
 
 ## FastAPI-only testing
 

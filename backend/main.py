@@ -6,15 +6,16 @@ from fastapi.staticfiles import StaticFiles
 from sqlalchemy import text
 
 from .database import engine
+from .api.routes.users import router as users_router
 
 app = FastAPI()
+app.include_router(users_router)
 FRONTEND_DIR = Path(__file__).resolve().parent.parent / "frontend" / "pages"
 
 
-# TEMPORRARY HOME PAGE FOR TESTING, this will be the signup page in the future.
 @app.get("/")
 def home():
-    return FileResponse(FRONTEND_DIR / "repDashboard.html")
+    return FileResponse(FRONTEND_DIR / "login.html")
 
 
 @app.get("/db-test")

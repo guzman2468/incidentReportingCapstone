@@ -139,12 +139,4 @@ locationButton.addEventListener('click', () => {
   );
 });
 
-document.getElementById('logoutButton').addEventListener('click', () => {
-  const toast = document.createElement('div');
-
-  toast.className = 'toast';
-  toast.textContent = 'Log out selected.';
-  document.body.appendChild(toast);
-
-  setTimeout(() => toast.remove(), 2600);
-});
+document.getElementById('logoutButton').addEventListener('click', window.logoutUser);

@@ -22,10 +22,10 @@
       <div class="page-title">Incident overview</div>
       <div class="user-menu">
         <button id="userButton" class="top-avatar" type="button"
-          aria-label="Open user menu" aria-expanded="false">AS</button>
+          aria-label="Open user menu" data-user-initials aria-expanded="false"></button>
         <div id="userDropdown" class="user-dropdown" aria-hidden="true">
           <div class="user-summary">
-            <strong>FirstName LastName</strong>
+            <strong data-user-name></strong>
             <span>Assigner</span>
           </div>
           <button type="button" id="logoutButton">↪ <span>Log out</span></button>
@@ -175,6 +175,7 @@
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
     integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
     crossorigin="anonymous"></script>
+  <script src="../authHelpers.js"></script>
   <script src="assignerDemoData.js"></script>
   <script src="assignIncidentOverview.js"></script>
 </body>

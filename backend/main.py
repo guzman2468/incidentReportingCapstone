@@ -5,12 +5,15 @@ from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy import text
 
+from .core.middleware import protect_role_pages
 from .database import engine
 from .api.routes.users import router as users_router
 
 app = FastAPI()
 app.include_router(users_router)
 FRONTEND_DIR = Path(__file__).resolve().parent.parent / "frontend" / "pages"
+
+app.middleware("http")(protect_role_pages)
 
 
 @app.get("/")

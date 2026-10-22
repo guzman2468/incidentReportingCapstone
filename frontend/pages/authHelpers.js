@@ -50,6 +50,14 @@
     return (firstName.charAt(0) + lastName.charAt(0)).toUpperCase();
   }
 
+  function getRoleWorkspace(role) {
+    return {
+      REPORTER: '/reporter/',
+      ASSIGNER: '/assigner/',
+      AID_PROVIDER_TEAM_MEMBER: '/aptm/'
+    }[role];
+  }
+
   if (document.getElementById('userButton')) {
     fetch('/api/users/currentUser')
       .then(function(response) {
@@ -57,6 +65,16 @@
         return response.json();
       })
       .then(function(user) {
+        var workspace = getRoleWorkspace(user.role);
+        if (workspace && !window.location.pathname.startsWith(workspace)) {
+          window.location.replace(workspace + {
+            '/reporter/': 'repDashboard.html',
+            '/assigner/': 'assignDashboard.html',
+            '/aptm/': 'aptmDashboard.html'
+          }[workspace]);
+          return;
+        }
+
         var fullName = user.first_name + ' ' + user.last_name;
         var initials = getInitials(user.first_name, user.last_name);
         var role = user.role ? formatRole(user.role) : 'User';
@@ -102,7 +120,18 @@
     toast.textContent = 'Logging out...';
     toast.setAttribute('role', 'status');
     toast.setAttribute('aria-live', 'polite');
-    toast.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#18343a;color:#fff;border-radius:8px;padding:12px 17px;font:12px DM Sans,sans-serif;z-index:2001;';
+    toast.style.cssText = `
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #18343a;
+      color: #fff;
+      border-radius: 8px;
+      padding: 12px 17px;
+      font: 12px DM Sans, sans-serif;
+      z-index: 2001;
+    `;
     document.body.appendChild(toast);
 
     try {

@@ -22,7 +22,7 @@ from backend.services.users import (
 router = APIRouter(prefix="/api/users", tags=["users"])
 
 
-@router.post("", response_model=UserCreated, status_code=status.HTTP_201_CREATED)
+@router.post("/createUser", response_model=UserCreated, status_code=status.HTTP_201_CREATED)
 def register_user(user_data: UserCreate, db: Session = Depends(get_db)) -> UserCreated:
     try:
         return create_user(db, user_data)

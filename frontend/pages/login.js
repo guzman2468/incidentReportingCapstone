@@ -28,6 +28,15 @@
     submitBtn.textContent = originalText;
   }
 
+  function getLandingPage(role) {
+    var pages = {
+      REPORTER: 'reporter/repDashboard.html',
+      ASSIGNER: 'assigner/assignDashboard.html',
+      AID_PROVIDER_TEAM_MEMBER: 'aptm/aptmDashboard.html'
+    };
+    return pages[role] || 'login.html';
+  }
+
   async function handleLoginError(err, originalText) {
     if (err && typeof err.json === 'function') {
       try {
@@ -73,7 +82,7 @@
       })
       .then(function(data) {
         if (data?.success) {
-          window.location.href = 'reporter/repDashboard.html';
+          window.location.href = getLandingPage(data.role);
         } else {
           showLoginError(data.message, originalText);
         }

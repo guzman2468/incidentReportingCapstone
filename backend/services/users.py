@@ -18,6 +18,9 @@ class InvalidCredentials(Exception):
 
 def create_user(db: Session, user_data: UserCreate) -> dict[str, int | str]:
     """Hash the password and insert a user into the existing public.users table."""
+    first_name = user_data.first_name.strip().lower()
+    last_name = user_data.last_name.strip().lower()
+
     statement = text(
         """
         INSERT INTO public.users (
@@ -35,8 +38,8 @@ def create_user(db: Session, user_data: UserCreate) -> dict[str, int | str]:
             {
                 "email": user_data.email,
                 "password_hash": hash_password(user_data.password),
-                "first_name": user_data.first_name,
-                "last_name": user_data.last_name,
+                "first_name": first_name,
+                "last_name": last_name,
                 "role": user_data.role,
                 "aid_provider_id": user_data.aid_provider_id,
             },
@@ -57,7 +60,7 @@ def authenticate_user(db: Session, login_data: UserLogin) -> dict[str, int | str
     row = db.execute(
         text(
             """
-            SELECT email, password_hash, first_name, last_name, is_active
+            SELECT email, password_hash, first_name, last_name, role, is_active
             FROM public.users
             WHERE email = :email
             """
@@ -76,6 +79,7 @@ def authenticate_user(db: Session, login_data: UserLogin) -> dict[str, int | str
         "email": row["email"],
         "first_name": row["first_name"],
         "last_name": row["last_name"],
+        "role": row["role"],
     }
 
 

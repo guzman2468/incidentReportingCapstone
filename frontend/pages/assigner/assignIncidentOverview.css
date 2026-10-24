@@ -438,12 +438,20 @@ button, a {
   background: var(--teal);
   color: white;
   box-shadow: 0 8px 18px rgba(8, 127, 131, .15);
-  transition: .2s;
 }
 
 .primary-button:hover {
   background: var(--teal-dark);
-  transform: translateY(-1px);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .primary-button {
+    transition: background-color .2s ease, transform .2s ease;
+  }
+
+  .primary-button:hover {
+    transform: translateY(-1px);
+  }
 }
 
 .primary-button:disabled {
@@ -662,5 +670,31 @@ button, a {
 
   .confirm-actions > button {
     flex: 1;
+  }
+}
+.application-header {
+  position: relative;
+}
+
+.application-header .user-menu {
+  grid-column: 3;
+}
+
+.application-title {
+  color: var(--ink);
+  font: 700 17px 'Space Grotesk', sans-serif;
+  left: 50%;
+  letter-spacing: -.5px;
+  pointer-events: none;
+  position: absolute;
+  text-align: center;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  white-space: nowrap;
+}
+
+@media (max-width: 680px) {
+  .application-title {
+    font-size: 14px;
   }
 }

@@ -82,7 +82,9 @@
       })
       .then(function(data) {
         if (data?.success) {
-          window.location.href = getLandingPage(data.role);
+          window.location.href = data.must_change_password
+            ? 'changePassword.html'
+            : getLandingPage(data.role);
         } else {
           showLoginError(data.message, originalText);
         }

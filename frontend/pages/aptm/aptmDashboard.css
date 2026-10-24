@@ -47,3 +47,25 @@
 .incident-info span .date-label {
   display: inline;
 }
+.application-header {
+  position: relative;
+}
+
+.application-title {
+  color: var(--ink);
+  font: 700 17px 'Space Grotesk', sans-serif;
+  left: 50%;
+  letter-spacing: -.5px;
+  pointer-events: none;
+  position: absolute;
+  text-align: center;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  white-space: nowrap;
+}
+
+@media (max-width: 680px) {
+  .application-title {
+    font-size: 14px;
+  }
+}

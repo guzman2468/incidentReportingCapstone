@@ -1,4 +1,15 @@
 (function() {
+  var appHeader = document.querySelector('header');
+  var hasExistingBrand = appHeader?.querySelector('.auth-brand');
+
+  if (appHeader && !hasExistingBrand) {
+    var applicationTitle = document.createElement('div');
+    applicationTitle.className = 'application-title';
+    applicationTitle.textContent = 'Incident Management Application';
+    appHeader.classList.add('application-header');
+    appHeader.appendChild(applicationTitle);
+  }
+
   // ==================================================
   // Email extension validation
   // Ensures addresses use a recognized top-level domain.
@@ -30,6 +41,7 @@
     toggle.addEventListener('click', function() {
       var isVisible = input.type === 'text';
       input.type = isVisible ? 'password' : 'text';
+      toggle.classList.toggle('is-visible', !isVisible);
       toggle.setAttribute('aria-pressed', String(!isVisible));
       toggle.setAttribute('aria-label', isVisible ? 'Show password' : 'Hide password');
     });
@@ -50,6 +62,15 @@
     return (firstName.charAt(0) + lastName.charAt(0)).toUpperCase();
   }
 
+  function formatName(name) {
+    return name
+      .trim()
+      .toLowerCase()
+      .replace(/(^|[\s'-])\w/g, function(letter) {
+        return letter.toUpperCase();
+      });
+  }
+
   function getRoleWorkspace(role) {
     return {
       REPORTER: '/reporter/',
@@ -66,7 +87,8 @@
       })
       .then(function(user) {
         var workspace = getRoleWorkspace(user.role);
-        if (workspace && !window.location.pathname.startsWith(workspace)) {
+        var isPasswordChangePage = window.location.pathname === '/changePassword.html';
+        if (workspace && !isPasswordChangePage && !window.location.pathname.startsWith(workspace)) {
           window.location.replace(workspace + {
             '/reporter/': 'repDashboard.html',
             '/assigner/': 'assignDashboard.html',
@@ -75,8 +97,10 @@
           return;
         }
 
-        var fullName = user.first_name + ' ' + user.last_name;
-        var initials = getInitials(user.first_name, user.last_name);
+        var firstName = formatName(user.first_name);
+        var lastName = formatName(user.last_name);
+        var fullName = firstName + ' ' + lastName;
+        var initials = getInitials(firstName, lastName);
         var role = user.role ? formatRole(user.role) : 'User';
         window.currentUser = user;
         window.currentUserDisplayName = fullName;
@@ -99,7 +123,7 @@
         });
 
         document.querySelectorAll('[data-user-first-name]').forEach(function(element) {
-          element.textContent = user.first_name;
+          element.textContent = firstName;
         });
 
         document.querySelectorAll('[data-user-initials]').forEach(function(element) {
@@ -114,6 +138,13 @@
         window.location.href = '/login';
       });
   }
+
+  document.addEventListener('click', function(event) {
+    var changePasswordButton = event.target.closest('#changePasswordButton');
+    if (changePasswordButton) {
+      window.location.href = '/changePassword.html';
+    }
+  });
 
   window.logoutUser = async function() {
     var toast = document.createElement('div');
@@ -136,8 +167,12 @@
 
     try {
       var response = await fetch('/api/users/logout', { method: 'POST' });
-      if (!response.ok) throw new Error('Logout request failed.');
-      window.location.href = '/login';
+      if (!response.ok) {
+        throw new Error('Logout request failed.');
+      }
+      else {
+        window.location.href = '/login';
+      }
     } catch (error) {
       console.error('Logout request failed.', error);
       toast.textContent = 'Unable to log out. Please try again.';

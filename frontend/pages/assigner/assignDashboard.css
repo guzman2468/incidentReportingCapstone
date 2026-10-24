@@ -286,13 +286,21 @@
   background: white;
   color: var(--ink);
   text-align: left;
-  transition: background .15s, border-color .15s, transform .15s;
 }
 
 .incident-row:hover {
-  transform: translateY(-1px);
   border-color: #c8e5df;
   background: #f7fcfa;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .incident-row {
+    transition: background-color .15s ease, border-color .15s ease, transform .15s ease;
+  }
+
+  .incident-row:hover {
+    transform: translateY(-1px);
+  }
 }
 
 .incident-symbol {
@@ -444,5 +452,27 @@
 
   .time-filter {
     width: 100%;
+  }
+}
+.application-header {
+  position: relative;
+}
+
+.application-title {
+  color: var(--ink);
+  font: 700 17px 'Space Grotesk', sans-serif;
+  left: 50%;
+  letter-spacing: -.5px;
+  pointer-events: none;
+  position: absolute;
+  text-align: center;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  white-space: nowrap;
+}
+
+@media (max-width: 680px) {
+  .application-title {
+    font-size: 14px;
   }
 }

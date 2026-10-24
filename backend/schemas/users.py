@@ -32,6 +32,7 @@ class UserProfile(BaseModel):
     first_name: str
     last_name: str
     role: UserRole
+    must_change_password: bool
 
 
 class UserCreated(BaseModel):
@@ -41,7 +42,10 @@ class UserCreated(BaseModel):
 
 class UserLoggedIn(BaseModel):
     success: bool = True
-    email: str
-    first_name: str
-    last_name: str
     role: UserRole
+    must_change_password: bool
+
+
+class PasswordChange(BaseModel):
+    current_password: str = Field(min_length=8, max_length=50)
+    new_password: str = Field(min_length=8, max_length=50)

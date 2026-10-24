@@ -155,12 +155,20 @@ button,a {
   padding: 13px 18px;
   font-weight: 700;
   font-size: 12px;
-  transition: .2s;
 }
 
 .primary-button:hover {
   background: var(--teal-dark);
-  transform: translateY(-1px);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .primary-button {
+    transition: background-color .2s ease, transform .2s ease;
+  }
+
+  .primary-button:hover {
+    transform: translateY(-1px);
+  }
 }
 
 .primary-button span {
@@ -355,7 +363,7 @@ button,a {
   gap: 13px;
   min-height: 76px;
   cursor: pointer;
-  transition: .15s;
+  transition: background-color .15s ease;
 }
 
 .incident-row:hover {
@@ -843,5 +851,27 @@ button,a {
   .topbar {
     padding-left: 4%;
     padding-right: 4%;
+  }
+}
+.application-header {
+  position: relative;
+}
+
+.application-title {
+  color: var(--ink);
+  font: 700 17px 'Space Grotesk', sans-serif;
+  left: 50%;
+  letter-spacing: -.5px;
+  pointer-events: none;
+  position: absolute;
+  text-align: center;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  white-space: nowrap;
+}
+
+@media (max-width: 680px) {
+  .application-title {
+    font-size: 14px;
   }
 }

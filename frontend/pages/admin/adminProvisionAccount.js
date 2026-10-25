@@ -13,10 +13,24 @@ const aidProviderDescriptionField = document.getElementById(
 const aidProviderDescriptionInput = document.getElementById(
   "aidProviderDescription",
 );
+const aidProviderTeamNameField = document.getElementById(
+  "aidProviderTeamNameField",
+);
+const aidProviderTeamNameInput = document.getElementById("aidProviderTeamName");
+const aidProviderTeamDescriptionField = document.getElementById(
+  "aidProviderTeamDescriptionField",
+);
+const aidProviderTeamDescriptionInput = document.getElementById(
+  "aidProviderTeamDescription",
+);
 const firstNameInput = document.getElementById("firstName");
 const lastNameInput = document.getElementById("lastName");
 const firstNameField = firstNameInput.closest(".field");
 const lastNameField = lastNameInput.closest(".field");
+const emailInput = document.getElementById("email");
+const emailField = document.getElementById("emailField");
+const passwordInput = document.getElementById("password");
+const passwordField = document.getElementById("passwordField");
 let providersLoaded = false;
 
 function formatDisplayName(value) {
@@ -118,12 +132,15 @@ function validateInput(input) {
 const liveInputs = [
   document.getElementById("firstName"),
   document.getElementById("lastName"),
-  document.getElementById("email"),
+  emailInput,
   roleSelect,
   aidProviderSelect,
   aidProviderTeamSelect,
   aidProviderNameInput,
-  document.getElementById("password"),
+  aidProviderDescriptionInput,
+  aidProviderTeamNameInput,
+  aidProviderTeamDescriptionInput,
+  passwordInput,
 ];
 
 liveInputs.forEach((input) => {
@@ -196,10 +213,15 @@ async function loadAidProviderTeams(providerId) {
 }
 
 function updateAidProviderField() {
-  const needsProvider = roleSelect.value === "AID_PROVIDER_TEAM_MEMBER";
+  const needsProvider = [
+    "AID_PROVIDER_TEAM",
+    "AID_PROVIDER_TEAM_MEMBER",
+  ].includes(roleSelect.value);
   const needsTeam = roleSelect.value === "AID_PROVIDER_TEAM_MEMBER";
   const needsProviderName = roleSelect.value === "AID_PROVIDER";
-  const needsPersonName = roleSelect.value !== "AID_PROVIDER";
+  const needsProviderTeamName = roleSelect.value === "AID_PROVIDER_TEAM";
+  const needsPersonName = !needsProviderName && !needsProviderTeamName;
+  const needsUserCredentials = needsPersonName;
   aidProviderField.hidden = !needsProvider;
   aidProviderSelect.required = needsProvider;
   aidProviderTeamField.hidden = !needsTeam;
@@ -207,10 +229,19 @@ function updateAidProviderField() {
   aidProviderNameField.hidden = !needsProviderName;
   aidProviderNameInput.required = needsProviderName;
   aidProviderDescriptionField.hidden = !needsProviderName;
+  aidProviderDescriptionInput.required = needsProviderName;
+  aidProviderTeamNameField.hidden = !needsProviderTeamName;
+  aidProviderTeamNameInput.required = needsProviderTeamName;
+  aidProviderTeamDescriptionField.hidden = !needsProviderTeamName;
+  aidProviderTeamDescriptionInput.required = needsProviderTeamName;
   firstNameInput.required = needsPersonName;
   lastNameInput.required = needsPersonName;
   firstNameField.hidden = !needsPersonName;
   lastNameField.hidden = !needsPersonName;
+  emailField.hidden = !needsUserCredentials;
+  emailInput.required = needsUserCredentials;
+  passwordField.hidden = !needsUserCredentials;
+  passwordInput.required = needsUserCredentials;
 
   if (needsProvider && !providersLoaded) {
     loadAidProviders().catch((error) => console.error(error));
@@ -231,6 +262,11 @@ function updateAidProviderField() {
     aidProviderDescriptionInput.value = "";
   }
 
+  if (!needsProviderTeamName) {
+    aidProviderTeamNameInput.value = "";
+    aidProviderTeamDescriptionInput.value = "";
+  }
+
   if (!needsTeam) {
     aidProviderTeamSelect.value = "";
     aidProviderTeamSelect.replaceChildren(new Option("Select team", ""));
@@ -241,12 +277,14 @@ function updateAidProviderField() {
 function getProvisioningRoles() {
   const teamMemberRole = roleSelect.value === "AID_PROVIDER_TEAM_MEMBER";
   const providerAccountRole = roleSelect.value === "AID_PROVIDER";
+  const providerTeamRole = roleSelect.value === "AID_PROVIDER_TEAM";
 
   return {
-    providerRole: teamMemberRole,
+    providerRole: teamMemberRole || providerTeamRole,
     teamMemberRole,
     providerAccountRole,
-    personNameRole: !providerAccountRole,
+    providerTeamRole,
+    personNameRole: !providerAccountRole && !providerTeamRole,
   };
 }
 
@@ -257,6 +295,11 @@ function validateProvisionForm(roles) {
       (input !== aidProviderSelect || roles.providerRole) &&
       (input !== aidProviderTeamSelect || roles.teamMemberRole) &&
       (input !== aidProviderNameInput || roles.providerAccountRole) &&
+      (input !== aidProviderDescriptionInput || roles.providerAccountRole) &&
+      (input !== aidProviderTeamNameInput || roles.providerTeamRole) &&
+      (input !== aidProviderTeamDescriptionInput || roles.providerTeamRole) &&
+      (input !== emailInput || roles.personNameRole) &&
+      (input !== passwordInput || roles.personNameRole) &&
       ((input.id !== "firstName" && input.id !== "lastName") ||
         roles.personNameRole),
   );
@@ -273,13 +316,21 @@ function validateProvisionForm(roles) {
 function buildProvisioningRequest(data, role, roles) {
   if (roles.providerAccountRole) {
     return {
-      endpoint: "/api/aidProviders/accounts",
+      endpoint: "/api/aidProviders",
       payload: {
-        email: data.get("email").trim().toLowerCase(),
-        password: data.get("password"),
-        aid_provider_name: data.get("aidProviderName").trim(),
-        aid_provider_description:
-          data.get("aidProviderDescription").trim() || null,
+        name: data.get("aidProviderName").trim(),
+        description: data.get("aidProviderDescription").trim(),
+      },
+    };
+  }
+
+  if (roles.providerTeamRole) {
+    return {
+      endpoint: "/api/aidProviders/teams",
+      payload: {
+        aid_provider_id: data.get("aidProvider"),
+        name: data.get("aidProviderTeamName").trim(),
+        description: data.get("aidProviderTeamDescription").trim(),
       },
     };
   }
@@ -336,7 +387,13 @@ function getProvisioningSuccessMessage(data, roles) {
     return `Aid provider ${displayName} was created successfully.`;
   }
 
-  const displayName = `${formatDisplayName(data.get("firstName"))} ${formatDisplayName(data.get("lastName"))}`.trim();
+  if (roles.providerTeamRole) {
+    const displayName = formatDisplayName(data.get("aidProviderTeamName"));
+    return `Aid provider team ${displayName} was created successfully.`;
+  }
+
+  const displayName =
+    `${formatDisplayName(data.get("firstName"))} ${formatDisplayName(data.get("lastName"))}`.trim();
   return `User ${displayName} was created successfully.`;
 }
 
@@ -391,9 +448,16 @@ form.addEventListener("submit", async (event) => {
     const isDuplicateProviderName =
       roles.providerAccountRole &&
       error.message.toLowerCase().includes("aid provider with that name");
+    const isDuplicateTeamName =
+      roles.providerTeamRole &&
+      error.message.toLowerCase().includes("aid provider team with that name");
     let errorInput = document.getElementById("email");
     if (isDuplicateProviderName) {
       errorInput = aidProviderNameInput;
+    } else if (isDuplicateTeamName) {
+      errorInput = aidProviderTeamNameInput;
+    } else if (roles.providerRole) {
+      errorInput = aidProviderSelect;
     }
     setError(errorInput, error.message);
   } finally {

@@ -465,3 +465,24 @@ form.addEventListener("submit", async (event) => {
     submitButton.textContent = "Provide application access";
   }
 });
+
+const userButton = document.getElementById("userButton");
+const userDropdown = document.getElementById("userDropdown");
+
+userButton.addEventListener("click", () => {
+  const isOpen = userDropdown.classList.toggle("open");
+  userDropdown.setAttribute("aria-hidden", String(!isOpen));
+  userButton.setAttribute("aria-expanded", String(isOpen));
+});
+
+document.addEventListener("click", (event) => {
+  if (!event.target.closest(".user-menu")) {
+    userDropdown.classList.remove("open");
+    userDropdown.setAttribute("aria-hidden", "true");
+    userButton.setAttribute("aria-expanded", "false");
+  }
+});
+
+document
+  .getElementById("logoutButton")
+  .addEventListener("click", window.logoutUser);

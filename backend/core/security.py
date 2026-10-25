@@ -84,7 +84,7 @@ def get_session_email(token: str | None) -> str | None:
         encoded_payload_bytes = encoded_payload.encode("ascii")
         decoded_payload = base64.urlsafe_b64decode(encoded_payload_bytes)
         payload = json.loads(decoded_payload)
-    except (ValueError, TypeError, json.JSONDecodeError):
+    except (ValueError, TypeError):
         return None
 
     if not hmac.compare_digest(supplied_signature, expected_signature):

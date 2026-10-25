@@ -171,8 +171,17 @@ async function loadAidProviderTeams(providerId) {
     return;
   }
 
+  if (!/^[0-9a-f-]{36}$/i.test(providerId)) {
+    teamSelect.replaceChildren(new Option("Invalid aid provider", ""));
+    setTeamError("The selected aid provider is invalid.");
+    return;
+  }
+
   try {
-    const response = await fetch(`/api/aidProviders/${providerId}/teams`);
+    const encodedProviderId = encodeURIComponent(providerId);
+    const response = await fetch(
+      `/api/aidProviders/${encodedProviderId}/teams`,
+    );
     if (!response.ok) throw new Error("Unable to load aid provider teams.");
 
     availableTeams = await response.json();

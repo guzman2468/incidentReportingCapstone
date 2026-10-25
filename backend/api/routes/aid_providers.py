@@ -47,7 +47,7 @@ def require_provider_read_access(email: str, db: Session) -> None:
         )
 
 
-@router.get("", response_model=list[AidProvider])
+@router.get("")
 def list_active_aid_providers(
     email: str = Depends(require_session),
     db: Session = Depends(get_db),
@@ -56,7 +56,7 @@ def list_active_aid_providers(
     return get_active_aid_providers(db)
 
 
-@router.get("/{aid_provider_id}/teams", response_model=list[AidProviderTeam])
+@router.get("/{aid_provider_id}/teams")
 def list_active_aid_provider_teams(
     aid_provider_id: UUID,
     email: str = Depends(require_session),
@@ -66,7 +66,7 @@ def list_active_aid_provider_teams(
     return get_active_aid_provider_teams(db, str(aid_provider_id))
 
 
-@router.post("", response_model=AidProviderCreated, status_code=status.HTTP_201_CREATED)
+@router.post("", status_code=status.HTTP_201_CREATED)
 def create_provider(
     provider_data: AidProviderCreate,
     email: str = Depends(require_session),
@@ -84,7 +84,7 @@ def create_provider(
         raise
 
 
-@router.post("/teams", response_model=AidProviderTeamCreated, status_code=status.HTTP_201_CREATED)
+@router.post("/teams", status_code=status.HTTP_201_CREATED)
 def create_provider_team(
     team_data: AidProviderTeamCreate,
     email: str = Depends(require_session),
@@ -104,7 +104,7 @@ def create_provider_team(
         raise
 
 
-@router.post("/teamMembers", response_model=UserCreated, status_code=status.HTTP_201_CREATED)
+@router.post("/teamMembers", status_code=status.HTTP_201_CREATED)
 def create_team_member_account(
     account_data: AidProviderTeamMemberAccountCreate,
     email: str = Depends(require_session),

@@ -1052,9 +1052,9 @@ a {
 }
 
 .overview-page .primary-button:disabled {
-  background: #a7b2b3;
+  background: #aebbbc;
   box-shadow: none;
-  color: #eef2f2;
+  color: #263638;
   cursor: not-allowed;
   opacity: 1;
 }

@@ -54,7 +54,7 @@ def get_active_profile(db: Session, email: str) -> dict[str, str | bool]:
     return profile
 
 
-@router.post("/createUser", response_model=UserCreated, status_code=status.HTTP_201_CREATED)
+@router.post("/createUser", status_code=status.HTTP_201_CREATED)
 def register_user(user_data: UserCreate, db: Session = Depends(get_db)) -> UserCreated:
     try:
         return create_user(db, user_data)
@@ -65,7 +65,7 @@ def register_user(user_data: UserCreate, db: Session = Depends(get_db)) -> UserC
         ) from error
 
 
-@router.post("/login", response_model=UserLoggedIn)
+@router.post("/login")
 def login_user(
     login_data: UserLogin,
     response: Response,
@@ -94,7 +94,7 @@ def require_session(session: str | None = Cookie(default=None, alias=SESSION_COO
     return email
 
 
-@router.get("/currentUser", response_model=UserProfile)
+@router.get("/currentUser")
 def current_user(
     email: str = Depends(require_session),
     db: Session = Depends(get_db),

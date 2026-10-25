@@ -37,12 +37,22 @@ def require_admin(email: str, db: Session) -> None:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin access required")
 
 
+def require_provider_read_access(email: str, db: Session) -> None:
+    """Allow administrators and assigners to read provider assignment options."""
+    profile = get_active_profile(db, email)
+    if profile["role"] not in {"ADMIN", "ASSIGNER"}:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Provider assignment access required",
+        )
+
+
 @router.get("", response_model=list[AidProvider])
 def list_active_aid_providers(
     email: str = Depends(require_session),
     db: Session = Depends(get_db),
 ) -> list[AidProvider]:
-    require_admin(email, db)
+    require_provider_read_access(email, db)
     return get_active_aid_providers(db)
 
 
@@ -52,7 +62,7 @@ def list_active_aid_provider_teams(
     email: str = Depends(require_session),
     db: Session = Depends(get_db),
 ) -> list[AidProviderTeam]:
-    require_admin(email, db)
+    require_provider_read_access(email, db)
     return get_active_aid_provider_teams(db, str(aid_provider_id))
 
 

@@ -1,0 +1,105 @@
+/* Form styles for the provision page. Shared layout comes from adminDashboard.css. */
+
+.provision-wrap {
+  max-width: 760px;
+}
+
+.provision-form {
+  display: grid;
+  gap: 18px;
+  padding-top: 23px;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.form-field {
+  min-width: 0;
+}
+
+.provision-form label {
+  display: block;
+  margin-bottom: 8px;
+  color: #3d555b;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.provision-form input,
+.provision-form select {
+  width: 100%;
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid #dce8e5;
+  border-radius: 8px;
+  outline: none;
+  background: white;
+  color: var(--ink);
+  font-size: 12px;
+}
+
+.provision-form input:focus,
+.provision-form select:focus {
+  border-color: #71bdb5;
+  box-shadow: 0 0 0 3px #e7f6f3;
+}
+
+.provision-form .input-error,
+.provision-form .input-error:focus {
+  border-color: var(--coral);
+  box-shadow: 0 0 0 3px #fff0ec;
+}
+
+.field-error {
+  display: block;
+  min-height: 14px;
+  margin-top: 6px;
+  color: #a84c40;
+  font-size: 10px;
+  line-height: 1.4;
+}
+
+.form-message {
+  display: block;
+  padding: 12px;
+  border-radius: 8px;
+  font-size: 11px;
+  line-height: 1.6;
+}
+
+.form-message:empty {
+  display: none;
+}
+
+.form-message.success {
+  border: 1px solid #cdeedc;
+  background: #e6f7ee;
+  color: #2d6a45;
+}
+
+.form-message.error {
+  border: 1px solid #f7d5ce;
+  background: #fff0ec;
+  color: #a84c40;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 9px;
+  padding-top: 22px;
+  border-top: 1px solid var(--line);
+}
+
+@media (max-width: 600px) {
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+
+  .form-actions > * {
+    flex: 1;
+  }
+}

@@ -1,0 +1,113 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Provision Account</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="adminDashboard.css" />
+  <link rel="stylesheet" href="adminProvisionAccount.css" />
+</head>
+<body>
+  <main class="admin-page">
+    <header class="admin-topbar">
+      <a class="back-link" href="adminDashboard.html">← Back to accounts</a>
+      <div class="page-title">Provision Account</div>
+      <div class="user-menu">
+        <button id="userButton" class="top-avatar" type="button"
+          aria-label="Open user menu" data-user-initials aria-expanded="false"></button>
+        <div id="userDropdown" class="user-dropdown" aria-hidden="true">
+          <div class="user-summary">
+            <strong data-user-name></strong>
+            <span>Admin</span>
+          </div>
+          <button type="button" id="logoutButton">↪ <span>Log out</span></button>
+        </div>
+      </div>
+    </header>
+
+    <section class="overview-wrap provision-wrap">
+      <div class="overview-heading">
+        <div>
+          <p class="eyebrow">ADMIN</p>
+          <h1>Provision an account</h1>
+          <p class="hero-copy">Create a new account and assign its role. The user can sign in right away with the email and password entered here.</p>
+        </div>
+      </div>
+
+      <section class="report-card provision-card">
+        <div class="card-heading">
+          <div>
+            <span class="incident-number">NEW ACCOUNT</span>
+            <h2>Account details</h2>
+            <p>All fields are required.</p>
+          </div>
+        </div>
+
+        <form id="provisionForm" class="provision-form" novalidate>
+          <div class="form-row">
+            <div class="form-field">
+              <label for="firstName">First name</label>
+              <input id="firstName" name="firstName" type="text" maxlength="50" required />
+              <span class="field-error" id="firstNameError" role="alert"></span>
+            </div>
+            <div class="form-field">
+              <label for="lastName">Last name</label>
+              <input id="lastName" name="lastName" type="text" maxlength="50" required />
+              <span class="field-error" id="lastNameError" role="alert"></span>
+            </div>
+          </div>
+
+          <div class="form-field">
+            <label for="role">Role</label>
+            <select id="role" name="role" required>
+              <option value="" selected disabled>Select a role</option>
+              <option value="ADMIN">Admin</option>
+              <option value="ASSIGNER">Assigner</option>
+              <option value="AID_PROVIDER">Aid Provider</option>
+              <option value="AID_PROVIDER_TEAM_MEMBER">Aid Provider Team Member</option>
+              <option value="REPORTER">Reporter</option>
+            </select>
+            <span class="field-error" id="roleError" role="alert"></span>
+          </div>
+
+          <div class="form-field">
+            <label for="email">Email</label>
+            <input id="email" name="email" type="email" maxlength="50" required autocomplete="off"
+              pattern="[^@\s]+@[^@\s]+\.[^@\s]+" title="Enter an email in the format name@domain.extension" />
+            <span class="field-error" id="emailError" role="alert"></span>
+          </div>
+
+          <div class="form-row">
+            <div class="form-field">
+              <label for="password">Password</label>
+              <input id="password" name="password" type="password" maxlength="50" required autocomplete="new-password" />
+              <span class="field-error" id="passwordError" role="alert"></span>
+            </div>
+            <div class="form-field">
+              <label for="confirmPassword">Confirm password</label>
+              <input id="confirmPassword" name="confirmPassword" type="password" maxlength="50" required autocomplete="new-password" />
+              <span class="field-error" id="confirmPasswordError" role="alert"></span>
+            </div>
+          </div>
+
+          <output class="form-message" id="formMessage" aria-live="polite"></output>
+
+          <div class="form-actions">
+            <a class="secondary-button" href="adminDashboard.html">Cancel</a>
+            <button class="primary-button" type="submit" id="createButton"><span>+</span> Create account</button>
+          </div>
+        </form>
+      </section>
+    </section>
+  </main>
+
+  <script src="../authHelpers.js"></script>
+  <script src="adminProvisionAccount.js"></script>
+</body>
+</html>

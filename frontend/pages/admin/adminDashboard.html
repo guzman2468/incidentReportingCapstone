@@ -1,0 +1,89 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Manage Accounts</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="adminDashboard.css" />
+</head>
+<body>
+  <main class="admin-page">
+    <header class="admin-topbar">
+      <span class="back-link"></span>
+      <div class="page-title">Account Dashboard</div>
+      <div class="user-menu">
+        <button id="userButton" class="top-avatar" type="button"
+          aria-label="Open user menu" data-user-initials aria-expanded="false"></button>
+        <div id="userDropdown" class="user-dropdown" aria-hidden="true">
+          <div class="user-summary">
+            <strong data-user-name></strong>
+            <span>Admin</span>
+          </div>
+          <button type="button" id="logoutButton">↪ <span>Log out</span></button>
+        </div>
+      </div>
+    </header>
+
+    <section class="overview-wrap">
+      <div class="overview-heading">
+        <div>
+          <p class="eyebrow">ADMIN</p>
+          <h1>Accounts</h1>
+          <p class="hero-copy">View every account registered on the platform, grouped by staff and reporters.</p>
+        </div>
+        <span class="status-badge active" id="totalAccountsBadge">0 accounts</span>
+      </div>
+
+      <div class="accounts-layout">
+        <section class="report-card account-list-card">
+          <div class="card-heading">
+            <div>
+              <span class="incident-number">STAFF</span>
+              <h2>Staff accounts</h2>
+              <p>Admins, assigners, and aid provider accounts</p>
+            </div>
+            <span class="count-badge" id="staffCount">0</span>
+          </div>
+
+          <div class="account-list" id="staffList"></div>
+          <p class="empty-state" id="staffEmpty">No staff accounts found.</p>
+        </section>
+
+        <section class="report-card account-list-card">
+          <div class="card-heading">
+            <div>
+              <span class="incident-number">REPORTERS</span>
+              <h2>Reporter accounts</h2>
+              <p>Public users who submit incident reports</p>
+            </div>
+            <span class="count-badge" id="reporterCount">0</span>
+          </div>
+
+          <div class="account-list" id="reporterList"></div>
+          <p class="empty-state" id="reporterEmpty">No reporter accounts found.</p>
+        </section>
+
+        <aside class="report-column">
+          <section class="report-card">
+            <p class="eyebrow">MANAGE</p>
+            <div class="section-heading">
+              <h3>Provision an account</h3>
+              <p>Create a new staff account and assign its role. Reporters sign up on their own.</p>
+            </div>
+            <a class="primary-button" href="adminProvisionAccount.html"><span>+</span> Provision account</a>
+          </section>
+        </aside>
+      </div>
+    </section>
+  </main>
+
+  <script src="../authHelpers.js"></script>
+  <script src="adminDashboard.js"></script>
+</body>
+</html>

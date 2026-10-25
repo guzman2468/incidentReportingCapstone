@@ -111,23 +111,42 @@
                 </div>
                 <div class="field assignment-field">
                   <label class="field-label" for="providerSelect"
-                    >Assign to:</label
+                    >Assign to aid provider:
+                    <span class="required-star">*</span></label
                   >
                   <select id="providerSelect" required>
-                    <option value="">Select a responder</option>
+                    <option value="">Select an aid provider</option>
                   </select>
                   <span
                     class="field-error"
                     id="providerSelectError"
                     role="alert"
                   ></span>
+                  <label class="field-label" for="teamSelect"
+                    >Assign to team: <span class="required-star">*</span></label
+                  >
+                  <select id="teamSelect" required disabled>
+                    <option value="">Select a team</option>
+                  </select>
+                  <span
+                    class="field-error"
+                    id="teamSelectError"
+                    role="alert"
+                  ></span>
                   <button
                     type="button"
                     class="primary-button"
                     id="assignButton"
+                    disabled
                   >
-                    Assign responder <span>→</span>
+                    Assign to team
                   </button>
+                  <p
+                    class="assignment-message"
+                    id="assignmentMessage"
+                    role="status"
+                    hidden
+                  ></p>
                 </div>
               </div>
 
@@ -214,22 +233,6 @@
       </section>
     </main>
 
-    <div class="confirm-backdrop" id="confirmBackdrop" hidden>
-      <dialog open class="confirm-dialog" aria-labelledby="confirmTitle">
-        <div class="confirm-icon">?</div>
-        <h2 id="confirmTitle">Confirm assignment</h2>
-        <p id="confirmMessage">
-          Assign this incident to the selected provider?
-        </p>
-        <div class="confirm-actions">
-          <button type="button" class="secondary-button" id="cancelAssign">
-            Cancel</button
-          ><button type="button" class="primary-button" id="confirmAssign">
-            Confirm assignment
-          </button>
-        </div>
-      </dialog>
-    </div>
     <script
       src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
       integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
@@ -237,6 +240,9 @@
     ></script>
     <script src="../authHelpers.js"></script>
     <script src="assignerDemoData.js"></script>
-    <script src="assignIncidentOverview.js?v=assigner-admin-layout-2"></script>
+    <script
+      type="module"
+      src="assignIncidentOverview.js?v=assigner-admin-layout-2"
+    ></script>
   </body>
 </html>

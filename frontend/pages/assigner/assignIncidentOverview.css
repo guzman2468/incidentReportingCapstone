@@ -929,14 +929,6 @@ a {
   margin: 0;
 }
 
-.card-arrow {
-  background: #e5f4f1;
-  border-radius: 9px;
-  color: var(--teal);
-  font-size: 23px;
-  padding: 9px 12px;
-}
-
 .overview-grid {
   display: grid;
   gap: 46px;
@@ -1057,6 +1049,14 @@ a {
   font-size: 12px;
   font-weight: 700;
   padding: 13px 18px;
+}
+
+.overview-page .primary-button:disabled {
+  background: #a7b2b3;
+  box-shadow: none;
+  color: #eef2f2;
+  cursor: not-allowed;
+  opacity: 1;
 }
 
 .overview-page .primary-button span {
@@ -1634,18 +1634,6 @@ a {
   border-color: #c8e5df;
 }
 
-.nearby-icon {
-  background: #e7f5f2;
-  border-radius: 8px;
-  color: var(--teal);
-  display: grid;
-  flex-shrink: 0;
-  font-weight: 700;
-  height: 30px;
-  place-items: center;
-  width: 30px;
-}
-
 .nearby-info {
   flex: 1;
   min-width: 0;
@@ -1698,6 +1686,14 @@ a {
 .assignment-field .primary-button {
   margin-top: 4px;
   width: 50%;
+}
+
+.assignment-message {
+  color: var(--teal-dark);
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.5;
+  margin: 8px 0 0;
 }
 
 .field-error {

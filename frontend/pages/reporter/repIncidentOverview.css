@@ -206,14 +206,6 @@ a {
   margin: 0;
 }
 
-.card-arrow {
-  background: #e5f4f1;
-  border-radius: 9px;
-  color: var(--teal);
-  font-size: 23px;
-  padding: 9px 12px;
-}
-
 .overview-grid {
   display: grid;
   gap: 46px;

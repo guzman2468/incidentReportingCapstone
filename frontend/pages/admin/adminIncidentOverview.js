@@ -199,7 +199,7 @@ const updateNearbyIncidents = () => {
   list.innerHTML = nearby
     .map(
       (item) => `<div class="nearby-row">
-    <span class="nearby-icon">↗</span><span class="nearby-info">
+    <span class="nearby-info">
       <strong>${escapeHTML(item.title)}</strong>
       <small>${escapeHTML(item.id)} · ${escapeHTML(item.county)} County · ${item.distance.toFixed(1)} miles away</small>
       <small>${escapeHTML(item.type)} · ${escapeHTML(item.severity)} · ${escapeHTML(item.status)}</small>

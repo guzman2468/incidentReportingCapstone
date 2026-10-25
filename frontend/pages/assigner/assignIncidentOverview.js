@@ -1,16 +1,30 @@
-const { incidents, providers } = window.assignerDemoData;
+const { incidents } = window.assignerDemoData;
 
 const params = new URLSearchParams(window.location.search);
 const incidentId = params.get("id");
 
 const providerSelect = document.getElementById("providerSelect");
+const teamSelect = document.getElementById("teamSelect");
 const assignButton = document.getElementById("assignButton");
-const confirmBackdrop = document.getElementById("confirmBackdrop");
 const providerSelectError = document.getElementById("providerSelectError");
+const teamSelectError = document.getElementById("teamSelectError");
+const assignmentMessage = document.getElementById("assignmentMessage");
+
+function formatDisplayName(value) {
+  return String(value ?? "")
+    .trim()
+    .toLowerCase()
+    .replace(/(^|[\s'-])\w/g, (letter) => letter.toUpperCase());
+}
 
 function setProviderError(message) {
   providerSelect.classList.toggle("input-error", Boolean(message));
   providerSelectError.textContent = message || "";
+}
+
+function setTeamError(message) {
+  teamSelect.classList.toggle("input-error", Boolean(message));
+  teamSelectError.textContent = message || "";
 }
 
 // Match the admin overview: nearby incidents live below the left-side fields.
@@ -21,7 +35,6 @@ if (nearbyCard && formFields) {
 }
 
 let incident = null;
-let pendingProvider = null;
 let incidentMap = null;
 let mapMarkers = null;
 
@@ -43,7 +56,7 @@ function escapeHTML(value) {
 // Load and display the selected incident
 // -------------------------------------
 
-function displayIncident() {
+async function displayIncident() {
   incident = incidents.find((item) => item.id === incidentId);
 
   if (!incident) {
@@ -96,8 +109,9 @@ function displayIncident() {
     `severity-value severity-${String(severity).toLowerCase()}`;
 
   updateStatusBadge();
+  await loadAidProviders();
   updateAvailableProviders();
-  updateCurrentProvider();
+  await updateCurrentProvider();
   updateNearbyIncidents();
 }
 
@@ -121,88 +135,111 @@ function updateStatusBadge() {
   }
 }
 
-let availableResponders = [];
+let providers = [];
+let availableTeams = [];
+let providersLoaded = false;
 
-function updateAvailableProviders() {
-  const latitude = Number(incident.latitude);
-  const longitude = Number(incident.longitude);
-  const hasCoordinates =
-    Number.isFinite(latitude) &&
-    Number.isFinite(longitude) &&
-    Math.abs(latitude) <= 90 &&
-    Math.abs(longitude) <= 180;
+async function loadAidProviders() {
+  if (providersLoaded) return;
 
-  providerSelect.replaceChildren(new Option("Select a responder", ""));
-  setProviderError("");
+  providerSelect.replaceChildren(new Option("Loading aid providers...", ""));
+  providerSelect.disabled = true;
 
-  if (!hasCoordinates) {
-    availableResponders = [];
-    return;
-  }
+  try {
+    const response = await fetch("/api/aidProviders");
+    if (!response.ok) throw new Error("Unable to load aid providers.");
 
-  availableResponders = providers
-    .filter((provider) => provider.available)
-    .map((provider) => ({
-      ...provider,
-      distance: distanceInMiles(
-        latitude,
-        longitude,
-        provider.latitude,
-        provider.longitude,
-      ),
-    }))
-    .sort((a, b) => a.distance - b.distance);
-
-  if (!availableResponders.length) {
-    return;
-  }
-
-  availableResponders.forEach((provider) => {
-    providerSelect.add(
-      new Option(`${provider.name} — ${provider.county} County`, provider.id),
+    providers = await response.json();
+    providersLoaded = true;
+    updateAvailableProviders();
+  } catch (error) {
+    console.error(error);
+    providerSelect.replaceChildren(
+      new Option("Unable to load aid providers", ""),
     );
-  });
+    setProviderError("Unable to load aid providers.");
+  }
 }
 
-function updateCurrentProvider() {
+async function loadAidProviderTeams(providerId) {
+  teamSelect.replaceChildren(new Option("Loading teams...", ""));
+  teamSelect.disabled = true;
+  availableTeams = [];
+
+  if (!providerId) {
+    teamSelect.replaceChildren(new Option("Select a team", ""));
+    return;
+  }
+
+  try {
+    const response = await fetch(`/api/aidProviders/${providerId}/teams`);
+    if (!response.ok) throw new Error("Unable to load aid provider teams.");
+
+    availableTeams = await response.json();
+    teamSelect.replaceChildren(new Option("Select a team", ""));
+    availableTeams.forEach((team) => {
+      teamSelect.add(new Option(formatDisplayName(team.name), team.id));
+    });
+    teamSelect.disabled = availableTeams.length === 0;
+
+    if (!availableTeams.length) {
+      teamSelect.replaceChildren(new Option("No teams found", ""));
+    }
+  } catch (error) {
+    console.error(error);
+    teamSelect.replaceChildren(new Option("Unable to load teams", ""));
+    setTeamError("Unable to load aid provider teams.");
+  }
+}
+
+function updateAvailableProviders() {
+  providerSelect.replaceChildren(new Option("Select an aid provider", ""));
+  providers.forEach((provider) => {
+    providerSelect.add(new Option(formatDisplayName(provider.name), provider.id));
+  });
+  providerSelect.disabled = !providers.length;
+  setProviderError("");
+}
+
+async function updateCurrentProvider() {
   const provider = incident.assignedProvider || "";
-  const assignedCounty = incident.assignedCounty || "";
+  const assignedTeam = incident.assignedTeam || "";
   let currentProviderText = "Not assigned";
   let assignmentSummaryText = "No provider has been assigned yet.";
 
   if (provider) {
     currentProviderText = provider;
     assignmentSummaryText = `Currently assigned to ${provider}`;
-
-    if (assignedCounty) {
-      currentProviderText += ` · ${assignedCounty} County`;
-      assignmentSummaryText += ` in ${assignedCounty} County`;
-    }
-
-    assignmentSummaryText +=
-      ". You can select another available responder to reassign this incident.";
+    assignmentSummaryText += assignedTeam ? ` · ${assignedTeam}` : "";
+    assignmentSummaryText += ". You can select another team to reassign this incident.";
   }
 
   document.getElementById("currentProvider").textContent = currentProviderText;
   const assignmentSummary = document.getElementById("assignmentSummary");
   if (assignmentSummary) assignmentSummary.textContent = assignmentSummaryText;
 
-  const assignedResponder = availableResponders.find(
-    (responder) => responder.name === provider,
+  const assignedProvider = providers.find(
+    (availableProvider) =>
+      availableProvider.name.toLowerCase() === provider.toLowerCase(),
   );
-  providerSelect.value = assignedResponder?.id || "";
+  providerSelect.value = assignedProvider?.id || "";
+  await loadAidProviderTeams(providerSelect.value);
+  const assignedTeamOption = availableTeams.find(
+    (team) => team.name.toLowerCase() === assignedTeam.toLowerCase(),
+  );
+  teamSelect.value = assignedTeamOption?.id || "";
 
   const isPast = ["resolved", "closed"].includes(incident.status);
+  const hasCompleteAssignment = providerSelect.value && teamSelect.value;
 
-  providerSelect.disabled = isPast || !availableResponders.length;
-  assignButton.disabled = isPast || !availableResponders.length;
+  providerSelect.disabled = isPast || !providers.length;
+  teamSelect.disabled = isPast || !availableTeams.length;
+  assignButton.disabled = isPast || !hasCompleteAssignment;
 
   if (isPast) {
     assignButton.textContent = "Incident is closed";
-  } else if (!availableResponders.length) {
-    assignButton.textContent = "No responders available";
   } else {
-    assignButton.innerHTML = "Assign responder <span>→</span>";
+    assignButton.textContent = "Assign to team";
   }
 }
 
@@ -379,7 +416,6 @@ function updateNearbyIncidents() {
     .map(
       (other) => `
     <div class="nearby-row">
-      <span class="nearby-icon">↗</span>
       <span class="nearby-info">
         <strong>${escapeHTML(other.title)}</strong>
         <small>
@@ -402,10 +438,26 @@ document
   .getElementById("radiusSelect")
   .addEventListener("change", updateNearbyIncidents);
 
-providerSelect.addEventListener("change", () => setProviderError(""));
+providerSelect.addEventListener("change", async () => {
+  setProviderError("");
+  setTeamError("");
+  teamSelect.value = "";
+  await loadAidProviderTeams(providerSelect.value);
+  const isPast = ["resolved", "closed"].includes(incident?.status);
+  teamSelect.disabled = isPast || !availableTeams.length;
+  assignButton.disabled =
+    isPast || !providerSelect.value || !teamSelect.value;
+});
+
+teamSelect.addEventListener("change", () => {
+  setTeamError("");
+  const isPast = ["resolved", "closed"].includes(incident?.status);
+  assignButton.disabled =
+    isPast || !providerSelect.value || !teamSelect.value;
+});
 
 // -------------------------------------
-// Provider assignment and confirmation
+// Provider assignment
 // -------------------------------------
 
 assignButton.addEventListener("click", () => {
@@ -413,72 +465,27 @@ assignButton.addEventListener("click", () => {
     return;
   }
 
-  const selectedProvider = availableResponders.find(
+  const selectedProvider = providers.find(
     (provider) => provider.id === providerSelect.value,
+  );
+  const selectedTeam = availableTeams.find(
+    (team) => team.id === teamSelect.value,
   );
 
   if (!selectedProvider) {
-    setProviderError("Please select a responder.");
+    setProviderError("Please select an aid provider.");
     providerSelect.focus();
     return;
   }
 
-  pendingProvider = selectedProvider;
-
-  const isReassignment =
-    Boolean(incident.assignedProvider) &&
-    incident.assignedProvider !== selectedProvider.name;
-
-  document.getElementById("confirmMessage").textContent = isReassignment
-    ? `Reassign ${incident.id} from ${incident.assignedProvider} to ${selectedProvider.name} in ${selectedProvider.county} County?`
-    : `Assign ${incident.id} to ${selectedProvider.name} in ${selectedProvider.county} County?`;
-
-  confirmBackdrop.hidden = false;
-  document.getElementById("confirmAssign").focus();
-});
-
-function closeConfirmation() {
-  confirmBackdrop.hidden = true;
-  pendingProvider = null;
-}
-
-document.getElementById("cancelAssign").addEventListener("click", () => {
-  closeConfirmation();
-});
-
-document.getElementById("confirmAssign").addEventListener("click", () => {
-  if (!incident || !pendingProvider) return;
-
-  if (["resolved", "closed"].includes(incident.status)) {
-    closeConfirmation();
-    displayIncident();
+  if (!selectedTeam) {
+    setTeamError("Please select a team.");
+    teamSelect.focus();
     return;
   }
 
-  const confirmedProvider = pendingProvider;
-  incident.assignedProvider = confirmedProvider.name;
-  incident.assignedCounty = confirmedProvider.county;
-  incident.status = "active";
-
-  // Update the assignment date for the demonstration.
-  incident.assignedDate = new Date().toISOString();
-
-  closeConfirmation();
-  displayIncident();
-});
-
-// Close the dialog when the user clicks its backdrop.
-confirmBackdrop.addEventListener("click", (event) => {
-  if (event.target === confirmBackdrop) {
-    closeConfirmation();
-  }
-});
-
-// Escape also closes the confirmation dialog.
-document.addEventListener("keydown", (event) => {
-  if (event.key === "Escape" && !confirmBackdrop.hidden) {
-    closeConfirmation();
-  }
+  assignmentMessage.textContent = `Assign to team clicked for ${formatDisplayName(selectedProvider.name)} — ${formatDisplayName(selectedTeam.name)}.`;
+  assignmentMessage.hidden = false;
 });
 
 // -------------------------------------
@@ -549,5 +556,9 @@ if (!incidentId) {
     </div>
   `;
 } else {
-  displayIncident();
+  try {
+    await displayIncident();
+  } catch (error) {
+    console.error(error);
+  }
 }

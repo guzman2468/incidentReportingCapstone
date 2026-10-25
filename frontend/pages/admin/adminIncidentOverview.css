@@ -929,14 +929,6 @@ a {
   margin: 0;
 }
 
-.card-arrow {
-  background: #e5f4f1;
-  border-radius: 9px;
-  color: var(--teal);
-  font-size: 23px;
-  padding: 9px 12px;
-}
-
 .overview-grid {
   display: grid;
   gap: 46px;
@@ -1630,18 +1622,6 @@ a {
 .nearby-row:hover {
   background: #f7fcfa;
   border-color: #c8e5df;
-}
-
-.nearby-icon {
-  background: #e7f5f2;
-  border-radius: 8px;
-  color: var(--teal);
-  display: grid;
-  flex-shrink: 0;
-  font-weight: 700;
-  height: 30px;
-  place-items: center;
-  width: 30px;
 }
 
 .nearby-info {

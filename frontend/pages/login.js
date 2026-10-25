@@ -32,7 +32,8 @@
     var pages = {
       REPORTER: 'reporter/repDashboard.html',
       ASSIGNER: 'assigner/assignDashboard.html',
-      AID_PROVIDER_TEAM_MEMBER: 'aptm/aptmDashboard.html'
+      AID_PROVIDER_TEAM_MEMBER: 'aptm/aptmDashboard.html',
+      ADMIN: 'admin/adminDashboard.html'
     };
     return pages[role] || 'login.html';
   }

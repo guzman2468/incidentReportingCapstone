@@ -75,7 +75,8 @@
     return {
       REPORTER: '/reporter/',
       ASSIGNER: '/assigner/',
-      AID_PROVIDER_TEAM_MEMBER: '/aptm/'
+      AID_PROVIDER_TEAM_MEMBER: '/aptm/',
+      ADMIN: '/admin/'
     }[role];
   }
 
@@ -92,7 +93,8 @@
           window.location.replace(workspace + {
             '/reporter/': 'repDashboard.html',
             '/assigner/': 'assignDashboard.html',
-            '/aptm/': 'aptmDashboard.html'
+            '/aptm/': 'aptmDashboard.html',
+            '/admin/': 'adminDashboard.html'
           }[workspace]);
           return;
         }

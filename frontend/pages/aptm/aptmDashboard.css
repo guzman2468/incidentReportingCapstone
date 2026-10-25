@@ -1,4 +1,4 @@
-@import url('../reporter/repDashboard.css');
+@import url("../reporter/repDashboard.css");
 
 /* APTM pages share the reporter dashboard visual system. */
 .panel-header h2 {
@@ -53,9 +53,11 @@
 
 .application-title {
   color: var(--ink);
-  font: 700 17px 'Space Grotesk', sans-serif;
+  font:
+    700 17px "Space Grotesk",
+    sans-serif;
   left: 50%;
-  letter-spacing: -.5px;
+  letter-spacing: -0.5px;
   pointer-events: none;
   position: absolute;
   text-align: center;

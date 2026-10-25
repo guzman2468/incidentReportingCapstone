@@ -31,11 +31,12 @@ def create_user(db: Session, user_data: UserCreate) -> dict[str, int | str]:
             :email, :password_hash, :first_name, :last_name, :role, :aid_provider_id,
             true, :must_change_password
         )
+        RETURNING id
         """
     )
 
     try:
-        db.execute(
+        user_id = db.execute(
             statement,
             {
                 "email": user_data.email,
@@ -43,10 +44,11 @@ def create_user(db: Session, user_data: UserCreate) -> dict[str, int | str]:
                 "first_name": first_name,
                 "last_name": last_name,
                 "role": user_data.role,
-                "aid_provider_id": user_data.aid_provider_id,
+                "aid_provider_id": None,
                 "must_change_password": user_data.role != "REPORTER",
             },
-        )
+        ).scalar_one()
+
         db.commit()
     except IntegrityError as error:
         db.rollback()

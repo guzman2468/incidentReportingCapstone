@@ -8,9 +8,11 @@ from sqlalchemy import text
 from .core.middleware import protect_role_pages
 from .database import engine
 from .api.routes.users import router as users_router
+from .api.routes.aid_providers import router as aid_providers_router
 
 app = FastAPI()
 app.include_router(users_router)
+app.include_router(aid_providers_router)
 FRONTEND_DIR = Path(__file__).resolve().parent.parent / "frontend" / "pages"
 
 app.middleware("http")(protect_role_pages)

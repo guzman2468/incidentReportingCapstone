@@ -2,19 +2,23 @@
 // Date display
 // -----------------------------
 // Show the user's current date in the dashboard greeting.
-document.getElementById('currentDate').textContent = new Intl.DateTimeFormat('en-US', {
-  weekday: 'long',
-  month: 'long',
-  day: 'numeric',
-  year: 'numeric'
-}).format(new Date()).toUpperCase();
-
+document.getElementById("currentDate").textContent = new Intl.DateTimeFormat(
+  "en-US",
+  {
+    weekday: "long",
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+  },
+)
+  .format(new Date())
+  .toUpperCase();
 
 // -----------------------------
 // Incident search
 // -----------------------------
 const getSubmittedDateText = (metadata) => {
-  const submitted = 'submitted';
+  const submitted = "submitted";
   const submittedIndex = metadata.toLowerCase().indexOf(submitted);
   if (submittedIndex === -1) return null;
 
@@ -23,12 +27,19 @@ const getSubmittedDateText = (metadata) => {
   return dateText.length < afterSubmitted.length ? dateText : null;
 };
 
-
 // Connect one search input and one time filter to one incident list.
-function connectIncidentControls(inputId, listId, emptyId, filterId, statusFilterId = null) {
+function connectIncidentControls(
+  inputId,
+  listId,
+  emptyId,
+  filterId,
+  statusFilterId = null,
+) {
   const search = document.getElementById(inputId);
   const filter = document.getElementById(filterId);
-  const statusFilter = statusFilterId ? document.getElementById(statusFilterId) : null;
+  const statusFilter = statusFilterId
+    ? document.getElementById(statusFilterId)
+    : null;
 
   const rows = [...document.querySelectorAll(`#${listId} .incident-row`)];
   const emptyState = document.getElementById(emptyId);
@@ -44,9 +55,9 @@ function connectIncidentControls(inputId, listId, emptyId, filterId, statusFilte
       day: 1,
       week: 7,
       month: 30,
-      'six-months': 182,
+      "six-months": 182,
       year: 365,
-      'five-years': 1825
+      "five-years": 1825,
     };
 
     const days = rangeInDays[selectedRange];
@@ -55,59 +66,62 @@ function connectIncidentControls(inputId, listId, emptyId, filterId, statusFilte
     let visible = 0;
 
     rows.forEach((row) => {
-      const metadata = row.querySelector('.incident-info span').textContent;
+      const metadata = row.querySelector(".incident-info span").textContent;
 
       const incidentDateText = getSubmittedDateText(metadata);
       const incidentDate = incidentDateText ? new Date(incidentDateText) : null;
       const matchesSearch = row.dataset.search.startsWith(query);
 
-      const statusText = row.querySelector('.status-pill')?.textContent.toLowerCase() || 'new';
-      const rowStatus = statusText === 'in progress' ? 'progress' : statusText;
+      const statusText =
+        row.querySelector(".status-pill")?.textContent.toLowerCase() || "new";
+      const rowStatus = statusText === "in progress" ? "progress" : statusText;
 
-      const matchesStatus = !selectedStatus
-        || selectedStatus === 'all'
-        || rowStatus === selectedStatus;
+      const matchesStatus =
+        !selectedStatus ||
+        selectedStatus === "all" ||
+        rowStatus === selectedStatus;
 
       const matchesTime = !cutoff || !incidentDate || incidentDate >= cutoff;
       const isVisible = matchesSearch && matchesStatus && matchesTime;
 
-      row.style.display = isVisible ? 'flex' : 'none';
+      row.style.display = isVisible ? "flex" : "none";
       if (isVisible) visible += 1;
     });
 
-    emptyState.style.display = visible ? 'none' : 'block';
+    emptyState.style.display = visible ? "none" : "block";
   };
 
-  search.addEventListener('input', applyFilters);
-  filter.addEventListener('change', applyFilters);
-  if (statusFilter) statusFilter.addEventListener('change', applyFilters);
+  search.addEventListener("input", applyFilters);
+  filter.addEventListener("change", applyFilters);
+  if (statusFilter) statusFilter.addEventListener("change", applyFilters);
 }
-
 
 // Update the resolved summary card using its own independent time filter.
 function connectResolvedSummary() {
-  const filter = document.getElementById('resolvedFilter');
-  const label = document.getElementById('resolvedLabel');
-  const count = document.getElementById('resolvedCount');
-  const rows = [...document.querySelectorAll('#pastIncidentList .incident-row')];
+  const filter = document.getElementById("resolvedFilter");
+  const label = document.getElementById("resolvedLabel");
+  const count = document.getElementById("resolvedCount");
+  const rows = [
+    ...document.querySelectorAll("#pastIncidentList .incident-row"),
+  ];
 
   const rangeInDays = {
     day: 1,
     week: 7,
     month: 30,
-    'six-months': 182,
+    "six-months": 182,
     year: 365,
-    'five-years': 1825
+    "five-years": 1825,
   };
 
   const labelByRange = {
-    all: 'Resolved all time',
-    day: 'Resolved today',
-    week: 'Resolved this week',
-    month: 'Resolved this month',
-    'six-months': 'Resolved in the past 6 months',
-    year: 'Resolved this year',
-    'five-years': 'Resolved in the past 5 years'
+    all: "Resolved all time",
+    day: "Resolved today",
+    week: "Resolved this week",
+    month: "Resolved this month",
+    "six-months": "Resolved in the past 6 months",
+    year: "Resolved this year",
+    "five-years": "Resolved in the past 5 years",
   };
 
   const updateCount = () => {
@@ -117,10 +131,10 @@ function connectResolvedSummary() {
       ? new Date(today.getTime() - rangeInDays[selectedRange] * 86400000)
       : null;
 
-    label.textContent = labelByRange[selectedRange] || 'Resolved incidents';
+    label.textContent = labelByRange[selectedRange] || "Resolved incidents";
 
     const matchingRows = rows.filter((row) => {
-      const metadata = row.querySelector('.incident-info span').textContent;
+      const metadata = row.querySelector(".incident-info span").textContent;
       const dateText = getSubmittedDateText(metadata);
       const incidentDate = dateText ? new Date(dateText) : null;
       return !cutoff || !incidentDate || incidentDate >= cutoff;
@@ -129,25 +143,24 @@ function connectResolvedSummary() {
     count.textContent = matchingRows.length;
   };
 
-  filter.addEventListener('change', updateCount);
+  filter.addEventListener("change", updateCount);
   updateCount();
 }
 
-
 // Each incident category has its own independent search field.
 connectIncidentControls(
-  'activeSearch',
-  'activeIncidentList',
-  'activeEmptyState',
-  'activeFilter',
-  'activeStatusFilter'
+  "activeSearch",
+  "activeIncidentList",
+  "activeEmptyState",
+  "activeFilter",
+  "activeStatusFilter",
 );
 connectIncidentControls(
-  'pastSearch',
-  'pastIncidentList',
-  'pastEmptyState',
-  'pastFilter',
-  'pastStatusFilter'
+  "pastSearch",
+  "pastIncidentList",
+  "pastEmptyState",
+  "pastFilter",
+  "pastStatusFilter",
 );
 
 connectResolvedSummary();
@@ -155,25 +168,38 @@ connectResolvedSummary();
 // Show the number of incidents under each status in the two incident columns.
 function updateStatusCounts() {
   const getStatus = (row) => {
-    const statusText = row.querySelector('.status-pill')?.textContent.toLowerCase() || 'new';
-    return statusText === 'in progress' ? 'progress' : statusText;
+    const statusText =
+      row.querySelector(".status-pill")?.textContent.toLowerCase() || "new";
+    return statusText === "in progress" ? "progress" : statusText;
   };
 
-  const pastRows = [...document.querySelectorAll('#pastIncidentList .incident-row')];
-  const activeRows = [...document.querySelectorAll('#activeIncidentList .incident-row')];
+  const pastRows = [
+    ...document.querySelectorAll("#pastIncidentList .incident-row"),
+  ];
+  const activeRows = [
+    ...document.querySelectorAll("#activeIncidentList .incident-row"),
+  ];
 
-  const resolvedPastCount = pastRows.filter((row) => getStatus(row) === 'resolved').length;
-  const closedPastCount = pastRows.filter((row) => getStatus(row) === 'closed').length;
+  const resolvedPastCount = pastRows.filter(
+    (row) => getStatus(row) === "resolved",
+  ).length;
+  const closedPastCount = pastRows.filter(
+    (row) => getStatus(row) === "closed",
+  ).length;
 
-  const newActiveCount = activeRows.filter((row) => getStatus(row) === 'new').length;
-  const progressActiveCount = activeRows.filter((row) => getStatus(row) === 'progress').length;
+  const newActiveCount = activeRows.filter(
+    (row) => getStatus(row) === "new",
+  ).length;
+  const progressActiveCount = activeRows.filter(
+    (row) => getStatus(row) === "progress",
+  ).length;
 
-  document.getElementById('resolvedPastCount').textContent = resolvedPastCount;
-  document.getElementById('closedPastCount').textContent = closedPastCount;
-  document.getElementById('newActiveCount').textContent = newActiveCount;
-  document.getElementById('progressActiveCount').textContent = progressActiveCount;
+  document.getElementById("resolvedPastCount").textContent = resolvedPastCount;
+  document.getElementById("closedPastCount").textContent = closedPastCount;
+  document.getElementById("newActiveCount").textContent = newActiveCount;
+  document.getElementById("progressActiveCount").textContent =
+    progressActiveCount;
 }
-
 
 updateStatusCounts();
 
@@ -181,57 +207,58 @@ updateStatusCounts();
 // Incident overview navigation
 // -----------------------------
 // Make every incident row open the same visual overview page, regardless of status.
-document.querySelectorAll('.incident-row').forEach((row) => {
-  row.setAttribute('role', 'link');
-  row.setAttribute('tabindex', '0');
+document.querySelectorAll(".incident-row").forEach((row) => {
+  row.setAttribute("role", "link");
+  row.setAttribute("tabindex", "0");
 
   const openIncident = () => {
-    const title = row.querySelector('.incident-info strong').textContent;
-    const meta = row.querySelector('.incident-info span').textContent;
-    const incidentStatus = row.querySelector('.status-pill')?.textContent || 'Open';
+    const title = row.querySelector(".incident-info strong").textContent;
+    const meta = row.querySelector(".incident-info span").textContent;
+    const incidentStatus =
+      row.querySelector(".status-pill")?.textContent || "Open";
     const params = new URLSearchParams({ title, meta, status: incidentStatus });
-    
+
     window.location.href = `repIncidentOverview.html?${params.toString()}`;
   };
 
-  row.addEventListener('click', openIncident);
-  row.addEventListener('keydown', (event) => {
-    if (event.key === 'Enter' || event.key === ' ') {
+  row.addEventListener("click", openIncident);
+  row.addEventListener("keydown", (event) => {
+    if (event.key === "Enter" || event.key === " ") {
       event.preventDefault();
       openIncident();
     }
   });
 });
 
-
 // -----------------------------
 // User menu
 // -----------------------------
-const userButton = document.getElementById('userButton');
-const userDropdown = document.getElementById('userDropdown');
-
+const userButton = document.getElementById("userButton");
+const userDropdown = document.getElementById("userDropdown");
 
 // Toggle the logout dropdown when the profile avatar is clicked.
-userButton.addEventListener('click', () => {
-  const isOpen = userDropdown.classList.toggle('open');
-  userDropdown.setAttribute('aria-hidden', String(!isOpen));
-  userButton.setAttribute('aria-expanded', String(isOpen));
+userButton.addEventListener("click", () => {
+  const isOpen = userDropdown.classList.toggle("open");
+  userDropdown.setAttribute("aria-hidden", String(!isOpen));
+  userButton.setAttribute("aria-expanded", String(isOpen));
 });
 
 // Close the dropdown when the user clicks outside the profile area.
-document.addEventListener('click', (event) => {
-  if (!event.target.closest('.user-menu')) {
-    userDropdown.classList.remove('open');
-    userDropdown.setAttribute('aria-hidden', 'true');
-    userButton.setAttribute('aria-expanded', 'false');
+document.addEventListener("click", (event) => {
+  if (!event.target.closest(".user-menu")) {
+    userDropdown.classList.remove("open");
+    userDropdown.setAttribute("aria-hidden", "true");
+    userButton.setAttribute("aria-expanded", "false");
   }
 });
 
-document.getElementById('logoutButton').addEventListener('click', window.logoutUser);
+document
+  .getElementById("logoutButton")
+  .addEventListener("click", window.logoutUser);
 
 // Display a temporary confirmation message at the bottom of the screen.
 function showToast(message) {
-  const toast = document.createElement('div');
+  const toast = document.createElement("div");
 
   toast.textContent = message;
   toast.style.cssText = `

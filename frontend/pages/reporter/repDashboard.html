@@ -1,86 +1,430 @@
 <!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Reporter Dashboard</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="repDashboard.css" />
-</head>
-<body>
-  <div class="app-shell">
-    <main class="main-content" id="dashboard">
-      <header class="topbar">
-        <div class="breadcrumbs"><strong>Dashboard</strong></div>
-        <div class="topbar-actions">
-          <div class="user-menu">
-            <button type="button" class="top-avatar" id="userButton" data-user-initials aria-label="Open user menu" aria-expanded="false"></button>
-            <div class="user-dropdown" id="userDropdown" aria-hidden="true">
-              <div class="user-summary"><strong data-user-name></strong><span>Reporter</span></div>
-              <button type="button" id="changePasswordButton"><span>Change password</span></button>
-              <button type="button" id="logoutButton"><span>Log out</span></button>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Reporter Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="repDashboard.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <main class="main-content" id="dashboard">
+        <header class="topbar">
+          <div class="breadcrumbs"><strong>Dashboard</strong></div>
+          <div class="topbar-actions">
+            <div class="user-menu">
+              <button
+                type="button"
+                class="top-avatar"
+                id="userButton"
+                data-user-initials
+                aria-label="Open user menu"
+                aria-expanded="false"
+              ></button>
+              <div class="user-dropdown" id="userDropdown" aria-hidden="true">
+                <div class="user-summary">
+                  <strong data-user-name></strong><span>Reporter</span>
+                </div>
+                <button type="button" id="changePasswordButton">
+                  <span>Change password</span>
+                </button>
+                <button type="button" id="logoutButton">
+                  <span>Log out</span>
+                </button>
+              </div>
             </div>
           </div>
+        </header>
+
+        <div class="content-wrap">
+          <section class="hero-row">
+            <div>
+              <p class="eyebrow" id="currentDate">TODAY</p>
+              <h1>Good morning, <span data-user-first-name></span></h1>
+              <p class="hero-copy">
+                Keep your workplace safe by reporting what you see.
+              </p>
+            </div>
+            <a
+              class="primary-button"
+              id="newReportButton"
+              href="repIncidentSubmission.html"
+              ><span>+</span> Report an incident</a
+            >
+          </section>
+
+          <section class="stats-grid" aria-label="Incident overview">
+            <article class="stat-card accent-green">
+              <div class="stat-icon"></div>
+              <div class="stat-content">
+                <span id="resolvedLabel">Resolved this year</span
+                ><strong id="resolvedCount">12</strong>
+              </div>
+              <select
+                class="time-filter stat-filter"
+                id="resolvedFilter"
+                aria-label="Filter resolved incidents by time"
+              >
+                <option value="all">All time</option>
+                <option value="day">Past day</option>
+                <option value="week">Past week</option>
+                <option value="month">Past month</option>
+                <option value="six-months">Past 6 months</option>
+                <option value="year">Past year</option>
+                <option value="five-years">Past 5 years</option>
+              </select>
+            </article>
+            <article class="stat-card accent-coral">
+              <div class="stat-icon"></div>
+              <div><span>Open incidents</span><strong>3</strong></div>
+            </article>
+          </section>
+
+          <section class="dashboard-grid" id="incidents">
+            <div class="panel incident-column">
+              <div class="panel-header">
+                <div>
+                  <h2>Past incidents</h2>
+                  <p>Your resolved and closed reports</p>
+                </div>
+                <div class="status-counts">
+                  <span class="count-badge past-count"
+                    ><strong id="resolvedPastCount">0</strong> resolved</span
+                  ><span class="count-badge closed-count"
+                    ><strong id="closedPastCount">0</strong> closed</span
+                  >
+                </div>
+              </div>
+              <div class="toolbar">
+                <div class="search-box">
+                  <span>⌕</span
+                  ><input
+                    id="pastSearch"
+                    type="search"
+                    aria-label="Search past incidents"
+                    placeholder="Search past incidents"
+                  />
+                </div>
+                <select
+                  class="time-filter"
+                  id="pastStatusFilter"
+                  aria-label="Filter past incidents by status"
+                >
+                  <option value="all">All statuses</option>
+                  <option value="resolved">Resolved</option>
+                  <option value="closed">Closed</option></select
+                ><select
+                  class="time-filter"
+                  id="pastFilter"
+                  aria-label="Filter past incidents by time"
+                >
+                  <option value="all">All time</option>
+                  <option value="day">Past day</option>
+                  <option value="week">Past week</option>
+                  <option value="month">Past month</option>
+                  <option value="six-months">Past 6 months</option>
+                  <option value="year">Past year</option>
+                  <option value="five-years">Past 5 years</option>
+                </select>
+              </div>
+              <div class="incident-list" id="pastIncidentList">
+                <article
+                  class="incident-row"
+                  data-search="lorem ipsum dolor sit amet"
+                >
+                  <div class="incident-symbol purple">~</div>
+                  <div class="incident-info">
+                    <strong>Lorem ipsum dolor sit amet</strong
+                    ><span>INC-0237 · Submitted Sep 28, 2026</span>
+                  </div>
+                  <span class="status-pill resolved">Resolved</span
+                  ><span class="row-arrow">›</span>
+                </article>
+                <article
+                  class="incident-row"
+                  data-search="consectetur adipiscing elit vivamus"
+                >
+                  <div class="incident-symbol blue">✓</div>
+                  <div class="incident-info">
+                    <strong>Consectetur adipiscing elit vivamus</strong
+                    ><span>INC-0229 · Submitted Sep 16, 2026</span>
+                  </div>
+                  <span class="status-pill resolved">Resolved</span
+                  ><span class="row-arrow">›</span>
+                </article>
+                <article
+                  class="incident-row"
+                  data-search="sed do eiusmod tempor incididunt"
+                >
+                  <div class="incident-symbol green">✓</div>
+                  <div class="incident-info">
+                    <strong>Sed do eiusmod tempor incididunt</strong
+                    ><span>INC-0218 · Submitted Aug 31, 2026</span>
+                  </div>
+                  <span class="status-pill closed">Closed</span
+                  ><span class="row-arrow">›</span>
+                </article>
+                <article
+                  class="incident-row"
+                  data-search="ut labore et dolore magna"
+                >
+                  <div class="incident-symbol purple">~</div>
+                  <div class="incident-info">
+                    <strong>Ut labore et dolore magna</strong
+                    ><span>INC-0206 · Submitted Aug 12, 2026</span>
+                  </div>
+                  <span class="status-pill resolved">Resolved</span
+                  ><span class="row-arrow">›</span>
+                </article>
+                <article
+                  class="incident-row"
+                  data-search="aliqua vestibulum consequat posuere"
+                >
+                  <div class="incident-symbol blue">✓</div>
+                  <div class="incident-info">
+                    <strong>Aliqua vestibulum consequat posuere</strong
+                    ><span>INC-0198 · Submitted Jul 29, 2026</span>
+                  </div>
+                  <span class="status-pill closed">Closed</span
+                  ><span class="row-arrow">›</span>
+                </article>
+                <article
+                  class="incident-row"
+                  data-search="enim ad minim veniam quis"
+                >
+                  <div class="incident-symbol green">✓</div>
+                  <div class="incident-info">
+                    <strong>Enim ad minim veniam quis</strong
+                    ><span>INC-0189 · Submitted Jul 18, 2026</span>
+                  </div>
+                  <span class="status-pill resolved">Resolved</span
+                  ><span class="row-arrow">›</span>
+                </article>
+                <article
+                  class="incident-row"
+                  data-search="nostrud exercitation ullamco laboris"
+                >
+                  <div class="incident-symbol purple">~</div>
+                  <div class="incident-info">
+                    <strong>Nostrud exercitation ullamco laboris</strong
+                    ><span>INC-0180 · Submitted Jul 05, 2026</span>
+                  </div>
+                  <span class="status-pill resolved">Resolved</span
+                  ><span class="row-arrow">›</span>
+                </article>
+                <article
+                  class="incident-row"
+                  data-search="nisi ut aliquip ex ea"
+                >
+                  <div class="incident-symbol blue">✓</div>
+                  <div class="incident-info">
+                    <strong>Nisi ut aliquip ex ea</strong
+                    ><span>INC-0172 · Submitted Jun 22, 2026</span>
+                  </div>
+                  <span class="status-pill closed">Closed</span
+                  ><span class="row-arrow">›</span>
+                </article>
+                <article
+                  class="incident-row"
+                  data-search="commodo consequat duis aute irure"
+                >
+                  <div class="incident-symbol green">✓</div>
+                  <div class="incident-info">
+                    <strong>Commodo consequat duis aute irure</strong
+                    ><span>INC-0164 · Submitted Jun 09, 2026</span>
+                  </div>
+                  <span class="status-pill resolved">Resolved</span
+                  ><span class="row-arrow">›</span>
+                </article>
+              </div>
+              <div class="empty-state" id="pastEmptyState">
+                No past incidents match your search.
+              </div>
+            </div>
+            <div class="panel incident-column">
+              <div class="panel-header">
+                <div>
+                  <h2>Active incidents</h2>
+                  <p>Reports currently being reviewed</p>
+                </div>
+                <div class="status-counts">
+                  <span class="count-badge new-count"
+                    ><strong id="newActiveCount">0</strong> new</span
+                  ><span class="count-badge active-count"
+                    ><strong id="progressActiveCount">0</strong> in
+                    progress</span
+                  >
+                </div>
+              </div>
+              <div class="toolbar">
+                <div class="search-box">
+                  <span>⌕</span
+                  ><input
+                    id="activeSearch"
+                    type="search"
+                    aria-label="Search active incidents"
+                    placeholder="Search active incidents"
+                  />
+                </div>
+                <select
+                  class="time-filter"
+                  id="activeStatusFilter"
+                  aria-label="Filter active incidents by status"
+                >
+                  <option value="all">All statuses</option>
+                  <option value="new">New</option>
+                  <option value="progress">In progress</option></select
+                ><select
+                  class="time-filter"
+                  id="activeFilter"
+                  aria-label="Filter active incidents by time"
+                >
+                  <option value="all">All time</option>
+                  <option value="day">Past day</option>
+                  <option value="week">Past week</option>
+                  <option value="month">Past month</option>
+                  <option value="six-months">Past 6 months</option>
+                  <option value="year">Past year</option>
+                  <option value="five-years">Past 5 years</option>
+                </select>
+              </div>
+              <div class="incident-list" id="activeIncidentList">
+                <article
+                  class="incident-row"
+                  data-search="phaesellus molestie lacus suspendisse"
+                >
+                  <div class="incident-symbol coral">!</div>
+                  <div class="incident-info">
+                    <strong>Phasellus molestie lacus suspendisse</strong
+                    ><span>INC-0248 · Submitted Oct 14, 2026</span>
+                  </div>
+                  <span class="row-arrow">›</span>
+                </article>
+                <article
+                  class="incident-row"
+                  data-search="mauris aliquam sem fringilla"
+                >
+                  <div class="incident-symbol amber">✦</div>
+                  <div class="incident-info">
+                    <strong>Mauris aliquam sem fringilla</strong
+                    ><span>INC-0244 · Submitted Oct 10, 2026</span>
+                  </div>
+                  <span class="status-pill progress">In progress</span
+                  ><span class="row-arrow">›</span>
+                </article>
+                <article
+                  class="incident-row"
+                  data-search="integer posuere erat ante venenatis"
+                >
+                  <div class="incident-symbol blue">↗</div>
+                  <div class="incident-info">
+                    <strong>Integer posuere erat ante venenatis</strong
+                    ><span>INC-0239 · Submitted Oct 03, 2026</span>
+                  </div>
+                  <span class="status-pill progress">In progress</span
+                  ><span class="row-arrow">›</span>
+                </article>
+                <article
+                  class="incident-row"
+                  data-search="faucibus porta lacus vestibulum"
+                >
+                  <div class="incident-symbol amber">✦</div>
+                  <div class="incident-info">
+                    <strong>Faucibus porta lacus vestibulum</strong
+                    ><span>INC-0235 · Submitted Sep 24, 2026</span>
+                  </div>
+                  <span class="status-pill progress">In progress</span
+                  ><span class="row-arrow">›</span>
+                </article>
+                <article
+                  class="incident-row"
+                  data-search="cras mattis consectetur purus"
+                >
+                  <div class="incident-symbol coral">!</div>
+                  <div class="incident-info">
+                    <strong>Cras mattis consectetur purus</strong
+                    ><span>INC-0228 · Submitted Sep 14, 2026</span>
+                  </div>
+                  <span class="status-pill progress">In progress</span
+                  ><span class="row-arrow">›</span>
+                </article>
+                <article
+                  class="incident-row"
+                  data-search="donec ullamcorper nulla non metus"
+                >
+                  <div class="incident-symbol coral">!</div>
+                  <div class="incident-info">
+                    <strong>Donec ullamcorper nulla non metus</strong
+                    ><span>INC-0221 · Submitted Sep 06, 2026</span>
+                  </div>
+                  <span class="status-pill awaiting">New</span
+                  ><span class="row-arrow">›</span>
+                </article>
+                <article
+                  class="incident-row"
+                  data-search="aenean lacinia bibendum nulla sed"
+                >
+                  <div class="incident-symbol amber">✦</div>
+                  <div class="incident-info">
+                    <strong>Aenean lacinia bibendum nulla sed</strong
+                    ><span>INC-0217 · Submitted Aug 28, 2026</span>
+                  </div>
+                  <span class="status-pill awaiting">New</span
+                  ><span class="row-arrow">›</span>
+                </article>
+                <article
+                  class="incident-row"
+                  data-search="nulla vitae elit libero pharetra"
+                >
+                  <div class="incident-symbol blue">↗</div>
+                  <div class="incident-info">
+                    <strong>Nulla vitae elit libero pharetra</strong
+                    ><span>INC-0211 · Submitted Aug 19, 2026</span>
+                  </div>
+                  <span class="status-pill progress">In progress</span
+                  ><span class="row-arrow">›</span>
+                </article>
+                <article
+                  class="incident-row"
+                  data-search="curabitur blandit tempus porttitor"
+                >
+                  <div class="incident-symbol amber">✦</div>
+                  <div class="incident-info">
+                    <strong>Curabitur blandit tempus porttitor</strong
+                    ><span>INC-0203 · Submitted Aug 08, 2026</span>
+                  </div>
+                  <span class="status-pill progress">In progress</span
+                  ><span class="row-arrow">›</span>
+                </article>
+                <article
+                  class="incident-row"
+                  data-search="vestibulum id ligula porta felis"
+                >
+                  <div class="incident-symbol blue">↗</div>
+                  <div class="incident-info">
+                    <strong>Vestibulum id ligula porta felis</strong
+                    ><span>INC-0195 · Submitted Jul 25, 2026</span>
+                  </div>
+                  <span class="status-pill awaiting">New</span
+                  ><span class="row-arrow">›</span>
+                </article>
+              </div>
+              <div class="empty-state" id="activeEmptyState">
+                No active incidents match your search.
+              </div>
+            </div>
+          </section>
         </div>
-      </header>
+      </main>
+    </div>
 
-      <div class="content-wrap">
-        <section class="hero-row">
-          <div>
-            <p class="eyebrow" id="currentDate">TODAY</p>
-            <h1>Good morning, <span data-user-first-name></span></h1>
-            <p class="hero-copy">Keep your workplace safe by reporting what you see.</p>
-          </div>
-          <a class="primary-button" id="newReportButton" href="repIncidentSubmission.html"><span>+</span> Report an incident</a>
-        </section>
-
-        <section class="stats-grid" aria-label="Incident overview">
-          <article class="stat-card accent-green"><div class="stat-icon"></div><div class="stat-content"><span id="resolvedLabel">Resolved this year</span><strong id="resolvedCount">12</strong></div><select class="time-filter stat-filter" id="resolvedFilter" aria-label="Filter resolved incidents by time"><option value="all">All time</option><option value="day">Past day</option><option value="week">Past week</option><option value="month">Past month</option><option value="six-months">Past 6 months</option><option value="year">Past year</option><option value="five-years">Past 5 years</option></select></article>
-          <article class="stat-card accent-coral"><div class="stat-icon"></div><div><span>Open incidents</span><strong>3</strong></div></article>
-        </section>
-
-        <section class="dashboard-grid" id="incidents">
-          <div class="panel incident-column">
-            <div class="panel-header"><div><h2>Past incidents</h2><p>Your resolved and closed reports</p></div><div class="status-counts"><span class="count-badge past-count"><strong id="resolvedPastCount">0</strong> resolved</span><span class="count-badge closed-count"><strong id="closedPastCount">0</strong> closed</span></div></div>
-            <div class="toolbar"><div class="search-box"><span>⌕</span><input id="pastSearch" type="search" aria-label="Search past incidents" placeholder="Search past incidents" /></div><select class="time-filter" id="pastStatusFilter" aria-label="Filter past incidents by status"><option value="all">All statuses</option><option value="resolved">Resolved</option><option value="closed">Closed</option></select><select class="time-filter" id="pastFilter" aria-label="Filter past incidents by time"><option value="all">All time</option><option value="day">Past day</option><option value="week">Past week</option><option value="month">Past month</option><option value="six-months">Past 6 months</option><option value="year">Past year</option><option value="five-years">Past 5 years</option></select></div>
-            <div class="incident-list" id="pastIncidentList">
-              <article class="incident-row" data-search="lorem ipsum dolor sit amet"><div class="incident-symbol purple">~</div><div class="incident-info"><strong>Lorem ipsum dolor sit amet</strong><span>INC-0237 · Submitted Sep 28, 2026</span></div><span class="status-pill resolved">Resolved</span><span class="row-arrow">›</span></article>
-              <article class="incident-row" data-search="consectetur adipiscing elit vivamus"><div class="incident-symbol blue">✓</div><div class="incident-info"><strong>Consectetur adipiscing elit vivamus</strong><span>INC-0229 · Submitted Sep 16, 2026</span></div><span class="status-pill resolved">Resolved</span><span class="row-arrow">›</span></article>
-              <article class="incident-row" data-search="sed do eiusmod tempor incididunt"><div class="incident-symbol green">✓</div><div class="incident-info"><strong>Sed do eiusmod tempor incididunt</strong><span>INC-0218 · Submitted Aug 31, 2026</span></div><span class="status-pill closed">Closed</span><span class="row-arrow">›</span></article>
-              <article class="incident-row" data-search="ut labore et dolore magna"><div class="incident-symbol purple">~</div><div class="incident-info"><strong>Ut labore et dolore magna</strong><span>INC-0206 · Submitted Aug 12, 2026</span></div><span class="status-pill resolved">Resolved</span><span class="row-arrow">›</span></article>
-              <article class="incident-row" data-search="aliqua vestibulum consequat posuere"><div class="incident-symbol blue">✓</div><div class="incident-info"><strong>Aliqua vestibulum consequat posuere</strong><span>INC-0198 · Submitted Jul 29, 2026</span></div><span class="status-pill closed">Closed</span><span class="row-arrow">›</span></article>
-              <article class="incident-row" data-search="enim ad minim veniam quis"><div class="incident-symbol green">✓</div><div class="incident-info"><strong>Enim ad minim veniam quis</strong><span>INC-0189 · Submitted Jul 18, 2026</span></div><span class="status-pill resolved">Resolved</span><span class="row-arrow">›</span></article>
-              <article class="incident-row" data-search="nostrud exercitation ullamco laboris"><div class="incident-symbol purple">~</div><div class="incident-info"><strong>Nostrud exercitation ullamco laboris</strong><span>INC-0180 · Submitted Jul 05, 2026</span></div><span class="status-pill resolved">Resolved</span><span class="row-arrow">›</span></article>
-              <article class="incident-row" data-search="nisi ut aliquip ex ea"><div class="incident-symbol blue">✓</div><div class="incident-info"><strong>Nisi ut aliquip ex ea</strong><span>INC-0172 · Submitted Jun 22, 2026</span></div><span class="status-pill closed">Closed</span><span class="row-arrow">›</span></article>
-              <article class="incident-row" data-search="commodo consequat duis aute irure"><div class="incident-symbol green">✓</div><div class="incident-info"><strong>Commodo consequat duis aute irure</strong><span>INC-0164 · Submitted Jun 09, 2026</span></div><span class="status-pill resolved">Resolved</span><span class="row-arrow">›</span></article>
-            </div>
-            <div class="empty-state" id="pastEmptyState">No past incidents match your search.</div>
-          </div>
-          <div class="panel incident-column">
-            <div class="panel-header"><div><h2>Active incidents</h2><p>Reports currently being reviewed</p></div><div class="status-counts"><span class="count-badge new-count"><strong id="newActiveCount">0</strong> new</span><span class="count-badge active-count"><strong id="progressActiveCount">0</strong> in progress</span></div></div>
-            <div class="toolbar"><div class="search-box"><span>⌕</span><input id="activeSearch" type="search" aria-label="Search active incidents" placeholder="Search active incidents" /></div><select class="time-filter" id="activeStatusFilter" aria-label="Filter active incidents by status"><option value="all">All statuses</option><option value="new">New</option><option value="progress">In progress</option></select><select class="time-filter" id="activeFilter" aria-label="Filter active incidents by time"><option value="all">All time</option><option value="day">Past day</option><option value="week">Past week</option><option value="month">Past month</option><option value="six-months">Past 6 months</option><option value="year">Past year</option><option value="five-years">Past 5 years</option></select></div>
-            <div class="incident-list" id="activeIncidentList">
-              <article class="incident-row" data-search="phaesellus molestie lacus suspendisse"><div class="incident-symbol coral">!</div><div class="incident-info"><strong>Phasellus molestie lacus suspendisse</strong><span>INC-0248 · Submitted Oct 14, 2026</span></div><span class="row-arrow">›</span></article>
-              <article class="incident-row" data-search="mauris aliquam sem fringilla"><div class="incident-symbol amber">✦</div><div class="incident-info"><strong>Mauris aliquam sem fringilla</strong><span>INC-0244 · Submitted Oct 10, 2026</span></div><span class="status-pill progress">In progress</span><span class="row-arrow">›</span></article>
-              <article class="incident-row" data-search="integer posuere erat ante venenatis"><div class="incident-symbol blue">↗</div><div class="incident-info"><strong>Integer posuere erat ante venenatis</strong><span>INC-0239 · Submitted Oct 03, 2026</span></div><span class="status-pill progress">In progress</span><span class="row-arrow">›</span></article>
-              <article class="incident-row" data-search="faucibus porta lacus vestibulum"><div class="incident-symbol amber">✦</div><div class="incident-info"><strong>Faucibus porta lacus vestibulum</strong><span>INC-0235 · Submitted Sep 24, 2026</span></div><span class="status-pill progress">In progress</span><span class="row-arrow">›</span></article>
-              <article class="incident-row" data-search="cras mattis consectetur purus"><div class="incident-symbol coral">!</div><div class="incident-info"><strong>Cras mattis consectetur purus</strong><span>INC-0228 · Submitted Sep 14, 2026</span></div><span class="status-pill progress">In progress</span><span class="row-arrow">›</span></article>
-              <article class="incident-row" data-search="donec ullamcorper nulla non metus"><div class="incident-symbol coral">!</div><div class="incident-info"><strong>Donec ullamcorper nulla non metus</strong><span>INC-0221 · Submitted Sep 06, 2026</span></div><span class="status-pill awaiting">New</span><span class="row-arrow">›</span></article>
-              <article class="incident-row" data-search="aenean lacinia bibendum nulla sed"><div class="incident-symbol amber">✦</div><div class="incident-info"><strong>Aenean lacinia bibendum nulla sed</strong><span>INC-0217 · Submitted Aug 28, 2026</span></div><span class="status-pill awaiting">New</span><span class="row-arrow">›</span></article>
-              <article class="incident-row" data-search="nulla vitae elit libero pharetra"><div class="incident-symbol blue">↗</div><div class="incident-info"><strong>Nulla vitae elit libero pharetra</strong><span>INC-0211 · Submitted Aug 19, 2026</span></div><span class="status-pill progress">In progress</span><span class="row-arrow">›</span></article>
-              <article class="incident-row" data-search="curabitur blandit tempus porttitor"><div class="incident-symbol amber">✦</div><div class="incident-info"><strong>Curabitur blandit tempus porttitor</strong><span>INC-0203 · Submitted Aug 08, 2026</span></div><span class="status-pill progress">In progress</span><span class="row-arrow">›</span></article>
-              <article class="incident-row" data-search="vestibulum id ligula porta felis"><div class="incident-symbol blue">↗</div><div class="incident-info"><strong>Vestibulum id ligula porta felis</strong><span>INC-0195 · Submitted Jul 25, 2026</span></div><span class="status-pill awaiting">New</span><span class="row-arrow">›</span></article>
-            </div>
-            <div class="empty-state" id="activeEmptyState">No active incidents match your search.</div>
-          </div>
-        </section>
-      </div>
-    </main>
-  </div>
-
-  <script src="../authHelpers.js"></script>
-  <script src="repDashboard.js"></script>
-</body>
+    <script src="../authHelpers.js"></script>
+    <script src="repDashboard.js"></script>
+  </body>
 </html>

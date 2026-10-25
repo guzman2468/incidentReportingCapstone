@@ -12,6 +12,7 @@ ROLE_WORKSPACES = {
     "/reporter/": "REPORTER",
     "/assigner/": "ASSIGNER",
     "/aptm/": "AID_PROVIDER_TEAM_MEMBER",
+    "/admin/": "ADMIN",
 }
 
 

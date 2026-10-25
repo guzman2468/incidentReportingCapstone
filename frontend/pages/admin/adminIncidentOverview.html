@@ -1,0 +1,207 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin Incident Overview</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="adminIncidentOverview.css" />
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+      crossorigin="anonymous"
+    />
+  </head>
+  <body>
+    <main class="overview-page">
+      <header class="submission-topbar">
+        <a class="back-link" href="adminDashboard.html"
+          >← <span>Dashboard</span></a
+        >
+        <div class="user-menu">
+          <button
+            type="button"
+            class="top-avatar"
+            id="userButton"
+            data-user-initials
+            aria-label="Open user menu"
+            aria-expanded="false"
+          ></button>
+          <div class="user-dropdown" id="userDropdown" aria-hidden="true">
+            <div class="user-summary">
+              <strong data-user-name></strong><span>Administrator</span>
+            </div>
+            <button type="button" id="changePasswordButton">
+              <span>Change password</span></button
+            ><button type="button" id="logoutButton">
+              ↪ <span>Log out</span>
+            </button>
+          </div>
+        </div>
+      </header>
+      <section class="submission-wrap overview-wrap">
+        <div class="overview-heading">
+          <div>
+            <p class="eyebrow">ADMIN · INCIDENT RECORD</p>
+            <h1>Incident overview</h1>
+          </div>
+        </div>
+        <div class="overview-layout">
+          <section class="incident-form">
+            <div class="form-header">
+              <div>
+                <div class="incident-meta">
+                  <span
+                    ><b>Submitted</b
+                    ><strong id="incidentMeta">Sep 28, 2026</strong></span
+                  ><span
+                    ><b>Resolved date</b
+                    ><strong id="resolvedDate">Not resolved</strong></span
+                  >
+                </div>
+              </div>
+              <span class="status-badge" id="statusBadge">Open</span>
+            </div>
+            <div class="form-body">
+              <div class="form-fields overview-fields">
+                <div class="field">
+                  <div class="field-label">Title</div>
+                  <div class="readonly-field" id="titleField">
+                    Lorem ipsum dolor sit amet
+                  </div>
+                </div>
+                <div class="field">
+                  <div class="field-label">Severity</div>
+                  <div class="readonly-field severity-high">HIGH</div>
+                </div>
+                <div class="field">
+                  <div class="field-label">Description</div>
+                  <div
+                    class="readonly-field description-field"
+                    id="descriptionField"
+                  >
+                    Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+                    Vivamus sagittis lacus vel augue laoreet rutrum faucibus
+                    dolor auctor.
+                  </div>
+                </div>
+                <div class="field assignment-field">
+                  <label class="field-label" for="aidProvider">Assign to:</label
+                  ><select id="aidProvider">
+                    <option value="">Select an aid provider</option>
+                    <option>Community First Aid</option>
+                    <option>Lakeside Emergency Response</option>
+                    <option>Northside Medical Support</option>
+                    <option>Rapid Relief Services</option>
+                  </select>
+                </div>
+              </div>
+              <div class="location-result">
+                <span class="coordinates-label">Coordinates</span
+                ><span class="coordinates" id="overviewCoordinates"
+                  >41.878100° N, 87.629800° W</span
+                >
+                <div class="map-card">
+                  <div
+                    id="incidentMap"
+                    role="application"
+                    aria-label="Map showing this incident and nearby incidents"
+                  ></div>
+                </div>
+                <p class="map-caption">
+                  Teal marks the selected incident; coral marks nearby reports.
+                  Map data © OpenStreetMap contributors.
+                </p>
+              </div>
+            </div>
+            <section class="nearby-card">
+              <div class="section-heading">
+                <div>
+                  <h2>Nearby incidents</h2>
+                  <p>Disaster reports within the selected radius</p>
+                </div>
+              </div>
+              <label for="radiusSelect">Search radius</label
+              ><select id="radiusSelect">
+                <option value="1">Within 1 mile</option>
+                <option value="5" selected>Within 5 miles</option>
+                <option value="10">Within 10 miles</option>
+                <option value="25">Within 25 miles</option>
+              </select>
+              <div id="nearbyList" class="nearby-list"></div>
+              <p id="nearbyEmpty" class="empty-state">
+                No other incidents found within this radius.
+              </p>
+            </section>
+            <div class="form-footer">
+              <div class="form-actions">
+                <a class="secondary-button" href="adminDashboard.html"
+                  >Back to dashboard</a
+                ><button
+                  type="button"
+                  class="primary-button"
+                  id="generateReportButton"
+                >
+                  Generate report
+                </button>
+              </div>
+            </div>
+          </section>
+          <aside class="overview-notes">
+            <div class="notes-heading">
+              <div>
+                <strong>Notes</strong
+                ><small
+                  >Information added during the timeline of the incident</small
+                >
+              </div>
+            </div>
+            <div class="notes-list" id="notesList">
+              <p class="notes-empty" style="display: none">
+                No notes have been added to this incident.
+              </p>
+              <div class="note-item other">
+                <strong>Reviewer Name <small>Today, 9:14 AM</small></strong>
+                <p>Inspection requested for the reported area.</p>
+              </div>
+              <div class="note-item other">
+                <strong>Safety Team <small>Today, 10:02 AM</small></strong>
+                <p>Maintenance has been notified and is reviewing the issue.</p>
+              </div>
+            </div>
+            <div class="note-composer">
+              <label class="visually-hidden" for="noteInput">Add a note</label
+              ><textarea
+                id="noteInput"
+                rows="5"
+                placeholder="Write a note..."
+              ></textarea
+              ><button type="button" class="outline-button" id="addNoteButton">
+                + Add note
+              </button>
+            </div>
+          </aside>
+        </div>
+      </section>
+    </main>
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.2/jspdf.umd.min.js"
+      integrity="sha384-OLBgp1GsljhM2TJ+sbHjaiH9txEUvgdDTAzHv2P24donTt6/529l+9Ua0vFImLlb"
+      crossorigin="anonymous"
+    ></script>
+    <script
+      src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+      integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+      crossorigin="anonymous"
+    ></script>
+    <script src="../authHelpers.js"></script>
+    <script src="../assigner/assignerDemoData.js"></script>
+    <script src="adminIncidentOverview.js"></script>
+  </body>
+</html>

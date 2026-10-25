@@ -12,14 +12,15 @@ UserRole = Literal[
     "AID_PROVIDER_TEAM_MEMBER",
 ]
 
+GeneralUserRole = Literal["ADMIN", "REPORTER", "ASSIGNER"]
+
 
 class UserCreate(BaseModel):
-    first_name: str = Field(min_length=1, max_length=50)
-    last_name: str = Field(min_length=1, max_length=50)
+    first_name: str = Field(min_length=0, max_length=50)
+    last_name: str = Field(min_length=0, max_length=50)
     email: str = Field(min_length=3, max_length=50, pattern=r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
     password: str = Field(min_length=8, max_length=50)
-    role: UserRole
-    aid_provider_id: UUID | None = None
+    role: GeneralUserRole
 
 
 class UserLogin(BaseModel):

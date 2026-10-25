@@ -1,182 +1,242 @@
-
 <!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Assigner Incident Overview</title>
-
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
-    crossorigin="anonymous" />
-
-  <link rel="stylesheet" href="assignIncidentOverview.css" />
-</head>
-<body>
-  <main class="assigner-page">
-    <header class="assigner-topbar">
-      <a class="back-link" href="assignDashboard.html">← Dashboard</a>
-      <div class="user-menu">
-        <button id="userButton" class="top-avatar" type="button"
-          aria-label="Open user menu" data-user-initials aria-expanded="false"></button>
-        <div id="userDropdown" class="user-dropdown" aria-hidden="true">
-          <div class="user-summary">
-            <strong data-user-name></strong>
-            <span>Assigner</span>
-          </div>
-          <button type="button" id="changePasswordButton"><span>Change password</span></button>
-          <button type="button" id="logoutButton">↪ <span>Log out</span></button>
-        </div>
-      </div>
-    </header>
-
-    <section class="overview-wrap">
-      <div class="overview-heading">
-        <div>
-          <p class="eyebrow">ASSIGNER · INCIDENT RECORD</p>
-          <h1>Incident overview</h1>
-          <p class="hero-copy">Review the disaster report, nearby incidents, and available county responders.</p>
-        </div>
-        <span class="status-badge" id="statusBadge">New</span>
-      </div>
-
-      <div class="overview-layout">
-        <section class="incident-card">
-          <div class="card-heading">
-            <div>
-              <span class="incident-number" id="incidentNumber">INC-0000</span>
-              <h2 id="incidentTitle">Incident title</h2>
-              <p class="incident-type" id="incidentType">Incident type</p>
-              <p id="submittedDate">Submitted date</p>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Assigner Incident Overview</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="assignIncidentOverview.css?v=standalone-admin-layout-2"
+    />
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+      crossorigin="anonymous"
+    />
+  </head>
+  <body>
+    <main class="overview-page assigner-overview">
+      <header class="submission-topbar">
+        <a class="back-link" href="assignDashboard.html"
+          >← <span>Dashboard</span></a
+        >
+        <div class="application-title">Incident Management Application</div>
+        <div class="user-menu">
+          <button
+            type="button"
+            class="top-avatar"
+            id="userButton"
+            data-user-initials
+            aria-label="Open user menu"
+            aria-expanded="false"
+          ></button>
+          <div class="user-dropdown" id="userDropdown" aria-hidden="true">
+            <div class="user-summary">
+              <strong data-user-name></strong><span>Assigner</span>
             </div>
-            <span class="severity-badge" id="severityBadge">HIGH</span>
-          </div>
-
-          <div class="incident-details">
-            <div class="detail-field">
-              <span>Description</span>
-              <p id="incidentDescription">Incident description.</p>
-            </div>
-
-            <div class="detail-grid">
-              <div class="detail-field">
-                <span>Current responder</span>
-                <strong id="currentProvider">Not assigned</strong>
-              </div>
-              <div class="detail-field">
-                <span>Incident county</span>
-                <strong id="incidentCounty">Not available</strong>
-              </div>
-              <div class="detail-field">
-                <span>Location coordinates</span>
-                <strong id="incidentCoordinates">Not available</strong>
-              </div>
-            </div>
-          </div>
-
-          <div class="map-section">
-            <div class="section-heading">
-              <div>
-                <h3>Incident location</h3>
-                <p>Selected incident and nearby incidents within the chosen radius</p>
-              </div>
-            </div>
-            <div class="map-card">
-              <div id="incidentMap" role="application"
-                aria-label="Map showing this incident and nearby incidents"></div>
-            </div>
-            <p class="map-caption">
-              Teal marks the selected incident; coral marks nearby reports. Map data © OpenStreetMap contributors.
-            </p>
-          </div>
-        </section>
-
-        <aside class="assignment-column">
-          <section class="assignment-card">
-            <div class="section-heading">
-              <div>
-                <p class="eyebrow">NEXT STEP</p>
-                <h2>Assign a county responder</h2>
-                <p>Available county responders are ordered by distance from the incident.</p>
-              </div>
-            </div>
-
-            <label for="providerSelect">Available responder</label>
-            <select id="providerSelect" required>
-              <option value="">Finding available responders...</option>
-            </select>
-            <output class="responder-recommendation" id="closestProviderHint"></output>
-
-            <div class="current-assignment" id="assignmentSummary">
-              No provider has been assigned yet.
-            </div>
-
-            <button type="button" class="primary-button" id="assignButton">
-              Assign responder <span>→</span>
+            <button type="button" id="changePasswordButton">
+              <span>Change password</span>
             </button>
+            <button type="button" id="logoutButton">
+              ↪ <span>Log out</span>
+            </button>
+          </div>
+        </div>
+      </header>
 
-            <p class="assignment-help">
-              Responder availability is simulated. Confirm the assignment in the next step; demo changes reset when you leave or reload.
-            </p>
-          </section>
+      <section class="submission-wrap overview-wrap">
+        <div class="overview-heading">
+          <div>
+            <p class="eyebrow">ASSIGNER · INCIDENT RECORD</p>
+            <h1>Incident overview</h1>
+          </div>
+        </div>
+        <div class="overview-layout">
+          <section class="incident-form">
+            <div class="form-header">
+              <div class="incident-meta">
+                <span class="visually-hidden" id="incidentNumber"
+                  >INC-0000</span
+                >
+                <span class="visually-hidden" id="incidentType"
+                  >Incident type</span
+                >
+                <span class="visually-hidden" id="currentProvider"
+                  >Not assigned</span
+                >
+                <span class="visually-hidden" id="incidentCounty"
+                  >Not available</span
+                >
+                <span
+                  ><b>Submitted</b
+                  ><strong id="submittedDate">Submitted date</strong></span
+                >
+                <span
+                  ><b>Resolved date</b
+                  ><strong id="resolvedDate">Not resolved</strong></span
+                >
+              </div>
+              <span class="status-badge" id="statusBadge">New</span>
+            </div>
 
-          <section class="nearby-card">
-            <div class="section-heading">
-              <div>
-                <h2>Nearby incidents</h2>
-                <p>Disaster reports within the selected radius</p>
+            <div class="form-body">
+              <div class="form-fields overview-fields">
+                <div class="field">
+                  <div class="field-label">Title</div>
+                  <div class="readonly-field" id="incidentTitle">
+                    Incident title
+                  </div>
+                </div>
+                <div class="field">
+                  <div class="field-label">Severity</div>
+                  <div class="readonly-field severity-high" id="severityValue">
+                    HIGH
+                  </div>
+                </div>
+                <div class="field">
+                  <div class="field-label">Description</div>
+                  <div
+                    class="readonly-field description-field"
+                    id="incidentDescription"
+                  >
+                    Incident description.
+                  </div>
+                </div>
+                <div class="field assignment-field">
+                  <label class="field-label" for="providerSelect"
+                    >Assign to:</label
+                  >
+                  <select id="providerSelect" required>
+                    <option value="">Select a responder</option>
+                  </select>
+                  <span
+                    class="field-error"
+                    id="providerSelectError"
+                    role="alert"
+                  ></span>
+                  <button
+                    type="button"
+                    class="primary-button"
+                    id="assignButton"
+                  >
+                    Assign responder <span>→</span>
+                  </button>
+                </div>
+              </div>
+
+              <div class="location-result">
+                <span class="coordinates-label">Coordinates</span
+                ><span class="coordinates" id="incidentCoordinates"
+                  >Not available</span
+                >
+                <div class="map-card">
+                  <div
+                    id="incidentMap"
+                    role="application"
+                    aria-label="Map showing this incident and nearby incidents"
+                  ></div>
+                </div>
+                <p class="map-caption">
+                  Teal marks the selected incident; coral marks nearby reports.
+                  Map data © OpenStreetMap contributors.
+                </p>
               </div>
             </div>
 
-            <label for="radiusSelect">Search radius</label>
-            <select id="radiusSelect">
-              <option value="1">Within 1 mile</option>
-              <option value="5" selected>Within 5 miles</option>
-              <option value="10">Within 10 miles</option>
-              <option value="25">Within 25 miles</option>
-            </select>
+            <section class="nearby-card">
+              <div class="section-heading">
+                <div>
+                  <h2>Nearby incidents</h2>
+                  <p>Disaster reports within the selected radius</p>
+                </div>
+              </div>
+              <label for="radiusSelect">Search radius</label>
+              <select id="radiusSelect">
+                <option value="1">Within 1 mile</option>
+                <option value="5" selected>Within 5 miles</option>
+                <option value="10">Within 10 miles</option>
+                <option value="25">Within 25 miles</option>
+              </select>
+              <div id="nearbyList" class="nearby-list"></div>
+              <p id="nearbyEmpty" class="empty-state">
+                No other incidents found within this radius.
+              </p>
+            </section>
 
-            <div id="nearbyList" class="nearby-list"></div>
-            <p id="nearbyEmpty" class="empty-state">
-              No other incidents found within this radius.
-            </p>
+            <div class="form-footer">
+              <div class="form-actions">
+                <a class="secondary-button" href="assignDashboard.html"
+                  >Back to dashboard</a
+                >
+              </div>
+            </div>
           </section>
-        </aside>
-      </div>
 
-      <div class="bottom-actions">
-        <a class="secondary-button" href="assignDashboard.html">
-          ← Back to dashboard
-        </a>
-      </div>
-    </section>
-  </main>
+          <aside class="overview-notes">
+            <div class="notes-heading">
+              <div>
+                <strong>Notes</strong
+                ><small
+                  >Information added during the timeline of the incident</small
+                >
+              </div>
+            </div>
+            <div class="notes-list" id="notesList">
+              <div class="note-item other">
+                <strong>Reviewer Name <small>Today, 9:14 AM</small></strong>
+                <p>Inspection requested for the reported area.</p>
+              </div>
+              <div class="note-item other">
+                <strong>Safety Team <small>Today, 10:02 AM</small></strong>
+                <p>Maintenance has been notified and is reviewing the issue.</p>
+              </div>
+            </div>
+            <div class="note-composer">
+              <label class="visually-hidden" for="noteInput">Add a note</label
+              ><textarea
+                id="noteInput"
+                rows="5"
+                placeholder="Write a note..."
+              ></textarea
+              ><button type="button" class="outline-button" id="addNoteButton">
+                + Add note
+              </button>
+            </div>
+          </aside>
+        </div>
+      </section>
+    </main>
 
-  <div class="confirm-backdrop" id="confirmBackdrop" hidden>
-    <dialog open class="confirm-dialog"
-      aria-labelledby="confirmTitle">
-      <div class="confirm-icon">?</div>
-      <h2 id="confirmTitle">Confirm assignment</h2>
-      <p id="confirmMessage">Assign this incident to the selected provider?</p>
-      <div class="confirm-actions">
-        <button type="button" class="secondary-button" id="cancelAssign">
-          Cancel
-        </button>
-        <button type="button" class="primary-button" id="confirmAssign">
-          Confirm assignment
-        </button>
-      </div>
-    </dialog>
-  </div>
-
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
-    crossorigin="anonymous"></script>
-  <script src="../authHelpers.js"></script>
-  <script src="assignerDemoData.js"></script>
-  <script src="assignIncidentOverview.js"></script>
-</body>
+    <div class="confirm-backdrop" id="confirmBackdrop" hidden>
+      <dialog open class="confirm-dialog" aria-labelledby="confirmTitle">
+        <div class="confirm-icon">?</div>
+        <h2 id="confirmTitle">Confirm assignment</h2>
+        <p id="confirmMessage">
+          Assign this incident to the selected provider?
+        </p>
+        <div class="confirm-actions">
+          <button type="button" class="secondary-button" id="cancelAssign">
+            Cancel</button
+          ><button type="button" class="primary-button" id="confirmAssign">
+            Confirm assignment
+          </button>
+        </div>
+      </dialog>
+    </div>
+    <script
+      src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+      integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+      crossorigin="anonymous"
+    ></script>
+    <script src="../authHelpers.js"></script>
+    <script src="assignerDemoData.js"></script>
+    <script src="assignIncidentOverview.js?v=assigner-admin-layout-2"></script>
+  </body>
 </html>

@@ -7,7 +7,7 @@
   --teal: #087f83;
   --teal-dark: #07666c;
   --coral: #ee806d;
-  --shadow: 0 12px 35px rgba(29,64,67,.06);
+  --shadow: 0 12px 35px rgba(29, 64, 67, 0.06);
 }
 
 * {
@@ -18,15 +18,18 @@ body {
   margin: 0;
   background: var(--canvas);
   color: var(--ink);
-  font-family: 'DM Sans',sans-serif;
+  font-family: "DM Sans", sans-serif;
   font-size: 14px;
 }
 
-button,input,textarea {
+button,
+input,
+textarea {
   font: inherit;
 }
 
-button,a {
+button,
+a {
   cursor: pointer;
 }
 
@@ -127,7 +130,9 @@ button,a {
 }
 
 .hero-row h1 {
-  font: 600 34px 'Space Grotesk', sans-serif;
+  font:
+    600 34px "Space Grotesk",
+    sans-serif;
   letter-spacing: -1.5px;
   margin: 0 0 9px;
   color: #18323a;
@@ -150,7 +155,7 @@ button,a {
   background: var(--teal);
   border: 0;
   border-radius: 9px;
-  box-shadow: 0 8px 18px rgba(8,127,131,.18);
+  box-shadow: 0 8px 18px rgba(8, 127, 131, 0.18);
   color: #fff;
   padding: 13px 18px;
   font-weight: 700;
@@ -163,7 +168,9 @@ button,a {
 
 @media (prefers-reduced-motion: no-preference) {
   .primary-button {
-    transition: background-color .2s ease, transform .2s ease;
+    transition:
+      background-color 0.2s ease,
+      transform 0.2s ease;
   }
 
   .primary-button:hover {
@@ -179,7 +186,7 @@ button,a {
 
 .stats-grid {
   display: grid;
-  grid-template-columns: minmax(0,1fr) minmax(0,1fr);
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: 14px;
   margin-bottom: 25px;
 }
@@ -248,7 +255,9 @@ button,a {
 }
 
 .stat-card strong {
-  font: 600 27px 'Space Grotesk', sans-serif;
+  font:
+    600 27px "Space Grotesk",
+    sans-serif;
   display: block;
   line-height: 1;
   margin-bottom: 7px;
@@ -265,7 +274,7 @@ button,a {
 
 .dashboard-grid {
   display: grid;
-  grid-template-columns: minmax(0,1fr) minmax(0,1fr);
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: 14px;
   align-items: start;
 }
@@ -285,7 +294,9 @@ button,a {
 }
 
 .panel-header h2 {
-  font: 600 17px 'Space Grotesk', sans-serif;
+  font:
+    600 17px "Space Grotesk",
+    sans-serif;
   margin: 0 0 6px;
 }
 
@@ -363,7 +374,7 @@ button,a {
   gap: 13px;
   min-height: 76px;
   cursor: pointer;
-  transition: background-color .15s ease;
+  transition: background-color 0.15s ease;
 }
 
 .incident-row:hover {
@@ -508,7 +519,8 @@ button,a {
   font-size: 17px;
 }
 
-.action-card strong,.action-card small {
+.action-card strong,
+.action-card small {
   display: block;
 }
 
@@ -522,7 +534,7 @@ button,a {
   margin-top: 4px;
 }
 
-.action-card>b {
+.action-card > b {
   color: #94a2a3;
   font-size: 18px;
   margin-left: auto;
@@ -555,8 +567,7 @@ button,a {
   margin: 5px 0 0;
 }
 
-@media(max-width:900px) {
-
+@media (max-width: 900px) {
   .topbar {
     padding: 0 2%;
   }
@@ -578,8 +589,7 @@ button,a {
   }
 }
 
-@media(max-width:680px) {
-
+@media (max-width: 680px) {
   .topbar {
     gap: 12px;
   }
@@ -618,7 +628,6 @@ button,a {
   .incident-row {
     gap: 9px;
   }
-
 }
 
 /* Reporter dashboard: side-by-side active and past incident queues */
@@ -659,11 +668,15 @@ button,a {
   outline-offset: -3px;
 }
 
-.stat-icon,.incident-symbol,.row-arrow,.wave {
+.stat-icon,
+.incident-symbol,
+.row-arrow,
+.wave {
   display: none;
 }
 
-.incident-column .status-pill,.incident-column .row-arrow {
+.incident-column .status-pill,
+.incident-column .row-arrow {
   flex-shrink: 0;
 }
 
@@ -712,7 +725,7 @@ button,a {
 
 .support-row {
   display: grid;
-  grid-template-columns: minmax(0,1fr) minmax(0,1fr);
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: 21px;
   margin-top: 21px;
 }
@@ -736,9 +749,9 @@ button,a {
   align-items: flex-start;
 }
 
-@media(max-width:900px) {
-
-  .dashboard-grid,.support-row {
+@media (max-width: 900px) {
+  .dashboard-grid,
+  .support-row {
     grid-template-columns: 1fr;
   }
 
@@ -747,8 +760,7 @@ button,a {
   }
 }
 
-@media(max-width:680px) {
-
+@media (max-width: 680px) {
   .content-wrap {
     padding-left: 4%;
     padding-right: 4%;
@@ -794,7 +806,7 @@ button,a {
   background: #fff;
   border: 1px solid var(--line);
   border-radius: 9px;
-  box-shadow: 0 10px 25px rgba(29,64,67,.12);
+  box-shadow: 0 10px 25px rgba(29, 64, 67, 0.12);
   display: none;
   padding: 6px;
   position: absolute;
@@ -846,8 +858,7 @@ button,a {
   color: var(--teal);
 }
 
-@media(max-width:680px) {
-
+@media (max-width: 680px) {
   .topbar {
     padding-left: 4%;
     padding-right: 4%;
@@ -859,9 +870,11 @@ button,a {
 
 .application-title {
   color: var(--ink);
-  font: 700 17px 'Space Grotesk', sans-serif;
+  font:
+    700 17px "Space Grotesk",
+    sans-serif;
   left: 50%;
-  letter-spacing: -.5px;
+  letter-spacing: -0.5px;
   pointer-events: none;
   position: absolute;
   text-align: center;

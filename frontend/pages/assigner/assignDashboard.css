@@ -1,4 +1,4 @@
-@import url('../reporter/repDashboard.css');
+@import url("../reporter/repDashboard.css");
 
 .assigner-page {
   min-height: 100vh;
@@ -17,8 +17,10 @@
 .assigner-brand {
   color: var(--ink);
   text-decoration: none;
-  font: 700 19px 'Space Grotesk', sans-serif;
-  letter-spacing: -.7px;
+  font:
+    700 19px "Space Grotesk",
+    sans-serif;
+  letter-spacing: -0.7px;
 }
 
 .assigner-brand > span:last-child {
@@ -40,9 +42,15 @@
   border-radius: 4px;
 }
 
-.brand-mark i:nth-child(1) { height: 9px; }
-.brand-mark i:nth-child(2) { height: 14px; }
-.brand-mark i:nth-child(3) { height: 18px; }
+.brand-mark i:nth-child(1) {
+  height: 9px;
+}
+.brand-mark i:nth-child(2) {
+  height: 14px;
+}
+.brand-mark i:nth-child(3) {
+  height: 18px;
+}
 
 .assigner-topbar-actions {
   display: flex;
@@ -75,7 +83,7 @@
   border: 1px solid var(--line);
   border-radius: 10px;
   background: white;
-  box-shadow: 0 10px 25px rgba(29, 64, 67, .12);
+  box-shadow: 0 10px 25px rgba(29, 64, 67, 0.12);
 }
 
 .user-dropdown.open {
@@ -92,7 +100,9 @@
   display: block;
 }
 
-.user-summary strong { font-size: 11px; }
+.user-summary strong {
+  font-size: 11px;
+}
 .user-summary span {
   margin-top: 4px;
   color: var(--muted);
@@ -135,7 +145,9 @@
 .dashboard-heading h1 {
   margin: 0 0 9px;
   color: #18323a;
-  font: 600 34px 'Space Grotesk', sans-serif;
+  font:
+    600 34px "Space Grotesk",
+    sans-serif;
   letter-spacing: -1.5px;
 }
 
@@ -193,7 +205,9 @@
 
 .panel-heading h2 {
   margin: 0 0 5px;
-  font: 600 18px 'Space Grotesk', sans-serif;
+  font:
+    600 18px "Space Grotesk",
+    sans-serif;
 }
 
 .panel-heading p {
@@ -295,7 +309,10 @@
 
 @media (prefers-reduced-motion: no-preference) {
   .incident-row {
-    transition: background-color .15s ease, border-color .15s ease, transform .15s ease;
+    transition:
+      background-color 0.15s ease,
+      border-color 0.15s ease,
+      transform 0.15s ease;
   }
 
   .incident-row:hover {
@@ -420,9 +437,15 @@
 }
 
 @media (max-width: 700px) {
-  .assigner-topbar { padding: 0 5%; }
-  .assigner-brand { font-size: 16px; }
-  .role-label { display: none; }
+  .assigner-topbar {
+    padding: 0 5%;
+  }
+  .assigner-brand {
+    font-size: 16px;
+  }
+  .role-label {
+    display: none;
+  }
 
   .dashboard-wrap {
     padding: 32px 5% 45px;
@@ -434,7 +457,9 @@
     margin-bottom: 30px;
   }
 
-  .dashboard-heading h1 { font-size: 29px; }
+  .dashboard-heading h1 {
+    font-size: 29px;
+  }
 
   .stats-grid {
     grid-template-columns: 1fr;
@@ -460,9 +485,11 @@
 
 .application-title {
   color: var(--ink);
-  font: 700 17px 'Space Grotesk', sans-serif;
+  font:
+    700 17px "Space Grotesk",
+    sans-serif;
   left: 50%;
-  letter-spacing: -.5px;
+  letter-spacing: -0.5px;
   pointer-events: none;
   position: absolute;
   text-align: center;

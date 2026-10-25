@@ -1,5 +1,5 @@
-@import url('../reporter/repIncidentSubmission.css');
-@import url('../reporter/repIncidentOverview.css');
+@import url("../reporter/repIncidentSubmission.css");
+@import url("../reporter/repIncidentOverview.css");
 
 .assignment-field {
   display: flex;
@@ -63,9 +63,11 @@
 
 .application-title {
   color: var(--ink);
-  font: 700 17px 'Space Grotesk', sans-serif;
+  font:
+    700 17px "Space Grotesk",
+    sans-serif;
   left: 50%;
-  letter-spacing: -.5px;
+  letter-spacing: -0.5px;
   pointer-events: none;
   position: absolute;
   text-align: center;

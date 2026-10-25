@@ -6,7 +6,7 @@
   --teal: #087f83;
   --teal-dark: #07666c;
   --coral: #ee806d;
-  --shadow: 0 16px 45px rgba(29,64,67,.07);
+  --shadow: 0 16px 45px rgba(29, 64, 67, 0.07);
 }
 
 * {
@@ -17,11 +17,12 @@ body {
   margin: 0;
   background: var(--canvas);
   color: var(--ink);
-  font-family: 'DM Sans',sans-serif;
+  font-family: "DM Sans", sans-serif;
   font-size: 14px;
 }
 
-button,a {
+button,
+a {
   cursor: pointer;
   font: inherit;
 }
@@ -51,7 +52,9 @@ button,a {
 }
 
 .overview-label {
-  font: 600 17px 'Space Grotesk', sans-serif;
+  font:
+    600 17px "Space Grotesk",
+    sans-serif;
 }
 
 .user-menu {
@@ -74,7 +77,7 @@ button,a {
   background: #fff;
   border: 1px solid var(--line);
   border-radius: 9px;
-  box-shadow: 0 10px 25px rgba(29,64,67,.12);
+  box-shadow: 0 10px 25px rgba(29, 64, 67, 0.12);
   display: none;
   padding: 6px;
   position: absolute;
@@ -145,7 +148,9 @@ button,a {
 }
 
 .overview-heading h1 {
-  font: 600 34px 'Space Grotesk', sans-serif;
+  font:
+    600 34px "Space Grotesk",
+    sans-serif;
   letter-spacing: -1.3px;
   margin: 0;
 }
@@ -188,8 +193,10 @@ button,a {
 }
 
 .incident-card-header h2 {
-  font: 600 25px 'Space Grotesk', sans-serif;
-  letter-spacing: -.7px;
+  font:
+    600 25px "Space Grotesk",
+    sans-serif;
+  letter-spacing: -0.7px;
   margin: 10px 0 7px;
 }
 
@@ -210,7 +217,7 @@ button,a {
 .overview-grid {
   display: grid;
   gap: 46px;
-  grid-template-columns: minmax(0,1.25fr) minmax(240px,.75fr);
+  grid-template-columns: minmax(0, 1.25fr) minmax(240px, 0.75fr);
   padding: 29px 0 31px;
 }
 
@@ -227,7 +234,7 @@ button,a {
   display: block;
   font-size: 10px;
   font-weight: 700;
-  letter-spacing: .4px;
+  letter-spacing: 0.4px;
   margin-bottom: 8px;
   text-transform: uppercase;
 }
@@ -266,7 +273,8 @@ button,a {
   font-size: 21px;
 }
 
-.notes-heading strong,.notes-heading small {
+.notes-heading strong,
+.notes-heading small {
   display: block;
 }
 
@@ -321,7 +329,7 @@ button,a {
   background: var(--teal);
   border: 0;
   border-radius: 9px;
-  box-shadow: 0 8px 18px rgba(8,127,131,.18);
+  box-shadow: 0 8px 18px rgba(8, 127, 131, 0.18);
   color: #fff;
   font-size: 12px;
   font-weight: 700;
@@ -337,7 +345,7 @@ button,a {
   background: #18343a;
   border-radius: 8px;
   bottom: 24px;
-  box-shadow: 0 10px 25px rgba(0,0,0,.16);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.16);
   color: #fff;
   font-size: 12px;
   left: 50%;
@@ -347,8 +355,7 @@ button,a {
   z-index: 10;
 }
 
-@media(max-width:700px) {
-
+@media (max-width: 700px) {
   .overview-topbar {
     grid-template-columns: 1fr auto;
   }
@@ -382,7 +389,7 @@ button,a {
     justify-content: stretch;
   }
 
-  .incident-card-footer>* {
+  .incident-card-footer > * {
     flex: 1;
     text-align: center;
   }
@@ -437,7 +444,7 @@ button,a {
 
 .overview-wrap .form-body .map-card {
   display: block;
-  height: clamp(260px,32vw,560px);
+  height: clamp(260px, 32vw, 560px);
   min-height: 0;
 }
 
@@ -472,7 +479,7 @@ button,a {
   color: #778b8f;
   font-size: 10px;
   font-weight: 700;
-  letter-spacing: .7px;
+  letter-spacing: 0.7px;
   text-transform: uppercase;
 }
 
@@ -486,7 +493,7 @@ button,a {
   align-items: stretch;
   display: grid;
   gap: 28px;
-  grid-template-columns: minmax(0,1fr) 340px;
+  grid-template-columns: minmax(0, 1fr) 340px;
 }
 
 .overview-notes {
@@ -514,7 +521,8 @@ button,a {
   font-size: 21px;
 }
 
-.overview-notes .notes-heading strong,.overview-notes .notes-heading small {
+.overview-notes .notes-heading strong,
+.overview-notes .notes-heading small {
   display: block;
 }
 
@@ -610,7 +618,8 @@ button,a {
   margin-right: 0;
 }
 
-.overview-notes .note-item.own strong,.overview-notes .note-item.own p {
+.overview-notes .note-item.own strong,
+.overview-notes .note-item.own p {
   color: #fff;
 }
 
@@ -626,7 +635,8 @@ button,a {
   color: var(--ink);
 }
 
-.overview-notes .note-item strong small,.overview-notes .note-item p {
+.overview-notes .note-item strong small,
+.overview-notes .note-item p {
   color: var(--muted);
 }
 
@@ -644,7 +654,7 @@ button,a {
   background: var(--teal);
   border: 0;
   border-radius: 9px;
-  box-shadow: 0 8px 18px rgba(8,127,131,.18);
+  box-shadow: 0 8px 18px rgba(8, 127, 131, 0.18);
   color: #fff;
   font-weight: 700;
   height: 42px;
@@ -686,29 +696,26 @@ button,a {
   width: 1px;
 }
 
-@media(max-width:680px) {
-
+@media (max-width: 680px) {
   .overview-wrap .form-body {
-    grid-template-columns: minmax(0,1fr);
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .overview-wrap .form-body .map-card {
-    height: clamp(220px,70vw,380px);
+    height: clamp(220px, 70vw, 380px);
   }
 }
 
-@media(max-width:500px) {
-
+@media (max-width: 500px) {
   .incident-meta {
     gap: 14px;
   }
 }
 
-@media(max-width:900px) {
-
+@media (max-width: 900px) {
   .overview-layout {
     align-items: start;
-    grid-template-columns: minmax(0,1fr);
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .overview-notes {
@@ -737,8 +744,7 @@ button,a {
   padding-right: 2%;
 }
 
-@media(max-width:680px) {
-
+@media (max-width: 680px) {
   .overview-page .submission-topbar {
     height: 68px;
     padding-left: 4%;
@@ -751,9 +757,11 @@ button,a {
 
 .application-title {
   color: var(--ink);
-  font: 700 17px 'Space Grotesk', sans-serif;
+  font:
+    700 17px "Space Grotesk",
+    sans-serif;
   left: 50%;
-  letter-spacing: -.5px;
+  letter-spacing: -0.5px;
   pointer-events: none;
   position: absolute;
   text-align: center;

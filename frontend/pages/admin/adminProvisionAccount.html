@@ -1,40 +1,244 @@
 <!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Provide Application Access</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="adminProvisionAccount.css" />
-</head>
-<body>
-  <main class="submission-page">
-    <header class="submission-topbar">
-      <a class="back-link" href="adminDashboard.html">← <span>Dashboard</span></a>
-      <div class="user-menu"><button type="button" class="top-avatar" id="userButton" data-user-initials aria-label="Open user menu" aria-expanded="false"></button><div class="user-dropdown" id="userDropdown" aria-hidden="true"><div class="user-summary"><strong data-user-name></strong><span>Administrator</span></div><button type="button" id="changePasswordButton"><span>Change password</span></button><button type="button" id="logoutButton">↪ <span>Log out</span></button></div></div>
-    </header>
-    <section class="submission-wrap">
-      <div class="page-heading"><p class="eyebrow">APPLICATION ACCESS · DRAFT</p><h1>Provide application access</h1><p>Create an organization or team-member account.</p></div>
-      <form class="incident-form provision-form" id="provisionForm" novalidate>
-        <div class="form-header"><div><h2>Organization access details</h2><p>Enter the organization or team-member account information.</p></div><span class="required-note"><span class="required-star">*</span> Required</span></div>
-        <div class="form-body"><div class="form-fields">
-          <div class="field field-wide"><label for="role">Role <span>*</span></label><select id="role" name="role" required><option value="" selected disabled>Select role</option><option>REPORTER</option><option>ASSIGNER</option><option>AID_PROVIDER</option><option>AID_PROVIDER_TEAM_MEMBER</option><option>ADMIN</option></select><span class="field-error" id="roleError" role="alert"></span></div>
-          <div class="field field-wide" id="aidProviderField" hidden><label for="aidProvider">Aid provider <span>*</span></label><select id="aidProvider" name="aidProvider"><option value="" selected disabled>Select aid provider</option></select><span class="field-error" id="aidProviderError" role="alert"></span></div>
-          <div class="field field-wide" id="aidProviderTeamField" hidden><label for="aidProviderTeam">Aid provider team <span>*</span></label><select id="aidProviderTeam" name="aidProviderTeam"><option value="" selected disabled>Select team</option></select><span class="field-error" id="aidProviderTeamError" role="alert"></span></div>
-          <div class="field field-wide" id="aidProviderNameField" hidden><label for="aidProviderName">Aid provider name <span>*</span></label><input id="aidProviderName" name="aidProviderName" maxlength="100" autocomplete="organization" /><span class="field-error" id="aidProviderNameError" role="alert"></span></div>
-          <div class="field field-wide" id="aidProviderDescriptionField" hidden><label for="aidProviderDescription">Aid provider description</label><textarea id="aidProviderDescription" name="aidProviderDescription" maxlength="500" rows="3"></textarea><span class="field-error" id="aidProviderDescriptionError" role="alert"></span></div>
-          <div class="field"><label for="firstName">First name <span>*</span></label><input id="firstName" name="firstName" maxlength="50" required autocomplete="given-name" /><span class="field-error" id="firstNameError" role="alert"></span></div>
-          <div class="field"><label for="lastName">Last name <span>*</span></label><input id="lastName" name="lastName" maxlength="50" required autocomplete="family-name" /><span class="field-error" id="lastNameError" role="alert"></span></div>
-          <div class="field field-wide"><label for="email">Email address <span>*</span></label><input id="email" name="email" type="email" required autocomplete="email" /><span class="field-error" id="emailError" role="alert"></span></div>
-          <div class="field"><label for="password">Temporary password <span>*</span></label><input id="password" name="password" type="password" minlength="8" required autocomplete="new-password" /><span class="field-error" id="passwordError" role="alert"></span><small class="form-help">The account holder will be asked to change this temporary password after signing in.</small></div>
-        </div></div>
-        <div class="form-footer"><div class="form-actions"><a class="secondary-button" id="cancelButton" href="adminDashboard.html">Cancel</a><button class="primary-button" type="submit">Provide application access</button></div></div>
-      </form>
-    </section>
-  </main>
-  <div class="confirm-backdrop" id="cancelConfirmBackdrop" hidden><dialog class="confirm-dialog" id="cancelConfirm" aria-labelledby="confirmTitle"><h2 id="confirmTitle">Leave this provisioning setup?</h2><p>Are you sure? All changes will be lost.</p><div class="confirm-actions"><button type="button" class="secondary-button" id="keepEditing">Keep editing</button><button type="button" class="danger-button" id="discardChanges">Discard changes</button></div></dialog></div>
-  <div class="confirm-backdrop" id="successBackdrop" hidden><dialog class="confirm-dialog" id="successDialog" aria-labelledby="successTitle"><h2 id="successTitle">Provisioning completed</h2><p id="successMessage">The organization access account has been created.</p><div class="confirm-actions"><button type="button" class="primary-button" id="successDone">Done</button></div></dialog></div>
-  <script src="../authHelpers.js"></script><script src="adminProvisionAccount.js"></script>
-</body>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Provide Application Access</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="adminProvisionAccount.css" />
+  </head>
+  <body>
+    <main class="submission-page">
+      <header class="submission-topbar">
+        <a class="back-link" href="adminDashboard.html"
+          >← <span>Dashboard</span></a
+        >
+        <div class="user-menu">
+          <button
+            type="button"
+            class="top-avatar"
+            id="userButton"
+            data-user-initials
+            aria-label="Open user menu"
+            aria-expanded="false"
+          ></button>
+          <div class="user-dropdown" id="userDropdown" aria-hidden="true">
+            <div class="user-summary">
+              <strong data-user-name></strong><span>Administrator</span>
+            </div>
+            <button type="button" id="changePasswordButton">
+              <span>Change password</span></button
+            ><button type="button" id="logoutButton">
+              ↪ <span>Log out</span>
+            </button>
+          </div>
+        </div>
+      </header>
+      <section class="submission-wrap">
+        <div class="page-heading">
+          <p class="eyebrow">APPLICATION ACCESS · DRAFT</p>
+          <h1>Provide application access</h1>
+          <p>Create an organization or team-member account.</p>
+        </div>
+        <form
+          class="incident-form provision-form"
+          id="provisionForm"
+          novalidate
+        >
+          <div class="form-header">
+            <div>
+              <h2>Organization access details</h2>
+              <p>Enter the organization or team-member account information.</p>
+            </div>
+            <span class="required-note"
+              ><span class="required-star">*</span> Required</span
+            >
+          </div>
+          <div class="form-body">
+            <div class="form-fields">
+              <div class="field field-wide">
+                <label for="role">Role <span>*</span></label
+                ><select id="role" name="role" required>
+                  <option value="" selected disabled>Select role</option>
+                  <option>REPORTER</option>
+                  <option>ASSIGNER</option>
+                  <option>AID_PROVIDER</option>
+                  <option>AID_PROVIDER_TEAM_MEMBER</option>
+                  <option>ADMIN</option></select
+                ><span class="field-error" id="roleError" role="alert"></span>
+              </div>
+              <div class="field field-wide" id="aidProviderField" hidden>
+                <label for="aidProvider">Aid provider <span>*</span></label
+                ><select id="aidProvider" name="aidProvider">
+                  <option value="" selected disabled>
+                    Select aid provider
+                  </option></select
+                ><span
+                  class="field-error"
+                  id="aidProviderError"
+                  role="alert"
+                ></span>
+              </div>
+              <div class="field field-wide" id="aidProviderTeamField" hidden>
+                <label for="aidProviderTeam"
+                  >Aid provider team <span>*</span></label
+                ><select id="aidProviderTeam" name="aidProviderTeam">
+                  <option value="" selected disabled>
+                    Select team
+                  </option></select
+                ><span
+                  class="field-error"
+                  id="aidProviderTeamError"
+                  role="alert"
+                ></span>
+              </div>
+              <div class="field field-wide" id="aidProviderNameField" hidden>
+                <label for="aidProviderName"
+                  >Aid provider name <span>*</span></label
+                ><input
+                  id="aidProviderName"
+                  name="aidProviderName"
+                  maxlength="100"
+                  autocomplete="organization"
+                /><span
+                  class="field-error"
+                  id="aidProviderNameError"
+                  role="alert"
+                ></span>
+              </div>
+              <div
+                class="field field-wide"
+                id="aidProviderDescriptionField"
+                hidden
+              >
+                <label for="aidProviderDescription"
+                  >Aid provider description</label
+                ><textarea
+                  id="aidProviderDescription"
+                  name="aidProviderDescription"
+                  maxlength="500"
+                  rows="3"
+                ></textarea
+                ><span
+                  class="field-error"
+                  id="aidProviderDescriptionError"
+                  role="alert"
+                ></span>
+              </div>
+              <div class="field">
+                <label for="firstName">First name <span>*</span></label
+                ><input
+                  id="firstName"
+                  name="firstName"
+                  maxlength="50"
+                  required
+                  autocomplete="given-name"
+                /><span
+                  class="field-error"
+                  id="firstNameError"
+                  role="alert"
+                ></span>
+              </div>
+              <div class="field">
+                <label for="lastName">Last name <span>*</span></label
+                ><input
+                  id="lastName"
+                  name="lastName"
+                  maxlength="50"
+                  required
+                  autocomplete="family-name"
+                /><span
+                  class="field-error"
+                  id="lastNameError"
+                  role="alert"
+                ></span>
+              </div>
+              <div class="field field-wide">
+                <label for="email">Email address <span>*</span></label
+                ><input
+                  id="email"
+                  name="email"
+                  type="email"
+                  required
+                  autocomplete="email"
+                /><span class="field-error" id="emailError" role="alert"></span>
+              </div>
+              <div class="field">
+                <label for="password">Temporary password <span>*</span></label
+                ><input
+                  id="password"
+                  name="password"
+                  type="password"
+                  minlength="8"
+                  required
+                  autocomplete="new-password"
+                /><span
+                  class="field-error"
+                  id="passwordError"
+                  role="alert"
+                ></span
+                ><small class="form-help"
+                  >The account holder will be asked to change this temporary
+                  password after signing in.</small
+                >
+              </div>
+            </div>
+          </div>
+          <div class="form-footer">
+            <div class="form-actions">
+              <a
+                class="secondary-button"
+                id="cancelButton"
+                href="adminDashboard.html"
+                >Cancel</a
+              ><button class="primary-button" type="submit">
+                Provide application access
+              </button>
+            </div>
+          </div>
+        </form>
+      </section>
+    </main>
+    <div class="confirm-backdrop" id="cancelConfirmBackdrop" hidden>
+      <dialog
+        class="confirm-dialog"
+        id="cancelConfirm"
+        aria-labelledby="confirmTitle"
+      >
+        <h2 id="confirmTitle">Leave this provisioning setup?</h2>
+        <p>Are you sure? All changes will be lost.</p>
+        <div class="confirm-actions">
+          <button type="button" class="secondary-button" id="keepEditing">
+            Keep editing</button
+          ><button type="button" class="danger-button" id="discardChanges">
+            Discard changes
+          </button>
+        </div>
+      </dialog>
+    </div>
+    <div class="confirm-backdrop" id="successBackdrop" hidden>
+      <dialog
+        class="confirm-dialog"
+        id="successDialog"
+        aria-labelledby="successTitle"
+      >
+        <h2 id="successTitle">Provisioning completed</h2>
+        <p id="successMessage">
+          The organization access account has been created.
+        </p>
+        <div class="confirm-actions">
+          <button type="button" class="primary-button" id="successDone">
+            Done
+          </button>
+        </div>
+      </dialog>
+    </div>
+    <script src="../authHelpers.js"></script>
+    <script src="adminProvisionAccount.js"></script>
+  </body>
 </html>

@@ -1,87 +1,164 @@
 <!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Report an Incident</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="repIncidentSubmission.css" />
-</head>
-<body>
-  <main class="submission-page">
-    <header class="submission-topbar">
-      <a class="back-link" href="repDashboard.html">← <span>Dashboard</span></a>
-      <div class="user-menu">
-        <button type="button" class="top-avatar" id="userButton" data-user-initials aria-label="Open user menu" aria-expanded="false"></button>
-        <div class="user-dropdown" id="userDropdown" aria-hidden="true">
-          <div class="user-summary"><strong data-user-name></strong><span>Reporter</span></div>
-          <button type="button" id="changePasswordButton"><span>Change password</span></button>
-          <button type="button" id="logoutButton">↪ <span>Log out</span></button>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Report an Incident</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="repIncidentSubmission.css" />
+  </head>
+  <body>
+    <main class="submission-page">
+      <header class="submission-topbar">
+        <a class="back-link" href="repDashboard.html"
+          >← <span>Dashboard</span></a
+        >
+        <div class="user-menu">
+          <button
+            type="button"
+            class="top-avatar"
+            id="userButton"
+            data-user-initials
+            aria-label="Open user menu"
+            aria-expanded="false"
+          ></button>
+          <div class="user-dropdown" id="userDropdown" aria-hidden="true">
+            <div class="user-summary">
+              <strong data-user-name></strong><span>Reporter</span>
+            </div>
+            <button type="button" id="changePasswordButton">
+              <span>Change password</span>
+            </button>
+            <button type="button" id="logoutButton">
+              ↪ <span>Log out</span>
+            </button>
+          </div>
         </div>
-      </div>
-    </header>
+      </header>
 
-    <section class="submission-wrap">
-      <div class="page-heading">
-        <p class="eyebrow">INCIDENT REPORT · DRAFT</p>
-        <h1>Report an incident</h1>
-        <p>Tell us what happened so the right people can take action.</p>
-      </div>
+      <section class="submission-wrap">
+        <div class="page-heading">
+          <p class="eyebrow">INCIDENT REPORT · DRAFT</p>
+          <h1>Report an incident</h1>
+          <p>Tell us what happened so the right people can take action.</p>
+        </div>
 
-      <form class="incident-form" id="incidentForm">
-        <div class="form-header"><div><h2>Incident details</h2><p>Give us a clear picture of what you observed.</p></div><span class="required-note"><span class="required-star">*</span> Required</span></div>
-
-        <div class="form-body">
-          <div class="form-fields">
-            <div class="field">
-              <label for="incidentTitle">Title <span>*</span></label>
-              <input id="incidentTitle" name="title" maxlength="50" required placeholder="e.g. Wet floor near main lobby" />
+        <form class="incident-form" id="incidentForm">
+          <div class="form-header">
+            <div>
+              <h2>Incident details</h2>
+              <p>Give us a clear picture of what you observed.</p>
             </div>
-            <div class="field">
-              <label for="severity">Severity <span>*</span></label>
-              <select id="severity" name="severity" required>
-                <option value="" selected disabled>Select severity</option>
-                <option>LOW</option><option>MEDIUM</option><option>HIGH</option><option>SEVERE</option><option>CRITICAL</option>
-              </select>
-            </div>
-            <div class="field">
-              <label for="location">Location <span>*</span></label>
-              <div class="location-control">
-                <button type="button" class="location-button" id="locationButton">Use my location</button>
+            <span class="required-note"
+              ><span class="required-star">*</span> Required</span
+            >
+          </div>
+
+          <div class="form-body">
+            <div class="form-fields">
+              <div class="field">
+                <label for="incidentTitle">Title <span>*</span></label>
+                <input
+                  id="incidentTitle"
+                  name="title"
+                  maxlength="50"
+                  required
+                  placeholder="e.g. Wet floor near main lobby"
+                />
+              </div>
+              <div class="field">
+                <label for="severity">Severity <span>*</span></label>
+                <select id="severity" name="severity" required>
+                  <option value="" selected disabled>Select severity</option>
+                  <option>LOW</option>
+                  <option>MEDIUM</option>
+                  <option>HIGH</option>
+                  <option>SEVERE</option>
+                  <option>CRITICAL</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="location">Location <span>*</span></label>
+                <div class="location-control">
+                  <button
+                    type="button"
+                    class="location-button"
+                    id="locationButton"
+                  >
+                    Use my location
+                  </button>
+                </div>
+              </div>
+              <div class="field">
+                <label for="description">Description <span>*</span></label>
+                <textarea
+                  id="description"
+                  name="description"
+                  maxlength="500"
+                  rows="8"
+                  required
+                  placeholder="Describe what happened, who or what was involved, and any immediate action taken..."
+                ></textarea>
+                <small class="field-hint"
+                  >Include useful details such as time, conditions, and
+                  witnesses.</small
+                >
               </div>
             </div>
-            <div class="field">
-              <label for="description">Description <span>*</span></label>
-              <textarea id="description" name="description" maxlength="500" rows="8" required placeholder="Describe what happened, who or what was involved, and any immediate action taken..."></textarea>
-              <small class="field-hint">Include useful details such as time, conditions, and witnesses.</small>
+            <div class="location-result">
+              <span class="coordinates-label">Coordinates</span>
+              <span class="coordinates" id="coordinates" aria-live="polite"
+                >Coordinates will appear here</span
+              >
+              <div class="map-card" id="mapCard" hidden>
+                <iframe
+                  id="mapFrame"
+                  title="Map showing the reported location"
+                  loading="lazy"
+                ></iframe>
+              </div>
             </div>
           </div>
-          <div class="location-result">
-            <span class="coordinates-label">Coordinates</span>
-            <span class="coordinates" id="coordinates" aria-live="polite">Coordinates will appear here</span>
-            <div class="map-card" id="mapCard" hidden>
-              <iframe id="mapFrame" title="Map showing the reported location" loading="lazy"></iframe>
-            </div>
-          </div>
-        </div>
 
-        <div class="form-footer"><div class="form-actions"><a class="secondary-button" id="cancelButton" href="repDashboard.html">Cancel</a><button class="primary-button" type="submit">Submit report <span>→</span></button></div></div>
-      </form>
-    </section>
-  </main>
-  <div class="confirm-backdrop" id="cancelConfirmBackdrop" hidden>
-    <dialog class="confirm-dialog" id="cancelConfirm" aria-labelledby="confirmTitle">
-      <h2 id="confirmTitle">Leave this report?</h2>
-      <p>Are you sure? All changes will be lost.</p>
-      <div class="confirm-actions">
-        <button type="button" class="secondary-button" id="keepEditing">Keep editing</button>
-        <button type="button" class="danger-button" id="discardChanges">Discard changes</button>
-      </div>
-    </dialog>
-  </div>
-  <script src="../authHelpers.js"></script>
-  <script src="repIncidentSubmission.js"></script>
-</body>
+          <div class="form-footer">
+            <div class="form-actions">
+              <a
+                class="secondary-button"
+                id="cancelButton"
+                href="repDashboard.html"
+                >Cancel</a
+              ><button class="primary-button" type="submit">
+                Submit report <span>→</span>
+              </button>
+            </div>
+          </div>
+        </form>
+      </section>
+    </main>
+    <div class="confirm-backdrop" id="cancelConfirmBackdrop" hidden>
+      <dialog
+        class="confirm-dialog"
+        id="cancelConfirm"
+        aria-labelledby="confirmTitle"
+      >
+        <h2 id="confirmTitle">Leave this report?</h2>
+        <p>Are you sure? All changes will be lost.</p>
+        <div class="confirm-actions">
+          <button type="button" class="secondary-button" id="keepEditing">
+            Keep editing
+          </button>
+          <button type="button" class="danger-button" id="discardChanges">
+            Discard changes
+          </button>
+        </div>
+      </dialog>
+    </div>
+    <script src="../authHelpers.js"></script>
+    <script src="repIncidentSubmission.js"></script>
+  </body>
 </html>

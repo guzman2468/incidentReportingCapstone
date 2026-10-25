@@ -23,13 +23,19 @@ class AidProviderTeam(BaseModel):
     description: str | None = None
 
 
-class AidProviderAccountCreate(BaseModel):
-    """Fields required to create an aid provider and its account."""
+class AidProviderTeamCreate(BaseModel):
+    """Fields required to create an aid provider team grouping."""
 
-    email: str = Field(min_length=3, max_length=50, pattern=EMAIL_PATTERN)
-    password: str = Field(min_length=8, max_length=50)
-    aid_provider_name: str = Field(min_length=1, max_length=100)
-    aid_provider_description: str | None = Field(default=None, max_length=500)
+    aid_provider_id: UUID
+    name: str = Field(min_length=1, max_length=100)
+    description: str = Field(min_length=1, max_length=500)
+
+
+class AidProviderCreate(BaseModel):
+    """Fields required to create an aid provider organization."""
+
+    name: str = Field(min_length=1, max_length=100)
+    description: str = Field(min_length=1, max_length=500)
 
 
 class AidProviderTeamMemberAccountCreate(BaseModel):
@@ -44,8 +50,12 @@ class AidProviderTeamMemberAccountCreate(BaseModel):
 
 
 class AidProviderCreated(BaseModel):
-    """Response returned after creating an aid provider account."""
+    """Response returned after creating an aid provider."""
 
     success: bool = True
-    email: str
-    aid_provider_id: UUID
+
+
+class AidProviderTeamCreated(BaseModel):
+    """Response returned after creating an aid provider team."""
+
+    success: bool = True

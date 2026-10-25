@@ -7,6 +7,55 @@ from sqlalchemy.orm import Session
 from backend.core.security import hash_password, verify_password
 from backend.schemas.users import PasswordChange, UserCreate, UserLogin
 
+CREATE_USER_QUERY = text(
+    """
+    INSERT INTO public.users (
+        email, password_hash, first_name, last_name, role,
+        is_active, must_change_password
+    )
+    VALUES (
+        :email, :password_hash, :first_name, :last_name, :role,
+        true, :must_change_password
+    )
+    """
+)
+
+AUTHENTICATE_USER_QUERY = text(
+    """
+    SELECT email, password_hash, first_name, last_name, role, is_active,
+           must_change_password
+    FROM public.users
+    WHERE email = :email
+    """
+)
+
+GET_USER_PROFILE_QUERY = text(
+    """
+    SELECT email, first_name, last_name, role, must_change_password
+    FROM public.users
+    WHERE email = :email
+      AND is_active = true
+    """
+)
+
+GET_PASSWORD_HASH_QUERY = text(
+    """
+    SELECT password_hash
+    FROM public.users
+    WHERE email = :email
+      AND is_active = true
+    """
+)
+
+UPDATE_PASSWORD_QUERY = text(
+    """
+    UPDATE public.users
+    SET password_hash = :password_hash,
+        must_change_password = false
+    WHERE email = :email
+    """
+)
+
 
 class EmailAlreadyRegistered(Exception):
     """Raised when a user attempts to register an existing email address."""
@@ -21,33 +70,18 @@ def create_user(db: Session, user_data: UserCreate) -> dict[str, int | str]:
     first_name = user_data.first_name.strip().lower()
     last_name = user_data.last_name.strip().lower()
 
-    statement = text(
-        """
-        INSERT INTO public.users (
-            email, password_hash, first_name, last_name, role, aid_provider_id,
-            is_active, must_change_password
-        )
-        VALUES (
-            :email, :password_hash, :first_name, :last_name, :role, :aid_provider_id,
-            true, :must_change_password
-        )
-        RETURNING id
-        """
-    )
-
     try:
-        user_id = db.execute(
-            statement,
+        db.execute(
+            CREATE_USER_QUERY,
             {
                 "email": user_data.email,
                 "password_hash": hash_password(user_data.password),
                 "first_name": first_name,
                 "last_name": last_name,
                 "role": user_data.role,
-                "aid_provider_id": None,
                 "must_change_password": user_data.role != "REPORTER",
             },
-        ).scalar_one()
+        )
 
         db.commit()
     except IntegrityError as error:
@@ -63,14 +97,7 @@ def create_user(db: Session, user_data: UserCreate) -> dict[str, int | str]:
 def authenticate_user(db: Session, login_data: UserLogin) -> dict[str, int | str]:
     """Verify login credentials without exposing whether an email exists."""
     row = db.execute(
-        text(
-            """
-            SELECT email, password_hash, first_name, last_name, role, is_active,
-                   must_change_password
-            FROM public.users
-            WHERE email = :email
-            """
-        ),
+        AUTHENTICATE_USER_QUERY,
         {"email": login_data.email},
     ).mappings().one_or_none()
 
@@ -92,14 +119,7 @@ def authenticate_user(db: Session, login_data: UserLogin) -> dict[str, int | str
 
 def get_user_profile(db: Session, email: str) -> dict[str, str | bool] | None:
     row = db.execute(
-        text(
-            """
-            SELECT email, first_name, last_name, role, must_change_password
-            FROM public.users
-            WHERE email = :email
-              AND is_active = true
-            """
-        ),
+        GET_USER_PROFILE_QUERY,
         {"email": email},
     ).mappings().one_or_none()
     return dict(row) if row else None
@@ -107,7 +127,7 @@ def get_user_profile(db: Session, email: str) -> dict[str, str | bool] | None:
 
 def change_password(db: Session, email: str, password_data: PasswordChange) -> None:
     row = db.execute(
-        text("SELECT password_hash FROM public.users WHERE email = :email AND is_active = true"),
+        GET_PASSWORD_HASH_QUERY,
         {"email": email},
     ).mappings().one_or_none()
 
@@ -115,14 +135,7 @@ def change_password(db: Session, email: str, password_data: PasswordChange) -> N
         raise InvalidCredentials
 
     db.execute(
-        text(
-            """
-            UPDATE public.users
-            SET password_hash = :password_hash,
-                must_change_password = false
-            WHERE email = :email
-            """
-        ),
+        UPDATE_PASSWORD_QUERY,
         {"email": email, "password_hash": hash_password(password_data.new_password)},
     )
     db.commit()

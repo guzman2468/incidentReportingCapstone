@@ -5,7 +5,8 @@ from sqlalchemy.orm import Session
 
 from backend.core.security import hash_password
 from backend.schemas.aid_providers import (
-    AidProviderAccountCreate,
+    AidProviderCreate,
+    AidProviderTeamCreate,
     AidProviderTeamMemberAccountCreate,
 )
 
@@ -32,20 +33,16 @@ CREATE_PROVIDER_QUERY = text(
     """
     INSERT INTO public.aid_providers (name, description)
     VALUES (:name, :description)
-    RETURNING id
     """
 )
 
-CREATE_PROVIDER_ACCOUNT_QUERY = text(
+CREATE_TEAM_QUERY = text(
     """
-    INSERT INTO public.users (
-        email, password_hash, first_name, last_name, role, aid_provider_id,
-        is_active, must_change_password
-    )
-    VALUES (
-        :email, :password_hash, '', '', 'AID_PROVIDER', :aid_provider_id,
-        true, true
-    )
+    INSERT INTO public.aid_provider_teams (aid_provider_id, name, description)
+    SELECT id, :name, :description
+    FROM public.aid_providers
+    WHERE id = :aid_provider_id
+      AND is_active = true
     """
 )
 
@@ -59,7 +56,14 @@ CREATE_TEAM_MEMBER_QUERY = text(
         :email, :password_hash, :first_name, :last_name,
         'AID_PROVIDER_TEAM_MEMBER', :aid_provider_id, true, true
     )
-    RETURNING id
+    """
+)
+
+GET_CREATED_TEAM_MEMBER_ID_QUERY = text(
+    """
+    SELECT id
+    FROM public.users
+    WHERE email = :email
     """
 )
 
@@ -71,7 +75,6 @@ ASSIGN_TEAM_MEMBER_QUERY = text(
     WHERE apt.id = :team_id
       AND apt.aid_provider_id = :aid_provider_id
       AND apt.is_active = true
-    RETURNING team_id
     """
 )
 
@@ -95,30 +98,21 @@ def get_active_aid_provider_teams(db: Session, aid_provider_id: str) -> list[dic
     return [dict(row) for row in rows]
 
 
-def create_aid_provider_account(
+def create_aid_provider(
     db: Session,
-    account_data: AidProviderAccountCreate,
-) -> dict[str, str]:
-    """Create an aid provider organization and its provider account together."""
+    provider_data: AidProviderCreate,
+) -> dict[str, bool]:
+    """Create an aid provider organization without creating a user account."""
     try:
-        provider_id = db.execute(
+        db.execute(
             CREATE_PROVIDER_QUERY,
             {
-                "name": account_data.aid_provider_name.strip().lower(),
+                "name": provider_data.name.strip().lower(),
                 "description": (
-                    account_data.aid_provider_description.strip()
-                    if account_data.aid_provider_description
+                    provider_data.description.strip()
+                    if provider_data.description
                     else None
                 ),
-            },
-        ).scalar_one()
-
-        db.execute(
-            CREATE_PROVIDER_ACCOUNT_QUERY,
-            {
-                "email": account_data.email,
-                "password_hash": hash_password(account_data.password),
-                "aid_provider_id": provider_id,
             },
         )
         db.commit()
@@ -126,7 +120,33 @@ def create_aid_provider_account(
         db.rollback()
         raise
 
-    return {"email": account_data.email, "aid_provider_id": str(provider_id)}
+    return {"success": True}
+
+
+def create_aid_provider_team(
+    db: Session,
+    team_data: AidProviderTeamCreate,
+) -> dict[str, bool]:
+    """Create a team grouping under an active aid provider."""
+    try:
+        team_insert = db.execute(
+            CREATE_TEAM_QUERY,
+            {
+                "aid_provider_id": team_data.aid_provider_id,
+                "name": team_data.name.strip().lower(),
+                "description": team_data.description.strip(),
+            },
+        )
+        if team_insert.rowcount == 0:
+            raise InvalidAidProviderAssignment(
+                "The selected aid provider does not exist or is inactive."
+            )
+        db.commit()
+    except Exception:
+        db.rollback()
+        raise
+
+    return {"success": True}
 
 
 def create_aid_provider_team_member_account(
@@ -135,7 +155,7 @@ def create_aid_provider_team_member_account(
 ) -> dict[str, str]:
     """Create a team member and assign them to a team under the selected provider."""
     try:
-        user_id = db.execute(
+        db.execute(
             CREATE_TEAM_MEMBER_QUERY,
             {
                 "email": account_data.email,
@@ -144,8 +164,11 @@ def create_aid_provider_team_member_account(
                 "last_name": account_data.last_name.strip().lower(),
                 "aid_provider_id": account_data.aid_provider_id,
             },
+        )
+        user_id = db.execute(
+            GET_CREATED_TEAM_MEMBER_ID_QUERY,
+            {"email": account_data.email},
         ).scalar_one()
-
         membership = db.execute(
             ASSIGN_TEAM_MEMBER_QUERY,
             {
@@ -153,8 +176,8 @@ def create_aid_provider_team_member_account(
                 "team_id": account_data.aid_provider_team_id,
                 "aid_provider_id": account_data.aid_provider_id,
             },
-        ).scalar_one_or_none()
-        if membership is None:
+        )
+        if membership.rowcount == 0:
             raise InvalidAidProviderAssignment(
                 "The selected team does not belong to the selected aid provider."
             )

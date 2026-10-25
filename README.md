@@ -1,6 +1,6 @@
 # incidentReportingCapstone
 Fall 2026 NGR Capstone
-
+**FOR CAPSTONE INSTRUCTOR, SEE THE RELEASE NOTES SECTION FOR CODE MILESTONE UPDATES**
 
 ## Prerequisites
 
@@ -92,13 +92,16 @@ docker-stop.bat
 ```
 
 The stop scripts remove the containers without deleting the persistent Kafka volume.
-main is master branch, raise PR's here intermittently. Create feature/ branches off of develop and raise PR's to merge feature/ branches to develop, not main.
+main is master branch, raise PR's here intermittently. 
+Create feature/ branches off of develop and raise PR's to merge feature/ branches to develop, not main.
 
 
+## Release Notes (10-25-2026)
+To run the app, you must follow the instructions in this README.
 
-Test your UIs with the LiveServer extension in VScode, the below text if for once backend logic is being developed and then you have to use the start scripts to be able to access logic and frontend files like the real app would.
+This application is designed to streamline disaster recovery efforts. Its main use case is for natural disaster scenarios, where multiple organizations in the relief effort are to be coordinated appropriately to tend to the needs of people (Reporters).
 
+The features that are currently working are up to Milestone 3 as describe in the Project Plan (minimum UIs and base level functionality for each role).
+Account creation by both the Admin user role and self creation for reporters is implemented. Incident related logic is not yet implemented, all data is dummy data used to see how UIs would look once real data is being used.
 
-The reporter frontend files in `frontend/pages/reporter` are served statically by FastAPI when the application starts. Open http://localhost:8000/ to view the temporary home page (reporter dashboard). This will be
-the sign up page in the future but you can add /yourPageNameHere to the end of the localhost
-URL to view your page.
+Please use the **main** branch to view the working version of the project up until this point.

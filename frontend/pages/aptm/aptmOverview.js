@@ -71,55 +71,56 @@ document
   .getElementById("logoutButton")
   .addEventListener("click", window.logoutUser);
 
-// Apply the selected aid provider assignment until persistence is connected.
+// Apply the selected incident status until persistence is connected.
 document
-  .getElementById("confirmAssignmentButton")
+  .getElementById("confirmStatusButton")
   .addEventListener("click", () => {
-    const providerSelect = document.getElementById("aidProvider");
-    const provider = providerSelect.value;
+    const statusSelect = document.getElementById("incidentStatusSelect");
+    const status = statusSelect.value;
 
-    if (!provider) {
-      providerSelect.focus();
-      showToast("Select an aid provider first.");
+    if (!status) {
+      statusSelect.focus();
+      showToast("Select a status first.");
       return;
     }
 
-    document.getElementById("assignmentProviderName").textContent = provider;
-    const assignmentConfirmBackdrop = document.getElementById(
-      "assignmentConfirmBackdrop",
+    document.getElementById("selectedStatus").textContent = status;
+    const statusConfirmBackdrop = document.getElementById(
+      "statusConfirmBackdrop",
     );
 
-    assignmentConfirmBackdrop.hidden = false;
-    document.getElementById("assignmentConfirm").showModal();
+    statusConfirmBackdrop.hidden = false;
+    document.getElementById("statusConfirm").showModal();
   });
 
-const closeAssignmentConfirm = () => {
-  document.getElementById("assignmentConfirm").close();
-  document.getElementById("assignmentConfirmBackdrop").hidden = true;
+const closeStatusConfirm = () => {
+  document.getElementById("statusConfirm").close();
+  document.getElementById("statusConfirmBackdrop").hidden = true;
 };
 
-document.getElementById("assignmentConfirm").addEventListener("close", () => {
-  document.getElementById("assignmentConfirmBackdrop").hidden = true;
+document.getElementById("statusConfirm").addEventListener("close", () => {
+  document.getElementById("statusConfirmBackdrop").hidden = true;
 });
 
 document
-  .getElementById("cancelAssignmentButton")
-  .addEventListener("click", closeAssignmentConfirm);
+  .getElementById("cancelStatusButton")
+  .addEventListener("click", closeStatusConfirm);
 
 document
-  .getElementById("applyAssignmentButton")
+  .getElementById("applyStatusButton")
   .addEventListener("click", () => {
-    const provider = document.getElementById("aidProvider").value;
+    const status = document.getElementById("incidentStatusSelect").value;
 
-    closeAssignmentConfirm();
-    showToast(`Incident assigned to ${provider}.`);
+    closeStatusConfirm();
+    document.getElementById("statusBadge").textContent = status;
+    showToast(`Incident status updated to ${status}.`);
   });
 
 // Clicking outside the dialog keeps the user on the incident overview.
 document
-  .getElementById("assignmentConfirm")
+  .getElementById("statusConfirm")
   .addEventListener("click", (event) => {
-    const dialog = document.getElementById("assignmentConfirm");
+    const dialog = document.getElementById("statusConfirm");
     const bounds = dialog.getBoundingClientRect();
 
     const clickedOutside =
@@ -129,7 +130,7 @@ document
       event.clientY > bounds.bottom;
 
     if (clickedOutside) {
-      closeAssignmentConfirm();
+      closeStatusConfirm();
     }
   });
 

@@ -88,27 +88,21 @@
                   </div>
                 </div>
                 <div class="field assignment-field">
-                  <label class="field-label" for="aidProvider">Assign to:</label
-                  ><select id="aidProvider">
-                    <option value="">Select an aid provider</option>
-                    <option value="Community First Aid">
-                      Community First Aid
+                  <label class="field-label" for="incidentStatusSelect"
+                    >Update status:</label
+                  ><select id="incidentStatusSelect">
+                    <option value="" disabled selected>
+                      Select a status to provide an update
                     </option>
-                    <option value="Lakeside Emergency Response">
-                      Lakeside Emergency Response
-                    </option>
-                    <option value="Northside Medical Support">
-                      Northside Medical Support
-                    </option>
-                    <option value="Rapid Relief Services">
-                      Rapid Relief Services
-                    </option></select
+                    <option value="IN PROGRESS">IN PROGRESS</option>
+                    <option value="RESOLVED">RESOLVED</option>
+                    <option value="CANCELLED">CANCELLED</option></select
                   ><button
                     type="button"
                     class="assignment-button"
-                    id="confirmAssignmentButton"
+                    id="confirmStatusButton"
                   >
-                    Confirm Assignment
+                    Update Status
                   </button>
                 </div>
               </div>
@@ -176,32 +170,31 @@
         </div>
       </section>
     </main>
-    <div class="confirm-backdrop" id="assignmentConfirmBackdrop" hidden>
+    <div class="confirm-backdrop" id="statusConfirmBackdrop" hidden>
       <dialog
         class="confirm-dialog"
-        id="assignmentConfirm"
-        aria-labelledby="assignmentConfirmTitle"
+        id="statusConfirm"
+        aria-labelledby="statusConfirmTitle"
       >
-        <h2 id="assignmentConfirmTitle">Confirm assignment?</h2>
+        <h2 id="statusConfirmTitle">Update incident status?</h2>
         <p>
-          Are you sure you want to assign this incident to
-          <strong id="assignmentProviderName"></strong>? This action cannot be
-          undone.
+          Are you sure you want to update this incident to
+          <strong id="selectedStatus"></strong>?
         </p>
         <div class="confirm-actions">
           <button
             type="button"
             class="secondary-button"
-            id="cancelAssignmentButton"
+            id="cancelStatusButton"
           >
             Cancel
           </button>
           <button
             type="button"
             class="assignment-confirm"
-            id="applyAssignmentButton"
+            id="applyStatusButton"
           >
-            Confirm Assignment
+            Update Status
           </button>
         </div>
       </dialog>

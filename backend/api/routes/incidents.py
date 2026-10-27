@@ -1,0 +1,55 @@
+"""Incident submission API routes."""
+
+from fastapi import APIRouter, Depends, HTTPException, status
+from sqlalchemy.orm import Session
+
+from backend.api.routes.users import get_active_profile, require_session
+from backend.database import get_db
+from backend.schemas.incidents import IncidentCreate, IncidentSubmitted, IncidentSummary
+from backend.services.incidents import ReporterNotFound, create_incident
+from backend.services.incidents import get_reporter_incidents
+
+router = APIRouter(prefix="/api/incidents", tags=["incidents"])
+
+
+def require_reporter(
+    email: str = Depends(require_session),
+    db: Session = Depends(get_db),
+) -> str:
+    """Allow only active reporter accounts to submit incidents."""
+
+    profile = get_active_profile(db, email)
+    if profile["role"] != "REPORTER":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Reporter access required",
+        )
+
+    return email
+
+
+@router.post("", response_model=IncidentSubmitted, status_code=status.HTTP_201_CREATED)
+def submit_incident(
+    incident_data: IncidentCreate,
+    email: str = Depends(require_reporter),
+    db: Session = Depends(get_db),
+) -> IncidentSubmitted:
+    """Create a new incident with NEW status for the authenticated reporter."""
+
+    try:
+        return create_incident(db, email, incident_data)
+    except ReporterNotFound as error:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Reporter account is not active",
+        ) from error
+
+
+@router.get("/mine", response_model=list[IncidentSummary])
+def list_my_incidents(
+    email: str = Depends(require_reporter),
+    db: Session = Depends(get_db),
+) -> list[IncidentSummary]:
+    """Return incidents submitted by the authenticated reporter."""
+
+    return get_reporter_incidents(db, email)

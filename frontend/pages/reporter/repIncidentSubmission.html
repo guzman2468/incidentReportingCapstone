@@ -48,7 +48,7 @@
           <p>Tell us what happened so the right people can take action.</p>
         </div>
 
-        <form class="incident-form" id="incidentForm">
+        <form class="incident-form" id="incidentForm" novalidate>
           <div class="form-header">
             <div>
               <h2>Incident details</h2>
@@ -70,6 +70,7 @@
                   required
                   placeholder="e.g. Wet floor near main lobby"
                 />
+                <span class="field-error" id="incidentTitleError" role="alert"></span>
               </div>
               <div class="field">
                 <label for="severity">Severity <span>*</span></label>
@@ -81,9 +82,10 @@
                   <option>SEVERE</option>
                   <option>CRITICAL</option>
                 </select>
+                <span class="field-error" id="severityError" role="alert"></span>
               </div>
               <div class="field">
-                <label for="location">Location <span>*</span></label>
+                <label for="coordinates">Location <span>*</span></label>
                 <div class="location-control">
                   <button
                     type="button"
@@ -93,6 +95,7 @@
                     Use my location
                   </button>
                 </div>
+                <span class="field-error" id="coordinatesError" role="alert"></span>
               </div>
               <div class="field">
                 <label for="description">Description <span>*</span></label>
@@ -104,6 +107,7 @@
                   required
                   placeholder="Describe what happened, who or what was involved, and any immediate action taken..."
                 ></textarea>
+                <span class="field-error" id="descriptionError" role="alert"></span>
                 <small class="field-hint"
                   >Include useful details such as time, conditions, and
                   witnesses.</small
@@ -112,9 +116,17 @@
             </div>
             <div class="location-result">
               <span class="coordinates-label">Coordinates</span>
-              <span class="coordinates" id="coordinates" aria-live="polite"
-                >Coordinates will appear here</span
-              >
+              <input
+                class="coordinates"
+                id="coordinates"
+                name="location"
+                type="text"
+                aria-live="polite"
+                aria-label="Incident coordinates"
+                placeholder="Coordinates will appear here"
+                readonly
+                required
+              />
               <div class="map-card" id="mapCard" hidden>
                 <iframe
                   id="mapFrame"
@@ -154,6 +166,36 @@
           </button>
           <button type="button" class="danger-button" id="discardChanges">
             Discard changes
+          </button>
+        </div>
+      </dialog>
+    </div>
+    <div class="confirm-backdrop" id="successConfirmBackdrop" hidden>
+      <dialog
+        class="confirm-dialog"
+        id="successConfirm"
+        aria-labelledby="successTitle"
+      >
+        <h2 id="successTitle">Incident submitted</h2>
+        <p>Your incident has been recorded successfully.</p>
+        <div class="confirm-actions">
+          <button type="button" class="primary-button" id="successDone">
+            Done
+          </button>
+        </div>
+      </dialog>
+    </div>
+    <div class="confirm-backdrop" id="errorConfirmBackdrop" hidden>
+      <dialog
+        class="confirm-dialog"
+        id="errorConfirm"
+        aria-labelledby="errorTitle"
+      >
+        <h2 id="errorTitle">An error has occurred</h2>
+        <p>Please try again later.</p>
+        <div class="confirm-actions">
+          <button type="button" class="danger-button" id="errorDone">
+            Close
           </button>
         </div>
       </dialog>

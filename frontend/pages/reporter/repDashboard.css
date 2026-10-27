@@ -439,6 +439,11 @@ a {
   white-space: nowrap;
 }
 
+.status-pill,
+.count-badge {
+  text-transform: uppercase;
+}
+
 .awaiting {
   background: #fff3df;
   color: #805a00;

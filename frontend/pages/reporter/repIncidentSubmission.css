@@ -314,6 +314,26 @@ a {
   resize: vertical;
 }
 
+.field-error {
+  color: #c74444;
+  display: block;
+  font-size: 11px;
+  margin: 6px 0 0;
+  min-height: 0;
+}
+
+.field-error:not(:empty) {
+  min-height: 16px;
+}
+
+.field input.input-error,
+.field select.input-error,
+.field textarea.input-error,
+.location-result input.input-error {
+  border-color: #d95d5d;
+  box-shadow: 0 0 0 3px #fdeaea;
+}
+
 .field-hint {
   color: #9aa8a9;
   display: block;
@@ -480,6 +500,8 @@ a {
 }
 
 .coordinates {
+  background: transparent;
+  border: 0;
   color: #415b61;
   display: block;
   font-size: 15px;
@@ -487,7 +509,26 @@ a {
   max-width: 100%;
   min-height: 24px;
   overflow-wrap: anywhere;
+  padding: 0;
   text-align: right;
+  width: 100%;
+}
+
+.coordinates:focus,
+.coordinates:invalid {
+  border: 0;
+  box-shadow: none;
+  outline: none;
+}
+
+.location-result input.coordinates.input-error {
+  border: 0;
+  box-shadow: none;
+}
+
+.coordinates::placeholder {
+  color: #415b61;
+  opacity: 1;
 }
 
 .coordinates-label {

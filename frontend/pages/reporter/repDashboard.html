@@ -63,7 +63,7 @@
             <article class="stat-card accent-green">
               <div class="stat-icon"></div>
               <div class="stat-content">
-                <span id="resolvedLabel">Resolved this year</span
+                <span id="resolvedLabel">RESOLVED THIS YEAR</span
                 ><strong id="resolvedCount">12</strong>
               </div>
               <select
@@ -82,7 +82,7 @@
             </article>
             <article class="stat-card accent-coral">
               <div class="stat-icon"></div>
-              <div><span>Open incidents</span><strong>3</strong></div>
+              <div><span>Open incidents</span><strong id="openIncidentCount">0</strong></div>
             </article>
           </section>
 
@@ -95,9 +95,9 @@
                 </div>
                 <div class="status-counts">
                   <span class="count-badge past-count"
-                    ><strong id="resolvedPastCount">0</strong> resolved</span
+                    ><strong id="resolvedPastCount">0</strong> RESOLVED</span
                   ><span class="count-badge closed-count"
-                    ><strong id="closedPastCount">0</strong> closed</span
+                    ><strong id="closedPastCount">0</strong> CLOSED</span
                   >
                 </div>
               </div>
@@ -116,9 +116,9 @@
                   id="pastStatusFilter"
                   aria-label="Filter past incidents by status"
                 >
-                  <option value="all">All statuses</option>
-                  <option value="resolved">Resolved</option>
-                  <option value="closed">Closed</option></select
+                  <option value="all">ALL STATUSES</option>
+                  <option value="resolved">RESOLVED</option>
+                  <option value="closed">CLOSED</option></select
                 ><select
                   class="time-filter"
                   id="pastFilter"
@@ -133,7 +133,7 @@
                   <option value="five-years">Past 5 years</option>
                 </select>
               </div>
-              <div class="incident-list" id="pastIncidentList">
+              <div class="incident-list" id="pastIncidentList" hidden>
                 <article
                   class="incident-row"
                   data-search="lorem ipsum dolor sit amet"
@@ -277,9 +277,9 @@
                   id="activeStatusFilter"
                   aria-label="Filter active incidents by status"
                 >
-                  <option value="all">All statuses</option>
-                  <option value="new">New</option>
-                  <option value="progress">In progress</option></select
+                  <option value="all">ALL STATUSES</option>
+                  <option value="new">NEW</option>
+                  <option value="progress">IN PROGRESS</option></select
                 ><select
                   class="time-filter"
                   id="activeFilter"
@@ -294,7 +294,7 @@
                   <option value="five-years">Past 5 years</option>
                 </select>
               </div>
-              <div class="incident-list" id="activeIncidentList">
+              <div class="incident-list" id="activeIncidentList" hidden>
                 <article
                   class="incident-row"
                   data-search="phaesellus molestie lacus suspendisse"
@@ -425,6 +425,6 @@
     </div>
 
     <script src="../authHelpers.js"></script>
-    <script src="repDashboard.js"></script>
+    <script type="module" src="repDashboard.js"></script>
   </body>
 </html>

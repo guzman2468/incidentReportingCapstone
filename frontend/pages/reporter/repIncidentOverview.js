@@ -47,7 +47,7 @@ if (meta) {
 if (incidentStatus) {
   const statusBadge = document.getElementById("statusBadge");
 
-  statusBadge.textContent = incidentStatus;
+  statusBadge.textContent = incidentStatus.toUpperCase();
 
   if (incidentStatus.toLowerCase() !== "resolved") {
     statusBadge.className = "status-badge active-status";

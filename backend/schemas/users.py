@@ -12,7 +12,7 @@ UserRole = Literal[
     "AID_PROVIDER_TEAM_MEMBER",
 ]
 
-GeneralUserRole = Literal["ADMIN", "REPORTER", "ASSIGNER"]
+ProvisionedUserRole = Literal["ADMIN", "REPORTER", "ASSIGNER"]
 
 
 class UserCreate(BaseModel):
@@ -20,7 +20,10 @@ class UserCreate(BaseModel):
     last_name: str = Field(min_length=0, max_length=50)
     email: str = Field(min_length=3, max_length=50, pattern=r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
     password: str = Field(min_length=8, max_length=50)
-    role: GeneralUserRole
+
+
+class AdminUserCreate(UserCreate):
+    role: ProvisionedUserRole
 
 
 class UserLogin(BaseModel):

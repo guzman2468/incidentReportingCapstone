@@ -26,6 +26,12 @@ document.addEventListener("click", (event) => {
 const form = document.getElementById("incidentForm");
 const cancelConfirm = document.getElementById("cancelConfirm");
 const cancelConfirmBackdrop = document.getElementById("cancelConfirmBackdrop");
+const successConfirm = document.getElementById("successConfirm");
+const successConfirmBackdrop = document.getElementById(
+  "successConfirmBackdrop",
+);
+const errorConfirm = document.getElementById("errorConfirm");
+const errorConfirmBackdrop = document.getElementById("errorConfirmBackdrop");
 
 const closeCancelConfirm = () => {
   cancelConfirm.close();
@@ -70,18 +76,152 @@ cancelConfirm.addEventListener("click", (event) => {
 // Escape closes the confirmation dialog.
 document.addEventListener("keydown", (event) => {
   if (event.key === "Escape" && cancelConfirm.open) closeCancelConfirm();
+  if (event.key === "Escape" && successConfirm.open) closeSuccessConfirm();
+  if (event.key === "Escape" && errorConfirm.open) closeErrorConfirm();
 });
 
-// This is visual-only for now. Backend submission can be connected later.
-form.addEventListener("submit", (event) => {
+const closeSuccessConfirm = () => {
+  successConfirm.close();
+  successConfirmBackdrop.hidden = true;
+};
+
+const closeErrorConfirm = () => {
+  errorConfirm.close();
+  errorConfirmBackdrop.hidden = true;
+};
+
+successConfirm.addEventListener("close", () => {
+  successConfirmBackdrop.hidden = true;
+});
+
+errorConfirm.addEventListener("close", () => {
+  errorConfirmBackdrop.hidden = true;
+});
+
+document.getElementById("successDone").addEventListener("click", () => {
+  window.location.href = "repDashboard.html";
+});
+
+document.getElementById("errorDone").addEventListener("click", () => {
+  closeErrorConfirm();
+});
+
+successConfirm.addEventListener("click", (event) => {
+  const bounds = successConfirm.getBoundingClientRect();
+  const clickedOutside =
+    event.clientX < bounds.left ||
+    event.clientX > bounds.right ||
+    event.clientY < bounds.top ||
+    event.clientY > bounds.bottom;
+
+  if (clickedOutside) closeSuccessConfirm();
+});
+
+errorConfirm.addEventListener("click", (event) => {
+  const bounds = errorConfirm.getBoundingClientRect();
+  const clickedOutside =
+    event.clientX < bounds.left ||
+    event.clientX > bounds.right ||
+    event.clientY < bounds.top ||
+    event.clientY > bounds.bottom;
+
+  if (clickedOutside) closeErrorConfirm();
+});
+
+const submitButton = form.querySelector('button[type="submit"]');
+const requiredFields = form.querySelectorAll(
+  "input[required], select[required], textarea[required]",
+);
+
+const setFieldError = (field, message) => {
+  const error = document.getElementById(`${field.id}Error`);
+  field.classList.toggle("input-error", Boolean(message));
+  error.textContent = message || "";
+  return !message;
+};
+
+const validateField = (field) => {
+  const value = field.value.trim();
+
+  if (!value) {
+    if (field.id === "coordinates") {
+      return setFieldError(field, "Location is required.");
+    }
+
+    const label = form.querySelector(`label[for="${field.id}"]`);
+    const fieldName = label
+      ? label.textContent.replace("*", "").trim()
+      : field.name;
+    return setFieldError(field, `${fieldName} is required.`);
+  }
+
+  return setFieldError(field, "");
+};
+
+requiredFields.forEach((field) => {
+  field.addEventListener("blur", () => validateField(field));
+  field.addEventListener("input", () => validateField(field));
+  field.addEventListener("change", () => validateField(field));
+});
+
+const showSubmissionError = () => {
+  errorConfirmBackdrop.hidden = false;
+  errorConfirm.showModal();
+};
+
+const showSuccessMessage = () => {
+  successConfirmBackdrop.hidden = false;
+  successConfirm.showModal();
+};
+
+form.addEventListener("submit", async (event) => {
   event.preventDefault();
-  const toast = document.createElement("div");
 
-  toast.className = "toast";
-  toast.textContent = "Incident report ready to submit.";
-  document.body.appendChild(toast);
+  const invalidFields = [...requiredFields].filter(
+    (field) => !validateField(field),
+  );
+  if (invalidFields.length) {
+    invalidFields[0].focus();
+    return;
+  }
 
-  setTimeout(() => toast.remove(), 2600);
+  const location = document.getElementById("coordinates").value.trim();
+
+  const formData = new FormData(form);
+  const submission = {
+    title: formData.get("title"),
+    description: formData.get("description"),
+    severity: formData.get("severity"),
+    location,
+  };
+
+  submitButton.disabled = true;
+  submitButton.textContent = "Submitting...";
+
+  try {
+    const response = await fetch("/api/incidents", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(submission),
+    });
+
+    const result = await response.json();
+    if (!response.ok) {
+      throw new Error(result.detail || "Incident submission failed.");
+    }
+
+    showSuccessMessage();
+    form.reset();
+    coordinates.value = "";
+    requiredFields.forEach((field) => setFieldError(field, ""));
+    mapCard.hidden = true;
+  } catch (error) {
+    console.error("Incident submission failed.", error);
+    showSubmissionError();
+  } finally {
+    submitButton.disabled = false;
+    submitButton.innerHTML = "Submit report <span>→</span>";
+  }
 });
 
 // -----------------------------
@@ -95,13 +235,14 @@ const mapFrame = document.getElementById("mapFrame");
 // Ask the browser for the user's current coordinates.
 locationButton.addEventListener("click", () => {
   if (!navigator.geolocation) {
-    coordinates.textContent = "Location is not supported by this browser.";
+    coordinates.value = "";
+    validateField(coordinates);
     return;
   }
 
   locationButton.disabled = true;
   locationButton.textContent = "Getting location...";
-  coordinates.textContent = "Waiting for permission...";
+  coordinates.value = "";
 
   navigator.geolocation.getCurrentPosition(
     (position) => {
@@ -109,9 +250,10 @@ locationButton.addEventListener("click", () => {
       const latitudeDirection = latitude >= 0 ? "N" : "S";
       const longitudeDirection = longitude >= 0 ? "E" : "W";
 
-      coordinates.textContent =
+      coordinates.value =
         `${Math.abs(latitude).toFixed(6)}° ${latitudeDirection}, ` +
         `${Math.abs(longitude).toFixed(6)}° ${longitudeDirection}`;
+      validateField(coordinates);
 
       // Build a small OpenStreetMap view with a marker at the retrieved point.
       const mapPadding = 0.01;
@@ -130,7 +272,8 @@ locationButton.addEventListener("click", () => {
       locationButton.textContent = "Update location";
     },
     () => {
-      coordinates.textContent = "Unable to retrieve coordinates.";
+      coordinates.value = "";
+      validateField(coordinates);
       locationButton.disabled = false;
       locationButton.textContent = "Try again";
     },

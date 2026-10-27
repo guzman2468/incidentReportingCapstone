@@ -350,7 +350,7 @@ function buildProvisioningRequest(data, role, roles) {
   }
 
   return {
-    endpoint: "/api/users/createUser",
+    endpoint: "/api/users/adminCreateUser",
     payload: {
       first_name: data.get("firstName").trim().toLowerCase(),
       last_name: data.get("lastName").trim().toLowerCase(),

@@ -12,6 +12,7 @@ from backend.core.security import (
 from backend.database import get_db
 from backend.schemas.users import (
     PasswordChange,
+    AdminUserCreate,
     UserCreate,
     UserCreated,
     UserLogin,
@@ -54,10 +55,49 @@ def get_active_profile(db: Session, email: str) -> dict[str, str | bool]:
     return profile
 
 
+def require_session(session: str | None = Cookie(default=None, alias=SESSION_COOKIE)) -> str:
+    email = get_session_email(session)
+    if not email:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authenticated")
+    return email
+
+
 @router.post("/createUser", status_code=status.HTTP_201_CREATED)
 def register_user(user_data: UserCreate, db: Session = Depends(get_db)) -> UserCreated:
     try:
-        return create_user(db, user_data)
+        return create_user(
+            db,
+            user_data,
+            role="REPORTER",
+            must_change_password=False,
+        )
+    except EmailAlreadyRegistered as error:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="An account with that email already exists.",
+        ) from error
+
+
+@router.post("/adminCreateUser", status_code=status.HTTP_201_CREATED)
+def admin_create_user(
+    user_data: AdminUserCreate,
+    email: str = Depends(require_session),
+    db: Session = Depends(get_db),
+) -> UserCreated:
+    profile = get_active_profile(db, email)
+    if profile["role"] != "ADMIN":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Admin access required",
+        )
+
+    try:
+        return create_user(
+            db,
+            user_data,
+            role=user_data.role,
+            must_change_password=True,
+        )
     except EmailAlreadyRegistered as error:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
@@ -85,13 +125,6 @@ def login_user(
         "role": user["role"],
         "must_change_password": user["must_change_password"],
     }
-
-
-def require_session(session: str | None = Cookie(default=None, alias=SESSION_COOKIE)) -> str:
-    email = get_session_email(session)
-    if not email:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authenticated")
-    return email
 
 
 @router.get("/currentUser")

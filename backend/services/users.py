@@ -65,7 +65,12 @@ class InvalidCredentials(Exception):
     """Raised when login credentials do not match an existing user."""
 
 
-def create_user(db: Session, user_data: UserCreate) -> dict[str, int | str]:
+def create_user(
+    db: Session,
+    user_data: UserCreate,
+    role: str = "REPORTER",
+    must_change_password: bool = False,
+) -> dict[str, int | str]:
     """Hash the password and insert a user into the existing public.users table."""
     first_name = user_data.first_name.strip().lower()
     last_name = user_data.last_name.strip().lower()
@@ -78,8 +83,8 @@ def create_user(db: Session, user_data: UserCreate) -> dict[str, int | str]:
                 "password_hash": hash_password(user_data.password),
                 "first_name": first_name,
                 "last_name": last_name,
-                "role": user_data.role,
-                "must_change_password": user_data.role != "REPORTER",
+                "role": role,
+                "must_change_password": must_change_password,
             },
         )
 

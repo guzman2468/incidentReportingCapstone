@@ -7,7 +7,7 @@ from backend.api.routes.users import get_active_profile, require_session
 from backend.database import get_db
 from backend.schemas.incidents import IncidentCreate, IncidentSubmitted, IncidentSummary
 from backend.services.incidents import ReporterNotFound, create_incident
-from backend.services.incidents import get_reporter_incidents
+from backend.services.incidents import get_reporter_incident, get_reporter_incidents
 
 router = APIRouter(prefix="/api/incidents", tags=["incidents"])
 
@@ -53,3 +53,21 @@ def list_my_incidents(
     """Return incidents submitted by the authenticated reporter."""
 
     return get_reporter_incidents(db, email)
+
+
+@router.get("/reference/{incident_reference}", response_model=IncidentSummary)
+def get_my_incident(
+    incident_reference: str,
+    email: str = Depends(require_reporter),
+    db: Session = Depends(get_db),
+) -> IncidentSummary:
+    """Return one incident by its human-readable number."""
+
+    incident = get_reporter_incident(db, email, incident_reference)
+    if incident is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Incident not found",
+        )
+
+    return incident

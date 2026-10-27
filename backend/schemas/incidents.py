@@ -2,7 +2,6 @@
 
 from datetime import datetime
 from typing import Literal
-from uuid import UUID
 
 from pydantic import BaseModel, Field
 
@@ -28,8 +27,7 @@ class IncidentSubmitted(BaseModel):
 class IncidentSummary(BaseModel):
     """Incident fields needed by the reporter dashboard."""
 
-    id: UUID
-    incident_number: int
+    incident_reference: str
     title: str
     description: str
     severity: IncidentSeverity
@@ -37,3 +35,4 @@ class IncidentSummary(BaseModel):
     status: str
     created_at: datetime
     updated_at: datetime
+    resolved_at: datetime | None = None

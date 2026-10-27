@@ -21,41 +21,111 @@ document.addEventListener("click", (event) => {
 // -----------------------------
 // Incident data
 // -----------------------------
-// Read the selected incident's basic values from the dashboard URL.
 const params = new URLSearchParams(window.location.search);
-const title = params.get("title");
-const meta = params.get("meta");
-const incidentStatus = params.get("status");
+const incidentReference = params.get("reference");
 
-if (title) {
-  document.getElementById("titleField").textContent = title;
-}
-if (meta) {
-  const submitted = "submitted";
-  const submittedIndex = meta.toLowerCase().indexOf(submitted);
+const formatLocalDateTime = (dateValue) => {
+  const date = new Date(dateValue);
+  if (Number.isNaN(date.getTime())) return "Unknown date";
 
-  const afterSubmitted =
-    submittedIndex === -1 ? "" : meta.slice(submittedIndex + submitted.length);
+  return new Intl.DateTimeFormat("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: true,
+    hourCycle: "h12",
+  }).format(date);
+};
 
-  const dateText = afterSubmitted.trimStart();
-  const submittedDate =
-    dateText && dateText.length < afterSubmitted.length ? dateText : meta;
-
-  document.getElementById("incidentMeta").textContent = submittedDate;
-}
-
-if (incidentStatus) {
+const setIncidentStatus = (status) => {
   const statusBadge = document.getElementById("statusBadge");
+  statusBadge.textContent = status.toUpperCase();
+  statusBadge.className =
+    status === "RESOLVED" || status === "CLOSED"
+      ? "status-badge"
+      : "status-badge active-status";
+};
 
-  statusBadge.textContent = incidentStatus.toUpperCase();
+const setIncidentLocation = (location) => {
+  document.getElementById("overviewCoordinates").textContent = location;
 
-  if (incidentStatus.toLowerCase() !== "resolved") {
-    statusBadge.className = "status-badge active-status";
-  }
-}
+  const coordinateMatch = location.match(
+    /^([\d.]+)°\s*([NS]),\s*([\d.]+)°\s*([EW])$/i,
+  );
+  if (!coordinateMatch) return;
 
-document.getElementById("overviewCoordinates").textContent =
-  "41.878100° N, 87.629800° W";
+  const latitude =
+    Number(coordinateMatch[1]) *
+    (coordinateMatch[2].toUpperCase() === "S" ? -1 : 1);
+  const longitude =
+    Number(coordinateMatch[3]) *
+    (coordinateMatch[4].toUpperCase() === "W" ? -1 : 1);
+  const padding = 0.01;
+  const mapFrame = document.getElementById("mapFrame");
+
+  mapFrame.src =
+    "https://www.openstreetmap.org/export/embed.html" +
+    `?bbox=${longitude - padding},${latitude - padding},` +
+    `${longitude + padding},${latitude + padding}` +
+    `&layer=mapnik&marker=${latitude},${longitude}`;
+};
+
+const loadIncident = async () => {
+  if (!incidentReference) throw new Error("Incident reference is missing.");
+
+  const response = await fetch(
+    `/api/incidents/reference/${encodeURIComponent(incidentReference)}`,
+  );
+  if (!response.ok) throw new Error("Unable to load incident.");
+
+  const incident = await response.json();
+  document.getElementById("titleField").textContent = incident.title;
+  document.getElementById("incidentMeta").textContent = formatLocalDateTime(
+    incident.created_at,
+  );
+  document.getElementById("resolvedDate").textContent = incident.resolved_at
+    ? formatLocalDateTime(incident.resolved_at)
+    : "Not resolved";
+  document.getElementById("severityField").textContent = incident.severity;
+  document.getElementById("severityField").className =
+    `readonly-field severity-${incident.severity.toLowerCase()}`;
+  document.getElementById("descriptionField").textContent = incident.description;
+  setIncidentLocation(incident.location);
+  setIncidentStatus(incident.status);
+  document.getElementById("incidentOverviewContent").hidden = false;
+};
+
+const showIncidentLoadError = (error) => {
+  console.error("Unable to load incident overview.", error);
+  document.getElementById("incidentOverviewContent").hidden = false;
+  document.getElementById("titleField").textContent =
+    "Unable to load this incident.";
+};
+
+const setLoadingState = () => {
+  document.getElementById("incidentMeta").textContent = "Loading...";
+  document.getElementById("resolvedDate").textContent = "Loading...";
+  document.getElementById("statusBadge").textContent = "Loading...";
+  document.getElementById("statusBadge").className = "status-badge";
+  document.getElementById("titleField").textContent = "Loading...";
+  document.getElementById("severityField").textContent = "Loading...";
+  document.getElementById("severityField").className = "readonly-field";
+  document.getElementById("descriptionField").textContent = "Loading...";
+  document.getElementById("overviewCoordinates").textContent = "Loading...";
+};
+
+const reloadIncidentOverview = () => {
+  setLoadingState();
+  loadIncident().catch(showIncidentLoadError);
+};
+
+window.addEventListener("pageshow", reloadIncidentOverview);
+window.addEventListener("pagehide", () => {
+  setLoadingState();
+});
 
 // -----------------------------
 // Visual-only actions
@@ -103,6 +173,9 @@ document.getElementById("addNoteButton").addEventListener("click", () => {
   });
 });
 
-document.getElementById("followUpButton").addEventListener("click", () => {
-  showToast("Follow-up action will be available soon.");
-});
+const followUpButton = document.getElementById("followUpButton");
+if (followUpButton) {
+  followUpButton.addEventListener("click", () => {
+    showToast("Follow-up action will be available soon.");
+  });
+}

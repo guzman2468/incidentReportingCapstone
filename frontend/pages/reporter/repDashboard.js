@@ -46,9 +46,6 @@ const formatDate = (dateValue) => {
   }).format(date);
 };
 
-const formatIncidentReference = (incidentNumber) =>
-  `INC-${String(incidentNumber).padStart(5, "0")}`;
-
 const getColumn = (incident) =>
   ["RESOLVED", "CLOSED", "CANCELLED"].includes(incident.status)
     ? "past"
@@ -73,7 +70,7 @@ const renderIncident = (incident) => {
   const { className, symbol } = getIncidentSymbol(incident);
   const statusLabel = statusLabels[incident.status] || incident.status;
   const searchText = [
-    formatIncidentReference(incident.incident_number),
+    incident.incident_reference,
     incident.title,
     incident.description,
     incident.severity,
@@ -86,13 +83,13 @@ const renderIncident = (incident) => {
   return `
     <article
       class="incident-row"
-      data-incident-id="${escapeHTML(incident.id)}"
+      data-incident-reference="${escapeHTML(incident.incident_reference)}"
       data-search="${escapeHTML(searchText)}"
     >
       <div class="incident-symbol ${className}">${symbol}</div>
       <div class="incident-info">
         <strong>${escapeHTML(incident.title)}</strong>
-        <span>${escapeHTML(formatIncidentReference(incident.incident_number))} · Submitted ${escapeHTML(formatDate(incident.created_at))}</span>
+        <span>${escapeHTML(incident.incident_reference)} · Submitted ${escapeHTML(formatDate(incident.created_at))}</span>
       </div>
       <span class="status-pill ${getStatusFilterValue(incident.status)}">${escapeHTML(statusLabel)}</span>
       <span class="row-arrow">›</span>
@@ -130,7 +127,7 @@ function connectIncidentControls(
 
     rows.forEach((row) => {
       const incident = incidents.find(
-        (item) => String(item.id) === row.dataset.incidentId,
+        (item) => item.incident_reference === row.dataset.incidentReference,
       );
       const matchesSearch = row.dataset.search.includes(query);
       const matchesStatus =
@@ -252,17 +249,18 @@ document.getElementById("resolvedFilter").addEventListener(
 document
   .querySelector(".dashboard-grid")
   .addEventListener("click", (event) => {
-    const row = event.target.closest("[data-incident-id]");
+    const row = event.target.closest("[data-incident-reference]");
     if (!row) return;
 
     const incident = incidents.find(
-      (item) => String(item.id) === row.dataset.incidentId,
+      (item) => item.incident_reference === row.dataset.incidentReference,
     );
     if (!incident) return;
 
     const params = new URLSearchParams({
+      reference: incident.incident_reference,
       title: incident.title,
-      meta: `${formatIncidentReference(incident.incident_number)} · Submitted ${formatDate(incident.created_at)}`,
+      meta: `${incident.incident_reference} · Submitted ${formatDate(incident.created_at)}`,
       status: statusLabels[incident.status] || incident.status,
     });
     window.location.href = `repIncidentOverview.html?${params.toString()}`;

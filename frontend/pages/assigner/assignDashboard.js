@@ -1,4 +1,4 @@
-const { incidents } = window.assignerDemoData;
+const incidents = [];
 
 const listSettings = [
   {
@@ -47,8 +47,9 @@ function isWithinTimeRange(submitted, selectedRange) {
 }
 
 function getColumn(incident) {
-  if (["resolved", "closed"].includes(incident.status)) return "past";
-  if (incident.status === "new") return "new";
+  const status = incident.status.toLowerCase();
+  if (["resolved", "closed", "cancelled"].includes(status)) return "past";
+  if (status === "new") return "new";
   return "active";
 }
 
@@ -66,50 +67,29 @@ function escapeHTML(value) {
   );
 }
 
-function renderIncident(incident, column) {
-  let symbolClass = "";
-  let symbol = "!";
-
-  if (column === "past") {
-    symbolClass = "past";
-    symbol = "✓";
-  } else if (column === "active") {
-    symbolClass = "active";
-    symbol = "↻";
-  }
-
+function renderIncident(incident) {
+  const normalizedStatus = incident.status.toLowerCase();
   const statusLabel =
     {
       new: "New",
       active: "In progress",
       resolved: "Resolved",
       closed: "Closed",
-    }[incident.status] || incident.status;
+    }[normalizedStatus] || normalizedStatus;
 
   const severityClass = `severity-${String(incident.severity).toLowerCase()}`;
 
   return `
     <button type="button" class="incident-row"
-      data-incident-id="${escapeHTML(incident.id)}"
+      data-incident-id="${escapeHTML(incident.incident_reference)}"
       aria-label="Open ${escapeHTML(incident.title)}">
-      <span class="incident-symbol ${symbolClass}">${symbol}</span>
       <span class="incident-row-content">
         <strong>${escapeHTML(incident.title)}</strong>
-        <small>${escapeHTML(incident.id)} · ${escapeHTML(incident.submitted)}</small>
-        <small>${escapeHTML(incident.type)} · ${escapeHTML(incident.county)} County</small>
-        <span class="row-bottom">
-          <span class="severity-pill ${severityClass}">
-            ${escapeHTML(incident.severity)}
-          </span>
-          <span class="status-pill">${escapeHTML(statusLabel)}</span>
-        </span>
-        ${
-          incident.assignedProvider
-            ? `
-          <small>Provider: ${escapeHTML(incident.assignedProvider)} · ${escapeHTML(incident.assignedCounty)} County</small>
-        `
-            : ""
-        }
+        <small>${escapeHTML(incident.incident_reference)} · Submitted ${escapeHTML(formatDate(incident.created_at))}</small>
+      </span>
+      <span class="row-status">
+        <span class="severity-pill ${severityClass}">${escapeHTML(incident.severity)}</span>
+        <span class="status-pill status-${escapeHTML(normalizedStatus)}">${escapeHTML(statusLabel.toUpperCase())}</span>
       </span>
       <span class="row-arrow" aria-hidden="true">›</span>
     </button>
@@ -129,11 +109,10 @@ function renderDashboard() {
 
     const filtered = matchingIncidents.filter((incident) => {
       const searchableText = [
-        incident.id,
+        incident.incident_reference,
         incident.title,
         incident.description,
-        incident.type,
-        incident.county,
+        incident.location,
         incident.severity,
         incident.assignedProvider,
       ]
@@ -142,12 +121,12 @@ function renderDashboard() {
 
       return (
         searchableText.includes(query) &&
-        isWithinTimeRange(incident.submitted, selectedRange)
+        isWithinTimeRange(incident.created_at, selectedRange)
       );
     });
 
     document.getElementById(settings.listId).innerHTML = filtered
-      .map((incident) => renderIncident(incident, settings.status))
+      .map(renderIncident)
       .join("");
 
     document.getElementById(settings.countId).textContent =
@@ -226,3 +205,35 @@ document.getElementById("currentDate").textContent = new Intl.DateTimeFormat(
   .toUpperCase();
 
 renderDashboard();
+
+function formatDate(dateValue) {
+  const date = new Date(dateValue);
+  if (Number.isNaN(date.getTime())) return "Unknown date";
+
+  return new Intl.DateTimeFormat("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(date);
+}
+
+async function loadAssignerIncidents() {
+  try {
+    const response = await fetch("/api/incidents/assigner");
+    if (!response.ok) throw new Error("Unable to load incidents.");
+
+    const loadedIncidents = await response.json();
+    incidents.splice(0, incidents.length, ...loadedIncidents);
+    renderDashboard();
+  } catch (error) {
+    console.error("Unable to load assigner incidents.", error);
+    document.querySelectorAll(".empty-state").forEach((emptyState) => {
+      emptyState.textContent = "Unable to load incidents.";
+      emptyState.style.display = "block";
+    });
+  }
+}
+
+await loadAssignerIncidents();

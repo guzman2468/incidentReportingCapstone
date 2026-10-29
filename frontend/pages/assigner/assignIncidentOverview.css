@@ -970,6 +970,43 @@ a {
   color: #d16f60;
 }
 
+.overview-fields .readonly-field.severity-value {
+  display: inline-block;
+  padding: 5px 9px;
+  border-radius: 20px;
+  border: 1px solid transparent;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
+.overview-fields .readonly-field.severity-value.severity-low {
+  background: #c9a400;
+  color: #111111;
+}
+
+.overview-fields .readonly-field.severity-value.severity-medium {
+  background: #f6a23a;
+  color: #111111;
+}
+
+.overview-fields .readonly-field.severity-value.severity-high {
+  background: #d94a4a;
+  color: #111111;
+}
+
+.overview-fields .readonly-field.severity-value.severity-severe {
+  background: #8652b8;
+  color: #ffffff;
+}
+
+.overview-fields .readonly-field.severity-value.severity-critical {
+  background: #111111;
+  border: 1px solid #000000;
+  color: #ffffff;
+}
+
 .notes-panel {
   background: #fff8e9;
   border: 1px solid #f6e5c6;
@@ -1182,6 +1219,11 @@ a {
 }
 
 .overview-wrap .active-status {
+  background: #fff3df;
+  color: #805a00;
+}
+
+.overview-wrap .new-status {
   background: #fff3df;
   color: #805a00;
 }
@@ -1624,9 +1666,13 @@ a {
   background: transparent;
   border: 1px solid #edf2f0;
   border-radius: 9px;
+  color: inherit;
+  cursor: pointer;
   display: flex;
   gap: 10px;
   padding: 12px;
+  text-align: left;
+  width: 100%;
 }
 
 .nearby-row:hover {

@@ -1,7 +1,6 @@
-const { incidents } = window.assignerDemoData;
-
 const params = new URLSearchParams(window.location.search);
 const incidentId = params.get("id");
+let incidents = [];
 
 const providerSelect = document.getElementById("providerSelect");
 const teamSelect = document.getElementById("teamSelect");
@@ -37,6 +36,7 @@ if (nearbyCard && formFields) {
 let incident = null;
 let incidentMap = null;
 let mapMarkers = null;
+const nearbyMarkers = new Map();
 
 function escapeHTML(value) {
   return String(value ?? "").replace(
@@ -52,19 +52,72 @@ function escapeHTML(value) {
   );
 }
 
+function formatDate(dateValue) {
+  const date = new Date(dateValue);
+  if (Number.isNaN(date.getTime())) return "date unavailable";
+
+  return new Intl.DateTimeFormat("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(date);
+}
+
+function parseCoordinates(location) {
+  const coordinateMatch = /^\s*(\d+(?:\.\d+)?)°\s*([NS])\s*,\s*(\d+(?:\.\d+)?)°\s*([EW])\s*$/i.exec(
+    String(location ?? ""),
+  );
+  if (!coordinateMatch) return {};
+
+  const latitude = Number(coordinateMatch[1]);
+  const longitude = Number(coordinateMatch[3]);
+
+  return {
+    latitude: coordinateMatch[2].toUpperCase() === "S" ? -latitude : latitude,
+    longitude:
+      coordinateMatch[4].toUpperCase() === "W" ? -longitude : longitude,
+  };
+}
+
+function normalizeIncident(rawIncident) {
+  return {
+    ...rawIncident,
+    ...parseCoordinates(rawIncident.location),
+    id: rawIncident.incident_reference,
+    type: "Incident report",
+    county: rawIncident.location,
+    submitted: formatDate(rawIncident.created_at),
+    status: String(rawIncident.status).toLowerCase(),
+    resolvedDate: rawIncident.resolved_at
+      ? formatDate(rawIncident.resolved_at)
+      : "Not resolved",
+  };
+}
+
 // -------------------------------------
 // Load and display the selected incident
 // -------------------------------------
 
 async function displayIncident() {
-  incident = incidents.find((item) => item.id === incidentId);
+  const response = await fetch("/api/incidents/assigner");
+  if (!response.ok) throw new Error("Unable to load incident.");
+
+  const loadedIncidents = await response.json();
+  incidents = loadedIncidents.map(normalizeIncident);
+  const loadedIncident = incidents.find(
+    (item) => item.incident_reference === incidentId,
+  );
+
+  incident = loadedIncident || null;
 
   if (!incident) {
     document.querySelector(".overview-wrap").innerHTML = `
       <div class="incident-card">
         <h1>Incident not found</h1>
         <p class="hero-copy">
-          This incident isn't included in the sample data.
+          This incident could not be found in the incident queue.
         </p>
         <a class="secondary-button" href="assignDashboard.html">
           Back to dashboard
@@ -88,8 +141,7 @@ async function displayIncident() {
     ? `Assigned ${assignedDate}`
     : `Submitted ${incident.submitted || "date unavailable"}`;
 
-  document.getElementById("submittedDate").textContent =
-    `${incident.id} · ${dateLabel}`;
+  document.getElementById("submittedDate").textContent = dateLabel;
   document.getElementById("resolvedDate").textContent =
     incident.resolvedDate || "Not resolved";
 
@@ -106,7 +158,7 @@ async function displayIncident() {
 
   document.getElementById("severityValue").textContent = severity;
   document.getElementById("severityValue").className =
-    `severity-value severity-${String(severity).toLowerCase()}`;
+    `readonly-field severity-value severity-${String(severity).toLowerCase()}`;
 
   updateStatusBadge();
   await loadAidProviders();
@@ -132,6 +184,8 @@ function updateStatusBadge() {
     badge.classList.add(incident.status);
   } else if (incident.status === "active") {
     badge.classList.add("active");
+  } else if (incident.status === "new") {
+    badge.classList.add("new-status");
   }
 }
 
@@ -290,6 +344,7 @@ function updateMap(nearby = []) {
   }
 
   if (!incidentMap) {
+    mapElement.textContent = "";
     incidentMap = L.map(mapElement).setView([latitude, longitude], 13);
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
       attribution:
@@ -300,6 +355,7 @@ function updateMap(nearby = []) {
   }
 
   mapMarkers.clearLayers();
+  nearbyMarkers.clear();
 
   const radiusMiles = Number(document.getElementById("radiusSelect").value);
   const radiusCircle = L.circle([latitude, longitude], {
@@ -324,18 +380,23 @@ function updateMap(nearby = []) {
     .addTo(mapMarkers);
 
   nearby.forEach((other) => {
-    L.circleMarker([Number(other.latitude), Number(other.longitude)], {
+    const nearbyMarker = L.circleMarker(
+      [Number(other.latitude), Number(other.longitude)],
+      {
       radius: 6,
       color: "#ffffff",
       weight: 2,
       fillColor: "#ee806d",
       fillOpacity: 1,
-    })
+      },
+    )
       .bindPopup(
         `<strong>${escapeHTML(other.id)} · ${escapeHTML(other.title)}</strong><br>` +
-          `${escapeHTML(other.county)} County`,
+          `${escapeHTML(other.location)}`,
       )
       .addTo(mapMarkers);
+
+    nearbyMarkers.set(other.id, nearbyMarker);
   });
 
   incidentMap.fitBounds(radiusCircle.getBounds(), {
@@ -343,6 +404,14 @@ function updateMap(nearby = []) {
     maxZoom: 14,
   });
   window.setTimeout(() => incidentMap.invalidateSize(), 0);
+}
+
+function focusNearbyIncident(incidentReference) {
+  const marker = nearbyMarkers.get(incidentReference);
+  if (!marker || !incidentMap) return;
+
+  incidentMap.setView(marker.getLatLng(), Math.max(incidentMap.getZoom(), 13));
+  marker.openPopup();
 }
 
 // -------------------------------------
@@ -424,17 +493,17 @@ function updateNearbyIncidents() {
   list.innerHTML = nearby
     .map(
       (other) => `
-    <div class="nearby-row">
+    <button type="button" class="nearby-row" data-nearby-incident="${escapeHTML(other.id)}">
       <span class="nearby-info">
         <strong>${escapeHTML(other.title)}</strong>
         <small>
-          ${escapeHTML(other.id)} · ${escapeHTML(other.county)} County
+          ${escapeHTML(other.id)} · ${other.distance.toFixed(1)} miles away
         </small>
         <small>
-          ${escapeHTML(other.type)} · ${escapeHTML(other.severity)} · ${escapeHTML(other.status)}
+          ${escapeHTML(other.severity)} · ${escapeHTML(other.status.toUpperCase())}
         </small>
       </span>
-    </div>
+    </button>
   `,
     )
     .join("");
@@ -446,6 +515,13 @@ function updateNearbyIncidents() {
 document
   .getElementById("radiusSelect")
   .addEventListener("change", updateNearbyIncidents);
+
+document.getElementById("nearbyList").addEventListener("click", (event) => {
+  const nearbyRow = event.target.closest("[data-nearby-incident]");
+  if (!nearbyRow) return;
+
+  focusNearbyIncident(nearbyRow.dataset.nearbyIncident);
+});
 
 providerSelect.addEventListener("change", async () => {
   setProviderError("");
@@ -569,5 +645,16 @@ if (!incidentId) {
     await displayIncident();
   } catch (error) {
     console.error(error);
+    document.querySelector(".overview-wrap").innerHTML = `
+      <div class="incident-card">
+        <h1>Unable to load incident</h1>
+        <p class="hero-copy">
+          The incident details could not be loaded. Return to the dashboard and try again.
+        </p>
+        <a class="secondary-button" href="assignDashboard.html">
+          Back to dashboard
+        </a>
+      </div>
+    `;
   }
 }

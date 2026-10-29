@@ -80,6 +80,23 @@ GET_REPORTER_INCIDENT_QUERY = text(
     """
 )
 
+GET_ASSIGNER_INCIDENTS_QUERY = text(
+    """
+    SELECT
+        incident_number,
+        title,
+        description,
+        severity,
+        location,
+        status,
+        created_at,
+        updated_at,
+        resolved_at
+    FROM public.incidents
+    ORDER BY created_at DESC
+    """
+)
+
 
 class ReporterNotFound(Exception):
     """Raised when the authenticated reporter no longer has an active account."""
@@ -137,6 +154,13 @@ def get_reporter_incidents(
         GET_REPORTER_INCIDENTS_QUERY,
         {"email": email},
     ).mappings().all()
+    return [_add_incident_reference(dict(row)) for row in rows]
+
+
+def get_assigner_incidents(db: Session) -> list[dict[str, object]]:
+    """Return incidents available to the assigner workspace."""
+
+    rows = db.execute(GET_ASSIGNER_INCIDENTS_QUERY).mappings().all()
     return [_add_incident_reference(dict(row)) for row in rows]
 
 

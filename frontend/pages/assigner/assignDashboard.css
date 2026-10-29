@@ -291,10 +291,10 @@
 .incident-row {
   display: flex;
   width: 100%;
-  min-height: 0;
-  gap: 10px;
-  align-items: flex-start;
-  padding: 13px 10px;
+  min-height: 76px;
+  gap: 13px;
+  align-items: center;
+  padding: 10px 8px;
   border: 1px solid #edf2f0;
   border-radius: 9px;
   background: white;
@@ -320,29 +320,6 @@
   }
 }
 
-.incident-symbol {
-  display: grid;
-  place-items: center;
-  flex-shrink: 0;
-  width: 32px;
-  height: 32px;
-  border-radius: 9px;
-  background: #fff0ec;
-  color: #a84c40;
-  font-size: 15px;
-  font-weight: 700;
-}
-
-.incident-symbol.active {
-  background: #fff8e7;
-  color: #7a5a0b;
-}
-
-.incident-symbol.past {
-  background: #ecf9f0;
-  color: #247447;
-}
-
 .incident-row-content {
   flex: 1;
   min-width: 0;
@@ -351,33 +328,35 @@
 .incident-row-content strong {
   display: block;
   overflow-wrap: anywhere;
-  margin: 1px 0 6px;
-  font-size: 11px;
+  margin: 0;
+  font-size: 12px;
   line-height: 1.5;
 }
 
 .incident-row-content small {
   display: block;
   color: #99a6a8;
-  font-size: 9px;
+  margin-top: 6px;
+  font-size: 10px;
   line-height: 1.6;
 }
 
-.row-bottom {
+.row-status {
   display: flex;
-  flex-wrap: wrap;
-  gap: 5px;
+  flex-shrink: 0;
+  gap: 8px;
   align-items: center;
-  margin-top: 8px;
 }
 
 .severity-pill,
 .status-pill {
   display: inline-block;
-  padding: 4px 7px;
-  border-radius: 5px;
-  font-size: 9px;
+  padding: 5px 9px;
+  border-radius: 20px;
+  font-size: 10px;
   font-weight: 700;
+  white-space: nowrap;
+  text-transform: uppercase;
 }
 
 .severity-low {
@@ -410,6 +389,27 @@
   background: #f0f5f4;
   color: #586a70;
   font-weight: 600;
+}
+
+.status-new {
+  background: #fff3df;
+  color: #805a00;
+}
+
+.status-active {
+  background: #e7f3ff;
+  color: #245b86;
+}
+
+.status-resolved {
+  background: #e7f3ec;
+  color: #28754d;
+}
+
+.status-closed,
+.status-cancelled {
+  background: #f0f5f4;
+  color: #586a70;
 }
 
 .row-arrow {

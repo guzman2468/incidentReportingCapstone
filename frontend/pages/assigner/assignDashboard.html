@@ -64,23 +64,31 @@
         <section class="stats-grid" aria-label="Incident counts">
           <article class="stat-card accent-green">
             <div>
-              <span>Past incidents</span>
+              <span id="pastSummaryLabel">Resolved all time</span>
               <strong id="pastCount">0</strong>
-              <small>Resolved or closed</small>
+            </div>
+            <div class="summary-filters">
+              <select id="pastSummaryStatus" aria-label="Choose past incident status"><option value="RESOLVED">Resolved</option><option value="CLOSED">Closed</option><option value="CANCELLED">Cancelled</option></select>
+              <select id="pastSummaryRange" aria-label="Filter past incidents by time"><option value="all">All time</option><option value="day">Past day</option><option value="week">Past week</option><option value="month">Past month</option><option value="six-months">Past 6 months</option><option value="year">Past year</option><option value="five-years">Past 5 years</option></select>
             </div>
           </article>
           <article class="stat-card accent-amber">
             <div>
-              <span>Active incidents</span>
+              <span id="activeSummaryLabel">Active all time</span>
               <strong id="activeCount">0</strong>
-              <small>Currently being handled</small>
+            </div>
+            <div class="summary-filters">
+              <select id="activeSummaryStatus" aria-label="Choose active incident status"><option value="all">All statuses</option><option value="IN_PROGRESS">In progress</option><option value="ASSIGNED">Assigned</option></select>
+              <select id="activeSummaryRange" aria-label="Filter active incidents by time"><option value="all">All time</option><option value="day">Past day</option><option value="week">Past week</option><option value="month">Past month</option><option value="six-months">Past 6 months</option><option value="year">Past year</option><option value="five-years">Past 5 years</option></select>
             </div>
           </article>
           <article class="stat-card accent-coral">
             <div>
-              <span>New incidents</span>
+              <span id="newSummaryLabel">New all time</span>
               <strong id="newCount">0</strong>
-              <small>Awaiting assignment</small>
+            </div>
+            <div class="summary-filters">
+              <select id="newSummaryRange" aria-label="Filter new incidents by time"><option value="all">All time</option><option value="day">Past day</option><option value="week">Past week</option><option value="month">Past month</option><option value="six-months">Past 6 months</option><option value="year">Past year</option><option value="five-years">Past 5 years</option></select>
             </div>
           </article>
         </section>
@@ -89,10 +97,15 @@
           <article class="incident-panel">
             <div class="panel-heading">
               <div>
-                <h2>Past</h2>
-                <p>Resolved and closed incidents</p>
+                <h2>Past incidents</h2>
+                <p>Resolved, closed, or cancelled</p>
               </div>
-              <span class="column-count" id="pastColumnCount">0</span>
+              <div class="column-count-group">
+                <span class="column-count total-count"><strong id="pastTotalCount">0</strong> TOTAL</span>
+                <span class="column-count resolved-count"><strong id="pastResolvedCount">0</strong> RESOLVED</span>
+                <span class="column-count closed-count"><strong id="pastClosedCount">0</strong> CLOSED</span>
+                <span class="column-count cancelled-count"><strong id="pastCancelledCount">0</strong> CANCELLED</span>
+              </div>
             </div>
             <div class="column-search">
               <input
@@ -101,6 +114,20 @@
                 placeholder="Search past incidents..."
                 aria-label="Search past incidents"
               />
+              <select id="pastSeverityFilter" class="time-filter" aria-label="Filter past incidents by severity">
+                <option value="all">All severities</option>
+                <option value="LOW">Low</option>
+                <option value="MEDIUM">Medium</option>
+                <option value="HIGH">High</option>
+                <option value="SEVERE">Severe</option>
+                <option value="CRITICAL">Critical</option>
+              </select>
+              <select id="pastStatusFilter" class="time-filter" aria-label="Filter past incidents by status">
+                <option value="all">All statuses</option>
+                <option value="RESOLVED">Resolved</option>
+                <option value="CLOSED">Closed</option>
+                <option value="CANCELLED">Cancelled</option>
+              </select>
               <select
                 id="pastFilter"
                 class="time-filter"
@@ -122,10 +149,14 @@
           <article class="incident-panel">
             <div class="panel-heading">
               <div>
-                <h2>Active</h2>
-                <p>Incidents being handled</p>
+                <h2>Active incidents</h2>
+                <p>Awaiting team acknowledgement or being worked on actively</p>
               </div>
-              <span class="column-count" id="activeColumnCount">0</span>
+              <div class="column-count-group">
+                <span class="column-count total-count"><strong id="activeTotalCount">0</strong> TOTAL</span>
+                <span class="column-count progress-count"><strong id="activeInProgressCount">0</strong> IN PROGRESS</span>
+                <span class="column-count assigned-count"><strong id="activeAssignedCount">0</strong> ASSIGNED</span>
+              </div>
             </div>
             <div class="column-search">
               <input
@@ -134,6 +165,19 @@
                 placeholder="Search active incidents..."
                 aria-label="Search active incidents"
               />
+              <select id="activeSeverityFilter" class="time-filter" aria-label="Filter active incidents by severity">
+                <option value="all">All severities</option>
+                <option value="LOW">Low</option>
+                <option value="MEDIUM">Medium</option>
+                <option value="HIGH">High</option>
+                <option value="SEVERE">Severe</option>
+                <option value="CRITICAL">Critical</option>
+              </select>
+              <select id="activeStatusFilter" class="time-filter" aria-label="Filter active incidents by status">
+                <option value="all">All statuses</option>
+                <option value="IN_PROGRESS">In progress</option>
+                <option value="ASSIGNED">Assigned</option>
+              </select>
               <select
                 id="activeFilter"
                 class="time-filter"
@@ -157,10 +201,13 @@
           <article class="incident-panel">
             <div class="panel-heading">
               <div>
-                <h2>New</h2>
-                <p>Awaiting a responder</p>
+                <h2>New incidents</h2>
+                <p>Awaiting assignment</p>
               </div>
-              <span class="column-count new-count" id="newColumnCount">0</span>
+              <div class="column-count-group">
+                <span class="column-count total-count"><strong id="newTotalCount">0</strong> TOTAL</span>
+                <span class="column-count new-count"><strong id="newStatusCount">0</strong> NEW</span>
+              </div>
             </div>
             <div class="column-search">
               <input
@@ -169,6 +216,14 @@
                 placeholder="Search new incidents..."
                 aria-label="Search new incidents"
               />
+              <select id="newSeverityFilter" class="time-filter" aria-label="Filter new incidents by severity">
+                <option value="all">All severities</option>
+                <option value="LOW">Low</option>
+                <option value="MEDIUM">Medium</option>
+                <option value="HIGH">High</option>
+                <option value="SEVERE">Severe</option>
+                <option value="CRITICAL">Critical</option>
+              </select>
               <select
                 id="newFilter"
                 class="time-filter"

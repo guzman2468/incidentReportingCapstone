@@ -1244,6 +1244,10 @@ a {
   gap: 4px;
 }
 
+.incident-meta span[hidden] {
+  display: none;
+}
+
 .incident-meta b {
   color: #778b8f;
   font-size: 10px;

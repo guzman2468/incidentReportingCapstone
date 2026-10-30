@@ -47,7 +47,9 @@ GET_REPORTER_INCIDENTS_QUERY = text(
         incidents.status,
         incidents.created_at,
         incidents.updated_at,
-        incidents.resolved_at
+        incidents.assigned_at,
+        incidents.resolved_at,
+        incidents.cancelled_at
     FROM public.incidents
     INNER JOIN public.users
         ON users.id = incidents.reporter_id
@@ -69,7 +71,9 @@ GET_REPORTER_INCIDENT_QUERY = text(
         incidents.status,
         incidents.created_at,
         incidents.updated_at,
-        incidents.resolved_at
+        incidents.assigned_at,
+        incidents.resolved_at,
+        incidents.cancelled_at
     FROM public.incidents
     INNER JOIN public.users
         ON users.id = incidents.reporter_id
@@ -93,6 +97,7 @@ GET_ASSIGNER_INCIDENTS_QUERY = text(
         incidents.updated_at,
         incidents.assigned_at,
         incidents.resolved_at,
+        incidents.cancelled_at,
         incidents.assigned_aid_provider_id,
         incidents.assigned_team_id,
         aid_providers.name AS assigned_provider_name,
@@ -119,6 +124,7 @@ GET_ASSIGNED_INCIDENTS_QUERY = text(
         incidents.updated_at,
         incidents.assigned_at,
         incidents.resolved_at,
+        incidents.cancelled_at,
         incidents.assigned_aid_provider_id,
         incidents.assigned_team_id,
         aid_providers.name AS assigned_provider_name,

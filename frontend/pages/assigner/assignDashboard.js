@@ -6,24 +6,26 @@ const listSettings = [
     listId: "pastList",
     searchId: "pastSearch",
     filterId: "pastFilter",
+    severityFilterId: "pastSeverityFilter",
+    statusFilterId: "pastStatusFilter",
     emptyId: "pastEmpty",
-    countId: "pastColumnCount",
   },
   {
     status: "active",
     listId: "activeList",
     searchId: "activeSearch",
     filterId: "activeFilter",
+    severityFilterId: "activeSeverityFilter",
+    statusFilterId: "activeStatusFilter",
     emptyId: "activeEmpty",
-    countId: "activeColumnCount",
   },
   {
     status: "new",
     listId: "newList",
     searchId: "newSearch",
     filterId: "newFilter",
+    severityFilterId: "newSeverityFilter",
     emptyId: "newEmpty",
-    countId: "newColumnCount",
   },
 ];
 
@@ -35,6 +37,12 @@ const rangeInDays = {
   year: 365,
   "five-years": 1825,
 };
+
+const summaryCardSettings = [
+  { column: "past", statusId: "pastSummaryStatus", rangeId: "pastSummaryRange", countId: "pastCount", labelId: "pastSummaryLabel" },
+  { column: "active", statusId: "activeSummaryStatus", rangeId: "activeSummaryRange", countId: "activeCount", labelId: "activeSummaryLabel" },
+  { column: "new", rangeId: "newSummaryRange", countId: "newCount", labelId: "newSummaryLabel", fixedStatus: "NEW", fixedLabel: "New" },
+];
 
 function isWithinTimeRange(submitted, selectedRange) {
   const days = rangeInDays[selectedRange];
@@ -53,6 +61,26 @@ function getColumn(incident) {
   return "active";
 }
 
+function getIncidentTimestamp(incident) {
+  const status = incident.status.toUpperCase();
+  if (status === "NEW") return incident.created_at;
+  if (status === "ASSIGNED") return incident.assigned_at || incident.updated_at;
+  if (status === "IN_PROGRESS") return incident.updated_at;
+  if (status === "RESOLVED") return incident.resolved_at || incident.updated_at;
+  return incident.updated_at;
+}
+
+function getIncidentTimestampLabel(status) {
+  return {
+    NEW: "Submitted",
+    ASSIGNED: "Assigned",
+    IN_PROGRESS: "Last updated",
+    RESOLVED: "Resolved",
+    CLOSED: "Closed",
+    CANCELLED: "Cancelled",
+  }[status] || "Last updated";
+}
+
 function escapeHTML(value) {
   return String(value ?? "").replace(
     /[&<>"']/g,
@@ -68,10 +96,16 @@ function escapeHTML(value) {
 }
 
 function renderIncident(incident) {
-  const normalizedStatus = incident.status.toLowerCase();
-  const statusClass = ["in_progress", "assigned"].includes(normalizedStatus)
-    ? "active"
-    : normalizedStatus;
+  const normalizedStatus = incident.status.toUpperCase();
+  const statusKey = normalizedStatus.toLowerCase();
+  const statusClass = {
+    new: "awaiting",
+    assigned: "assigned",
+    in_progress: "progress",
+    resolved: "resolved",
+    closed: "closed",
+    cancelled: "closed",
+  }[statusKey] || "closed";
   const statusLabel =
     {
       new: "New",
@@ -80,7 +114,7 @@ function renderIncident(incident) {
       in_progress: "In progress",
       resolved: "Resolved",
       closed: "Closed",
-    }[normalizedStatus] || normalizedStatus;
+    }[statusKey] || normalizedStatus;
 
   const severityClass = `severity-${String(incident.severity).toLowerCase()}`;
 
@@ -90,7 +124,7 @@ function renderIncident(incident) {
       aria-label="Open ${escapeHTML(incident.title)}">
       <span class="incident-row-content">
         <strong>${escapeHTML(incident.title)}</strong>
-        <small>${escapeHTML(incident.incident_reference)} · Submitted ${escapeHTML(formatDate(incident.created_at))}</small>
+        <small>${escapeHTML(incident.incident_reference)} · ${getIncidentTimestampLabel(normalizedStatus)} ${escapeHTML(formatDate(getIncidentTimestamp(incident)))}</small>
       </span>
       <span class="row-status">
         <span class="severity-pill ${severityClass}">${escapeHTML(incident.severity)}</span>
@@ -109,8 +143,13 @@ function renderDashboard() {
 
     const searchInput = document.getElementById(settings.searchId);
     const filterInput = document.getElementById(settings.filterId);
+    const severityFilterInput = document.getElementById(settings.severityFilterId);
     const query = searchInput.value.trim().toLowerCase();
     const selectedRange = filterInput.value;
+    const selectedSeverity = severityFilterInput.value;
+    const selectedStatus = settings.statusFilterId
+      ? document.getElementById(settings.statusFilterId).value
+      : "all";
 
     const filtered = matchingIncidents.filter((incident) => {
       const searchableText = [
@@ -126,6 +165,10 @@ function renderDashboard() {
 
       return (
         searchableText.includes(query) &&
+        (selectedStatus === "all" ||
+          incident.status.toUpperCase() === selectedStatus) &&
+        (selectedSeverity === "all" ||
+          incident.severity.toUpperCase() === selectedSeverity) &&
         isWithinTimeRange(incident.created_at, selectedRange)
       );
     });
@@ -134,13 +177,23 @@ function renderDashboard() {
       .map(renderIncident)
       .join("");
 
-    document.getElementById(settings.countId).textContent =
-      matchingIncidents.length;
-
     document.getElementById(settings.emptyId).style.display = filtered.length
       ? "none"
       : "block";
   });
+
+  const countByStatus = (status) =>
+    incidents.filter((incident) => incident.status.toUpperCase() === status).length;
+
+  document.getElementById("pastTotalCount").textContent = getColumnIncidents("past").length;
+  document.getElementById("pastResolvedCount").textContent = countByStatus("RESOLVED");
+  document.getElementById("pastClosedCount").textContent = countByStatus("CLOSED");
+  document.getElementById("pastCancelledCount").textContent = countByStatus("CANCELLED");
+  document.getElementById("activeTotalCount").textContent = getColumnIncidents("active").length;
+  document.getElementById("activeInProgressCount").textContent = countByStatus("IN_PROGRESS");
+  document.getElementById("activeAssignedCount").textContent = countByStatus("ASSIGNED");
+  document.getElementById("newTotalCount").textContent = getColumnIncidents("new").length;
+  document.getElementById("newStatusCount").textContent = countByStatus("NEW");
 
   document.getElementById("newCount").textContent = incidents.filter(
     (incident) => getColumn(incident) === "new",
@@ -156,12 +209,54 @@ function renderDashboard() {
 
   document.getElementById("totalCount").textContent =
     `${incidents.length} incidents`;
+
+  updateSummaryCards();
+}
+
+function updateSummaryCards() {
+  summaryCardSettings.forEach((settings) => {
+    const selectedStatus = settings.statusId
+      ? document.getElementById(settings.statusId).value
+      : settings.fixedStatus;
+    const selectedRange = document.getElementById(settings.rangeId).value;
+    const matchingCount = incidents.filter(
+      (incident) =>
+        getColumn(incident) === settings.column &&
+        (selectedStatus === "all" || incident.status.toUpperCase() === selectedStatus) &&
+        isWithinTimeRange(incident.created_at, selectedRange),
+    ).length;
+    const statusLabel = settings.statusId
+      ? document.getElementById(settings.statusId).selectedOptions[0].textContent
+      : settings.fixedLabel;
+    const rangeLabel = document.getElementById(settings.rangeId).selectedOptions[0].textContent.toLowerCase();
+    document.getElementById(settings.countId).textContent = matchingCount;
+    document.getElementById(settings.labelId).textContent = `${statusLabel}: ${rangeLabel}`;
+  });
+}
+
+function getColumnIncidents(column) {
+  return incidents.filter((incident) => getColumn(incident) === column);
 }
 
 // Each column has an independent search box.
-listSettings.forEach(({ searchId, filterId }) => {
+listSettings.forEach(({ searchId, filterId, severityFilterId, statusFilterId }) => {
   document.getElementById(searchId).addEventListener("input", renderDashboard);
   document.getElementById(filterId).addEventListener("change", renderDashboard);
+  document
+    .getElementById(severityFilterId)
+    .addEventListener("change", renderDashboard);
+  if (statusFilterId) {
+    document
+      .getElementById(statusFilterId)
+      .addEventListener("change", renderDashboard);
+  }
+});
+
+summaryCardSettings.forEach(({ statusId, rangeId }) => {
+  if (statusId) {
+    document.getElementById(statusId).addEventListener("change", updateSummaryCards);
+  }
+  document.getElementById(rangeId).addEventListener("change", updateSummaryCards);
 });
 
 // Event delegation means newly rendered incident buttons still work.
@@ -215,13 +310,18 @@ function formatDate(dateValue) {
   const date = new Date(dateValue);
   if (Number.isNaN(date.getTime())) return "Unknown date";
 
-  return new Intl.DateTimeFormat("en-US", {
+  const dateText = new Intl.DateTimeFormat("en-US", {
     month: "short",
     day: "numeric",
     year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
   }).format(date);
+  const hours = date.getHours();
+  const hour12 = hours % 12 || 12;
+  const meridiem = hours >= 12 ? "PM" : "AM";
+  const timeText = [hour12, date.getMinutes(), date.getSeconds()]
+    .map((part) => String(part).padStart(2, "0"))
+    .join(":");
+  return `${dateText} ${timeText} ${meridiem}`;
 }
 
 async function loadAssignerIncidents() {

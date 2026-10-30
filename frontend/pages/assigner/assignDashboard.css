@@ -180,6 +180,23 @@
   margin-bottom: 26px;
 }
 
+.stat-card .summary-filters {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-left: auto;
+}
+
+.stat-card .summary-filters select {
+  min-width: 112px;
+  padding: 7px 9px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: transparent;
+  color: #5c7075;
+  font: 500 10px "DM Sans", sans-serif;
+}
+
 .incident-columns {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -228,6 +245,57 @@
   color: var(--teal);
   font-size: 11px;
   font-weight: 700;
+}
+
+.column-count-group {
+  display: flex;
+  flex-wrap: nowrap;
+  justify-content: flex-end;
+  gap: 4px;
+  max-width: none;
+}
+
+.column-count-group .column-count {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  min-width: 0;
+  width: auto;
+  height: auto;
+  padding: 6px 7px;
+  border-radius: 20px;
+  font-size: 9px;
+  white-space: nowrap;
+}
+
+.total-count {
+  background: #f6d9e8;
+  color: #9c2f68;
+}
+
+.resolved-count {
+  background: #e6f7ee;
+  color: #2d6a45;
+}
+
+.closed-count {
+  background: #eef0f1;
+  color: #5f6d72;
+}
+
+.cancelled-count {
+  background: #ead9c5;
+  color: #795548;
+}
+
+.progress-count {
+  background: #e7f3ff;
+  color: #245b86;
+}
+
+.assigned-count {
+  background: #e8e4ff;
+  color: #51429a;
 }
 
 .new-count {
@@ -391,25 +459,30 @@
   font-weight: 600;
 }
 
-.status-new {
+.status-awaiting {
   background: #fff3df;
   color: #805a00;
 }
 
-.status-active {
+.status-assigned {
+  background: #e8e4ff;
+  color: #51429a;
+}
+
+.status-progress {
   background: #e7f3ff;
   color: #245b86;
 }
 
 .status-resolved {
-  background: #e7f3ec;
-  color: #28754d;
+  background: #e6f7ee;
+  color: #2d6a45;
 }
 
 .status-closed,
 .status-cancelled {
-  background: #f0f5f4;
-  color: #586a70;
+  background: #eef0f1;
+  color: #5f6d72;
 }
 
 .row-arrow {

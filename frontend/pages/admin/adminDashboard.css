@@ -439,9 +439,50 @@ a {
   white-space: nowrap;
 }
 
+.severity-pill {
+  border-radius: 20px;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1.2;
+  padding: 5px 9px;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.severity-low {
+  background: #c9a400;
+  color: #111111;
+}
+
+.severity-medium {
+  background: #f6a23a;
+  color: #111111;
+}
+
+.severity-high {
+  background: #d94a4a;
+  color: #111111;
+}
+
+.severity-severe {
+  background: #8652b8;
+  color: #ffffff;
+}
+
+.severity-critical {
+  background: #111111;
+  border: 1px solid #000000;
+  color: #ffffff;
+}
+
 .awaiting {
   background: #fff3df;
   color: #805a00;
+}
+
+.assigned {
+  background: #e8e4ff;
+  color: #51429a;
 }
 
 .progress {
@@ -704,8 +745,18 @@ a {
 }
 
 .active-count {
-  background: #fff3df;
-  color: #805a00;
+  background: #f6d9e8;
+  color: #9c2f68;
+}
+
+.progress-count {
+  background: #e7f3ff;
+  color: #245b86;
+}
+
+.assigned-count {
+  background: #e8e4ff;
+  color: #51429a;
 }
 
 .past-count {

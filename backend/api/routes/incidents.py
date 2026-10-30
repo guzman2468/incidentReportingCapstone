@@ -62,6 +62,22 @@ def require_assigner(
     return email
 
 
+def require_admin(
+    email: str = Depends(require_session),
+    db: Session = Depends(get_db),
+) -> str:
+    """Allow only active administrators to view every incident."""
+
+    profile = get_active_profile(db, email)
+    if profile["role"] != "ADMIN":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Admin access required",
+        )
+
+    return email
+
+
 def require_team_member(
     email: str = Depends(require_session),
     db: Session = Depends(get_db),
@@ -111,6 +127,16 @@ def list_assigner_incidents(
     db: Session = Depends(get_db),
 ) -> list[IncidentSummary]:
     """Return the incident queue for the authenticated assigner."""
+
+    return get_assigner_incidents(db)
+
+
+@router.get("/admin", response_model=list[IncidentSummary])
+def list_admin_incidents(
+    _email: str = Depends(require_admin),
+    db: Session = Depends(get_db),
+) -> list[IncidentSummary]:
+    """Return every incident for the authenticated administrator."""
 
     return get_assigner_incidents(db)
 

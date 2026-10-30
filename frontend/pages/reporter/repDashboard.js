@@ -9,6 +9,16 @@ const rangeInDays = {
   "five-years": 1825,
 };
 
+const timeRangeLabels = {
+  all: "all time",
+  day: "past day",
+  week: "past week",
+  month: "past month",
+  "six-months": "past 6 months",
+  year: "past year",
+  "five-years": "past 5 years",
+};
+
 const statusLabels = {
   NEW: "NEW",
   IN_PROGRESS: "IN PROGRESS",
@@ -54,6 +64,33 @@ const getColumn = (incident) =>
 const getStatusFilterValue = (status) =>
   status === "IN_PROGRESS" ? "progress" : status.toLowerCase();
 
+const getStatusClass = (status) => {
+  if (status === "NEW") return "awaiting";
+  if (status === "ASSIGNED") return "assigned";
+  if (status === "IN_PROGRESS") return "progress";
+  if (status === "RESOLVED") return "resolved";
+  return "closed";
+};
+
+const getIncidentTimestamp = (incident) => {
+  if (incident.status === "NEW") return incident.created_at;
+  if (incident.status === "ASSIGNED") return incident.assigned_at || incident.updated_at;
+  if (incident.status === "IN_PROGRESS") return incident.updated_at;
+  if (incident.status === "RESOLVED") return incident.resolved_at || incident.updated_at;
+  if (incident.status === "CANCELLED") return incident.cancelled_at || incident.updated_at;
+  return incident.updated_at;
+};
+
+const getIncidentTimestampLabel = (status) =>
+  ({
+    NEW: "Submitted",
+    ASSIGNED: "Assigned",
+    IN_PROGRESS: "Last updated",
+    RESOLVED: "Resolved",
+    CLOSED: "Closed",
+    CANCELLED: "Cancelled",
+  })[status] || "Last updated";
+
 const getIncidentSymbol = (incident) => {
   if (incident.status === "NEW") {
     return { className: "coral", symbol: "!" };
@@ -69,6 +106,7 @@ const getIncidentSymbol = (incident) => {
 const renderIncident = (incident) => {
   const { className, symbol } = getIncidentSymbol(incident);
   const statusLabel = statusLabels[incident.status] || incident.status;
+  const severity = String(incident.severity || "").toLowerCase();
   const searchText = [
     incident.incident_reference,
     incident.title,
@@ -89,9 +127,10 @@ const renderIncident = (incident) => {
       <div class="incident-symbol ${className}">${symbol}</div>
       <div class="incident-info">
         <strong>${escapeHTML(incident.title)}</strong>
-        <span>${escapeHTML(incident.incident_reference)} · Submitted ${escapeHTML(formatDate(incident.created_at))}</span>
+        <span>${escapeHTML(incident.incident_reference)} · ${getIncidentTimestampLabel(incident.status)} ${escapeHTML(formatDate(getIncidentTimestamp(incident)))}</span>
       </div>
-      <span class="status-pill ${getStatusFilterValue(incident.status)}">${escapeHTML(statusLabel)}</span>
+      <span class="severity-pill severity-${escapeHTML(severity)}">${escapeHTML(incident.severity || "Unknown")}</span>
+      <span class="status-pill ${getStatusClass(incident.status)}">${escapeHTML(statusLabel)}</span>
       <span class="row-arrow">›</span>
     </article>
   `;
@@ -113,15 +152,18 @@ function connectIncidentControls(
   emptyId,
   filterId,
   statusFilterId,
+  severityFilterId,
 ) {
   const search = document.getElementById(inputId);
   const filter = document.getElementById(filterId);
   const statusFilter = document.getElementById(statusFilterId);
+  const severityFilter = document.getElementById(severityFilterId);
 
   const applyFilters = () => {
     const query = search.value.trim().toLowerCase();
     const selectedRange = filter.value;
     const selectedStatus = statusFilter.value;
+    const selectedSeverity = severityFilter.value;
     const rows = [...document.querySelectorAll(`#${listId} .incident-row`)];
     let visible = 0;
 
@@ -133,8 +175,12 @@ function connectIncidentControls(
       const matchesStatus =
         selectedStatus === "all" ||
         getStatusFilterValue(incident.status) === selectedStatus;
+      const matchesSeverity =
+        selectedSeverity === "all" ||
+        String(incident.severity || "").toUpperCase() === selectedSeverity;
       const matchesTime = isWithinTimeRange(incident.created_at, selectedRange);
-      const isVisible = matchesSearch && matchesStatus && matchesTime;
+      const isVisible =
+        matchesSearch && matchesStatus && matchesSeverity && matchesTime;
 
       row.style.display = isVisible ? "flex" : "none";
       if (isVisible) visible += 1;
@@ -146,26 +192,20 @@ function connectIncidentControls(
   search.oninput = applyFilters;
   filter.onchange = applyFilters;
   statusFilter.onchange = applyFilters;
+  severityFilter.onchange = applyFilters;
   applyFilters();
 }
 
 const updateResolvedSummary = () => {
   const selectedRange = document.getElementById("resolvedFilter").value;
-  const labels = {
-    all: "RESOLVED ALL TIME",
-    day: "RESOLVED TODAY",
-    week: "RESOLVED THIS WEEK",
-    month: "RESOLVED THIS MONTH",
-    "six-months": "RESOLVED IN THE PAST 6 MONTHS",
-    year: "RESOLVED THIS YEAR",
-    "five-years": "RESOLVED IN THE PAST 5 YEARS",
-  };
+  const selectedStatus = document.getElementById("resolvedStatusFilter").value;
+  const statusLabel = document.getElementById("resolvedStatusFilter").selectedOptions[0].textContent;
 
   document.getElementById("resolvedLabel").textContent =
-    labels[selectedRange] || labels.all;
+    `${statusLabel}: ${timeRangeLabels[selectedRange] || "all time"}`;
   document.getElementById("resolvedCount").textContent = incidents.filter(
     (incident) =>
-      incident.status === "RESOLVED" &&
+      incident.status === selectedStatus &&
       isWithinTimeRange(incident.created_at, selectedRange),
   ).length;
 };
@@ -187,6 +227,7 @@ const renderDashboard = () => {
   document.getElementById("pastIncidentList").hidden = false;
   document.getElementById("activeIncidentList").hidden = false;
 
+  document.getElementById("pastTotalCount").textContent = pastIncidents.length;
   document.getElementById("newActiveCount").textContent = activeIncidents.filter(
     (incident) => incident.status === "NEW",
   ).length;
@@ -201,7 +242,23 @@ const renderDashboard = () => {
   document.getElementById("closedPastCount").textContent = pastIncidents.filter(
     (incident) => incident.status === "CLOSED",
   ).length;
-  document.getElementById("openIncidentCount").textContent = activeIncidents.length;
+  document.getElementById("cancelledPastCount").textContent = pastIncidents.filter(
+    (incident) => incident.status === "CANCELLED",
+  ).length;
+  document.getElementById("activeTotalCount").textContent = activeIncidents.length;
+  document.getElementById("assignedActiveCount").textContent = activeIncidents.filter(
+    (incident) => incident.status === "ASSIGNED",
+  ).length;
+  const openIncidentRange = document.getElementById("openIncidentFilter").value;
+  const openIncidentStatus = document.getElementById("openIncidentStatus").value;
+  const openStatusLabel = document.getElementById("openIncidentStatus").selectedOptions[0].textContent;
+  document.getElementById("openIncidentLabel").textContent =
+    `${openStatusLabel}: ${timeRangeLabels[openIncidentRange] || "all time"}`;
+  document.getElementById("openIncidentCount").textContent = activeIncidents.filter(
+    (incident) =>
+      (openIncidentStatus === "all" || incident.status === openIncidentStatus) &&
+      isWithinTimeRange(incident.created_at, openIncidentRange),
+  ).length;
 
   connectIncidentControls(
     "activeSearch",
@@ -209,6 +266,7 @@ const renderDashboard = () => {
     "activeEmptyState",
     "activeFilter",
     "activeStatusFilter",
+    "activeSeverityFilter",
   );
   connectIncidentControls(
     "pastSearch",
@@ -216,6 +274,7 @@ const renderDashboard = () => {
     "pastEmptyState",
     "pastFilter",
     "pastStatusFilter",
+    "pastSeverityFilter",
   );
   updateResolvedSummary();
 };
@@ -244,6 +303,19 @@ document.getElementById("currentDate").textContent = new Intl.DateTimeFormat(
 document.getElementById("resolvedFilter").addEventListener(
   "change",
   updateResolvedSummary,
+);
+document.getElementById("resolvedStatusFilter").addEventListener(
+  "change",
+  updateResolvedSummary,
+);
+
+document.getElementById("openIncidentFilter").addEventListener(
+  "change",
+  renderDashboard,
+);
+document.getElementById("openIncidentStatus").addEventListener(
+  "change",
+  renderDashboard,
 );
 
 document

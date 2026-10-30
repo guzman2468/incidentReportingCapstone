@@ -439,6 +439,42 @@ a {
   white-space: nowrap;
 }
 
+.severity-pill {
+  border-radius: 20px;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1.2;
+  padding: 5px 9px;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.severity-low {
+  background: #c9a400;
+  color: #111111;
+}
+
+.severity-medium {
+  background: #f6a23a;
+  color: #111111;
+}
+
+.severity-high {
+  background: #d94a4a;
+  color: #111111;
+}
+
+.severity-severe {
+  background: #8652b8;
+  color: #ffffff;
+}
+
+.severity-critical {
+  background: #111111;
+  border: 1px solid #000000;
+  color: #ffffff;
+}
+
 .status-pill,
 .count-badge {
   text-transform: uppercase;
@@ -452,6 +488,11 @@ a {
 .progress {
   background: #e7f3ff;
   color: #245b86;
+}
+
+.assigned {
+  background: #e8e4ff;
+  color: #51429a;
 }
 
 .resolved {
@@ -693,27 +734,30 @@ a {
   line-height: 1;
 }
 
-.count-badge {
-  border-radius: 20px;
-  font-size: 10px;
-  font-weight: 700;
-  padding: 6px 9px;
-  white-space: nowrap;
-}
-
-.status-counts {
+.column-count-group {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
   justify-content: flex-end;
 }
 
-.active-count {
-  background: #fff3df;
-  color: #805a00;
+.column-count {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 6px 7px;
+  border-radius: 20px;
+  font-size: 9px;
+  font-weight: 700;
+  white-space: nowrap;
 }
 
-.past-count {
+.total-count {
+  background: #f6d9e8;
+  color: #9c2f68;
+}
+
+.resolved-count {
   background: #e6f7ee;
   color: #2d6a45;
 }
@@ -723,9 +767,24 @@ a {
   color: #5f6d72;
 }
 
+.cancelled-count {
+  background: #ead9c5;
+  color: #795548;
+}
+
+.progress-count {
+  background: #e7f3ff;
+  color: #245b86;
+}
+
+.assigned-count {
+  background: #e8e4ff;
+  color: #51429a;
+}
+
 .new-count {
-  background: #fff3df;
-  color: #805a00;
+  background: #fff0ec;
+  color: #a84c40;
 }
 
 .support-row {
@@ -799,6 +858,14 @@ a {
   margin-left: auto;
   max-width: 125px;
   height: 32px;
+}
+
+.stat-filters {
+  align-items: flex-end;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-left: auto;
 }
 
 /* Minimal header mode: the sidebar is replaced by a small user menu. */

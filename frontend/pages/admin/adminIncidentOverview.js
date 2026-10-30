@@ -22,11 +22,12 @@ document.addEventListener("click", (event) => {
 // -----------------------------
 // Incident data
 // -----------------------------
-// Read the selected incident's basic values from the admin dashboard URL.
+// Read the selected incident reference from the admin dashboard URL.
 const params = new URLSearchParams(window.location.search);
-const title = params.get("title");
-const meta = params.get("meta");
-const incidentStatus = params.get("status");
+const incidentId = params.get("id")?.toUpperCase();
+let selectedIncident = null;
+let adminIncidents = [];
+let selectedCoordinates = null;
 
 // The admin overview is read-only for assignment; keep the field out of this view.
 document.querySelector(".assignment-field")?.remove();
@@ -39,49 +40,8 @@ if (nearbyCard && formFields) {
   nearbyCard.querySelector(".section-heading p")?.remove();
 }
 
-// The admin dashboard passes the incident summary in the URL. Reuse the
-// overview's incident data so the map and nearby list stay in sync with the
-// assignee overview's radius behavior.
-const demoIncidents = window.assignerDemoData?.incidents || [];
-const incidentId = /INC-\d+/i.exec(meta || "")?.[0]?.toUpperCase();
-const selectedDemoIncident =
-  demoIncidents.find((item) => item.id === incidentId) ||
-  demoIncidents.find((item) => item.title === title) ||
-  demoIncidents[0];
-const selectedCoordinates = selectedDemoIncident
-  ? {
-      latitude: Number(selectedDemoIncident.latitude),
-      longitude: Number(selectedDemoIncident.longitude),
-    }
-  : { latitude: 41.8781, longitude: -87.6298 };
 let incidentMap = null;
 let mapMarkers = null;
-
-if (title) document.getElementById("titleField").textContent = title;
-
-if (meta) {
-  const submittedIndex = meta.toLowerCase().indexOf("submitted");
-  const afterSubmitted =
-    submittedIndex === -1
-      ? ""
-      : meta.slice(submittedIndex + "submitted".length);
-
-  const dateText = afterSubmitted.trimStart();
-  const incidentDate =
-    dateText && dateText.length < afterSubmitted.length ? dateText : meta;
-
-  document.getElementById("incidentMeta").textContent = incidentDate;
-}
-
-if (incidentStatus) {
-  const statusBadge = document.getElementById("statusBadge");
-
-  statusBadge.textContent = incidentStatus;
-
-  if (incidentStatus.toLowerCase() !== "resolved") {
-    statusBadge.className = "status-badge active-status";
-  }
-}
 
 const escapeHTML = (value) =>
   String(value ?? "").replace(
@@ -108,20 +68,32 @@ const distanceInMiles = (lat1, lon1, lat2, lon2) => {
   return earthRadius * 2 * Math.atan2(Math.sqrt(safeA), Math.sqrt(1 - safeA));
 };
 
+const parseCoordinates = (location) => {
+  const match = /^\s*(\d+(?:\.\d+)?)°\s*([NS])\s*,\s*(\d+(?:\.\d+)?)°\s*([EW])\s*$/i.exec(location || "");
+  if (!match) return null;
+  const latitude = Number(match[1]) * (match[2].toUpperCase() === "S" ? -1 : 1);
+  const longitude = Number(match[3]) * (match[4].toUpperCase() === "W" ? -1 : 1);
+  return { latitude, longitude };
+};
+
 const findNearbyIncidents = (radius) =>
-  demoIncidents
-    .filter((item) => item.id !== selectedDemoIncident?.id)
+  (selectedCoordinates
+    ? adminIncidents
+    .filter((item) => item.incident_reference !== selectedIncident?.incident_reference)
+    .map((item) => ({ ...item, coordinates: parseCoordinates(item.location) }))
+    .filter((item) => item.coordinates)
     .map((item) => ({
       ...item,
       distance: distanceInMiles(
         selectedCoordinates.latitude,
         selectedCoordinates.longitude,
-        Number(item.latitude),
-        Number(item.longitude),
+        item.coordinates.latitude,
+        item.coordinates.longitude,
       ),
     }))
     .filter((item) => item.distance <= radius)
-    .sort((a, b) => a.distance - b.distance);
+    .sort((a, b) => a.distance - b.distance)
+    : []);
 
 const updateMap = (nearby) => {
   const mapElement = document.getElementById("incidentMap");
@@ -129,6 +101,11 @@ const updateMap = (nearby) => {
     if (mapElement)
       mapElement.textContent =
         "The interactive map could not load. Check your internet connection and reload the page.";
+    return;
+  }
+
+  if (!selectedCoordinates) {
+    mapElement.textContent = "Coordinates are not available for this incident.";
     return;
   }
 
@@ -165,12 +142,12 @@ const updateMap = (nearby) => {
     fillOpacity: 1,
   })
     .bindPopup(
-      `<strong>${escapeHTML(incidentId || "Selected incident")} · ${escapeHTML(title || "Incident")}</strong><br>Selected incident`,
+      `<strong>${escapeHTML(selectedIncident.incident_reference)} · ${escapeHTML(selectedIncident.title)}</strong><br>SELECTED INCIDENT`,
     )
     .addTo(mapMarkers);
 
   nearby.forEach((item) =>
-    L.circleMarker([item.latitude, item.longitude], {
+    L.circleMarker([item.coordinates.latitude, item.coordinates.longitude], {
       radius: 6,
       color: "#fff",
       weight: 2,
@@ -178,7 +155,7 @@ const updateMap = (nearby) => {
       fillOpacity: 1,
     })
       .bindPopup(
-        `<strong>${escapeHTML(item.id)} · ${escapeHTML(item.title)}</strong><br>${escapeHTML(item.county)} County · ${item.distance.toFixed(1)} miles away`,
+        `<strong>${escapeHTML(item.incident_reference)} · ${escapeHTML(item.title)}</strong><br>${item.distance.toFixed(1)} MILES AWAY`,
       )
       .addTo(mapMarkers),
   );
@@ -201,8 +178,8 @@ const updateNearbyIncidents = () => {
       (item) => `<div class="nearby-row">
     <span class="nearby-info">
       <strong>${escapeHTML(item.title)}</strong>
-      <small>${escapeHTML(item.id)} · ${escapeHTML(item.county)} County · ${item.distance.toFixed(1)} miles away</small>
-      <small>${escapeHTML(item.type)} · ${escapeHTML(item.severity)} · ${escapeHTML(item.status)}</small>
+      <small>${escapeHTML(item.incident_reference)} · ${item.distance.toFixed(1)} MILES AWAY</small>
+      <small>${escapeHTML(item.severity)} · ${escapeHTML(String(item.status || "").toUpperCase())}</small>
     </span></div>`,
     )
     .join("");
@@ -210,13 +187,87 @@ const updateNearbyIncidents = () => {
   updateMap(nearby);
 };
 
-document
-  .getElementById("radiusSelect")
-  .addEventListener("change", updateNearbyIncidents);
-updateNearbyIncidents();
+document.getElementById("radiusSelect").addEventListener("change", updateNearbyIncidents);
+
+const renderIncident = () => {
+  if (!selectedIncident) return;
+  const status = String(selectedIncident.status || "").toUpperCase();
+  const formatDateTime = (dateValue, fallback) => {
+    if (!dateValue) return fallback;
+    const date = new Date(dateValue);
+    if (Number.isNaN(date.getTime())) return fallback;
+    const dateText = new Intl.DateTimeFormat("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    }).format(date);
+    const hours = date.getHours();
+    const hour12 = hours % 12 || 12;
+    const meridiem = hours >= 12 ? "PM" : "AM";
+    const timeText = [hour12, date.getMinutes(), date.getSeconds()]
+      .map((part) => String(part).padStart(2, "0"))
+      .join(":");
+    return `${dateText} ${timeText} ${meridiem}`;
+  };
+
+  document.getElementById("titleField").textContent = selectedIncident.title;
+  document.getElementById("descriptionField").textContent = selectedIncident.description;
+  const severityField = document.getElementById("severityField");
+  severityField.textContent = selectedIncident.severity;
+  severityField.className = `readonly-field severity-value severity-${String(selectedIncident.severity).toLowerCase()}`;
+  document.getElementById("incidentMeta").textContent = formatDateTime(selectedIncident.created_at, "UNKNOWN DATE");
+  document.getElementById("assignedAt").textContent = formatDateTime(selectedIncident.assigned_at, "NOT ASSIGNED");
+  document.getElementById("updatedAt").textContent = formatDateTime(selectedIncident.updated_at, "UNKNOWN DATE");
+  document.getElementById("resolvedDate").textContent = formatDateTime(selectedIncident.resolved_at, "NOT RESOLVED");
+  document.getElementById("closedAt").textContent = formatDateTime(
+    status === "CLOSED" ? selectedIncident.updated_at : null,
+    "NOT CLOSED",
+  );
+  document.getElementById("cancelledAt").textContent = formatDateTime(
+    selectedIncident.cancelled_at,
+    "NOT CANCELLED",
+  );
+  const isCancelled = status === "CANCELLED";
+  document.getElementById("incidentMeta").closest("span").hidden = isCancelled;
+  document.getElementById("assignedAt").closest("span").hidden = isCancelled;
+  document.getElementById("updatedAt").closest("span").hidden = isCancelled;
+  document.getElementById("resolvedDate").closest("span").hidden = isCancelled;
+  document.getElementById("closedAtField").hidden = isCancelled;
+  document.getElementById("cancelledAtField").hidden = !isCancelled;
+  const statusBadge = document.getElementById("statusBadge");
+  statusBadge.textContent = status.replaceAll("_", " ");
+  let statusClass = "active-status";
+  if (status === "RESOLVED") {
+    statusClass = "resolved";
+  } else if (status === "CLOSED") {
+    statusClass = "closed";
+  } else if (status === "IN_PROGRESS") {
+    statusClass = "progress";
+  }
+  statusBadge.className = `status-badge ${statusClass}`;
+  selectedCoordinates = parseCoordinates(selectedIncident.location);
+  document.getElementById("overviewCoordinates").textContent = selectedIncident.location;
+  updateNearbyIncidents();
+};
+
+const loadAdminIncident = async () => {
+  try {
+    const response = await fetch("/api/incidents/admin");
+    if (!response.ok) throw new Error("Unable to load incident.");
+    adminIncidents = await response.json();
+    selectedIncident = adminIncidents.find((item) => item.incident_reference === incidentId);
+    if (!selectedIncident) throw new Error("Incident not found.");
+    renderIncident();
+  } catch (error) {
+    console.error("Unable to load admin incident.", error);
+    document.getElementById("titleField").textContent = "UNABLE TO LOAD INCIDENT";
+  }
+};
+
+await loadAdminIncident();
 
 // -----------------------------
-// Visual-only actions
+// Incident actions
 // -----------------------------
 const showToast = (message) => {
   const toast = document.createElement("div");
@@ -232,7 +283,7 @@ document
   .getElementById("logoutButton")
   .addEventListener("click", window.logoutUser);
 
-// Add a note to the page for visual testing until persistence is connected.
+// Add a note to the current incident while note persistence is unavailable.
 document.getElementById("addNoteButton").addEventListener("click", () => {
   const noteInput = document.getElementById("noteInput");
   const noteText = noteInput.value.trim();
@@ -246,11 +297,17 @@ document.getElementById("addNoteButton").addEventListener("click", () => {
   // Notes added from this admin user are styled as the user's chat bubbles.
   // Notes loaded from other users can use the "other" class later.
   note.className = "note-item own";
-  note.innerHTML =
-    "<strong>" +
-    (window.currentUserDisplayName || "User") +
-    " <small>just now</small></strong><p></p>";
-  note.querySelector("p").textContent = noteText;
+  const noteHeader = document.createElement("strong");
+  noteHeader.append(
+    document.createTextNode(window.currentUserDisplayName || "User"),
+    document.createTextNode(" "),
+  );
+  const noteTimestamp = document.createElement("small");
+  noteTimestamp.textContent = "JUST NOW";
+  noteHeader.appendChild(noteTimestamp);
+  const noteContent = document.createElement("p");
+  noteContent.textContent = noteText;
+  note.append(noteHeader, noteContent);
 
   document.getElementById("notesList").appendChild(note);
   document.querySelector(".notes-empty").style.display = "none";
@@ -364,7 +421,7 @@ const generateIncidentReport = () => {
     doc,
     "ASSIGNED AID PROVIDER",
     document.getElementById("aidProvider")?.selectedOptions[0]?.textContent ||
-      "Not assigned",
+      "NOT ASSIGNED",
     margin,
     y,
     contentWidth,

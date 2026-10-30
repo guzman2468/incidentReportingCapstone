@@ -43,6 +43,11 @@
   color: #805a00;
 }
 
+.overview-wrap .status-badge.assigned {
+  background: #e8e4ff;
+  color: #51429a;
+}
+
 .overview-wrap .status-badge.progress {
   background: #e7f3ff;
   color: #245b86;

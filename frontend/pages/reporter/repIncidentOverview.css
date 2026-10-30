@@ -243,8 +243,39 @@ a {
   max-width: 650px;
 }
 
-.severity-high {
-  color: #d16f60;
+.overview-fields .readonly-field.severity-value {
+  display: inline-block;
+  padding: 5px 9px;
+  border-radius: 20px;
+  border: 1px solid transparent;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
+.overview-fields .readonly-field.severity-value.severity-low {
+  background: #c9a400;
+  color: #111111;
+}
+
+.overview-fields .readonly-field.severity-value.severity-medium {
+  background: #f6a23a;
+  color: #111111;
+}
+
+.overview-fields .readonly-field.severity-value.severity-high {
+  background: #d94a4a;
+  color: #111111;
+}
+
+.overview-fields .readonly-field.severity-value.severity-severe {
+  background: #8652b8;
+  color: #ffffff;
+}
+
+.overview-fields .readonly-field.severity-value.severity-critical {
+  background: #111111;
+  border: 1px solid #000000;
+  color: #ffffff;
 }
 
 .notes-panel {
@@ -465,6 +496,10 @@ a {
   display: flex;
   flex-direction: column;
   gap: 4px;
+}
+
+.incident-meta span[hidden] {
+  display: none;
 }
 
 .incident-meta b {

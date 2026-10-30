@@ -40,6 +40,9 @@ const formatLocalDateTime = (dateValue) => {
   }).format(date);
 };
 
+const formatStatusDate = (dateValue, fallback) =>
+  dateValue ? formatLocalDateTime(dateValue) : fallback;
+
 const setIncidentStatus = (status) => {
   const statusBadge = document.getElementById("statusBadge");
   statusBadge.textContent = status.toUpperCase();
@@ -86,12 +89,35 @@ const loadIncident = async () => {
   document.getElementById("incidentMeta").textContent = formatLocalDateTime(
     incident.created_at,
   );
+  document.getElementById("assignedAt").textContent = formatStatusDate(
+    incident.assigned_at,
+    "NOT ASSIGNED",
+  );
+  document.getElementById("updatedAt").textContent = formatLocalDateTime(
+    incident.updated_at,
+  );
   document.getElementById("resolvedDate").textContent = incident.resolved_at
     ? formatLocalDateTime(incident.resolved_at)
-    : "Not resolved";
+    : "NOT RESOLVED";
+  const status = incident.status.toUpperCase();
+  document.getElementById("closedAt").textContent = formatStatusDate(
+    status === "CLOSED" ? incident.updated_at : null,
+    "NOT CLOSED",
+  );
+  document.getElementById("cancelledAt").textContent = formatStatusDate(
+    incident.cancelled_at,
+    "NOT CANCELLED",
+  );
+  const isCancelled = status === "CANCELLED";
+  document.getElementById("incidentMeta").closest("span").hidden = isCancelled;
+  document.getElementById("assignedAt").closest("span").hidden = isCancelled;
+  document.getElementById("updatedAt").closest("span").hidden = isCancelled;
+  document.getElementById("resolvedDate").closest("span").hidden = isCancelled;
+  document.getElementById("closedAtField").hidden = isCancelled;
+  document.getElementById("cancelledAtField").hidden = !isCancelled;
   document.getElementById("severityField").textContent = incident.severity;
   document.getElementById("severityField").className =
-    `readonly-field severity-${incident.severity.toLowerCase()}`;
+    `readonly-field severity-value severity-${incident.severity.toLowerCase()}`;
   document.getElementById("descriptionField").textContent = incident.description;
   setIncidentLocation(incident.location);
   setIncidentStatus(incident.status);
@@ -107,7 +133,17 @@ const showIncidentLoadError = (error) => {
 
 const setLoadingState = () => {
   document.getElementById("incidentMeta").textContent = "Loading...";
+  document.getElementById("assignedAt").textContent = "Loading...";
+  document.getElementById("updatedAt").textContent = "Loading...";
   document.getElementById("resolvedDate").textContent = "Loading...";
+  document.getElementById("closedAt").textContent = "Loading...";
+  document.getElementById("cancelledAt").textContent = "Loading...";
+  document.getElementById("incidentMeta").closest("span").hidden = false;
+  document.getElementById("assignedAt").closest("span").hidden = false;
+  document.getElementById("updatedAt").closest("span").hidden = false;
+  document.getElementById("resolvedDate").closest("span").hidden = false;
+  document.getElementById("closedAtField").hidden = false;
+  document.getElementById("cancelledAtField").hidden = true;
   document.getElementById("statusBadge").textContent = "Loading...";
   document.getElementById("statusBadge").className = "status-badge";
   document.getElementById("titleField").textContent = "Loading...";

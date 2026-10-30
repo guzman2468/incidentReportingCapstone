@@ -23,7 +23,12 @@ document.addEventListener("click", (event) => {
 // Incident data
 // -----------------------------
 const params = new URLSearchParams(window.location.search);
-const initialIncidentReference = params.get("reference");
+const incidentReferencePattern = /^INC-\d{5}$/i;
+const normalizeIncidentReference = (value) => {
+  const candidate = String(value || "").trim().toUpperCase();
+  return incidentReferencePattern.test(candidate) ? candidate : null;
+};
+const initialIncidentReference = normalizeIncidentReference(params.get("reference"));
 const linkedIncidentTitle = params.get("title");
 const linkedIncidentMeta = params.get("meta");
 let incidentReference = initialIncidentReference;
@@ -58,7 +63,7 @@ function formatIncidentStatus(status) {
 function getStatusColorClass(status) {
   return {
     NEW: "awaiting",
-    ASSIGNED: "awaiting",
+    ASSIGNED: "assigned",
     IN_PROGRESS: "progress",
     RESOLVED: "resolved",
     CLOSED: "closed",
@@ -67,9 +72,9 @@ function getStatusColorClass(status) {
 }
 
 function parseCoordinates(location) {
-  const coordinateMatch = String(location || "").match(
-    /^\s*(\d+(?:\.\d+)?)°\s*([NS])\s*,\s*(\d+(?:\.\d+)?)°\s*([EW])\s*$/i,
-  );
+  const coordinatePattern =
+    /^\s*(\d+(?:\.\d+)?)°\s*([NS])\s*,\s*(\d+(?:\.\d+)?)°\s*([EW])\s*$/i;
+  const coordinateMatch = coordinatePattern.exec(String(location || ""));
   if (!coordinateMatch) return null;
 
   const latitude = Number(coordinateMatch[1]);
@@ -85,11 +90,20 @@ function parseCoordinates(location) {
 function renderIncident(incident) {
   document.getElementById("titleField").textContent = incident.title;
   document.getElementById("incidentMeta").textContent = formatIncidentDate(
-    incident.assigned_at || incident.updated_at,
+    incident.created_at,
+  );
+  document.getElementById("assignedAt").textContent = incident.assigned_at
+    ? formatIncidentDate(incident.assigned_at)
+    : "NOT ASSIGNED";
+  document.getElementById("updatedAt").textContent = formatIncidentDate(
+    incident.updated_at,
   );
   document.getElementById("resolvedDate").textContent = incident.resolved_at
     ? formatIncidentDate(incident.resolved_at)
-    : "Not resolved";
+    : "NOT RESOLVED";
+  document.getElementById("closedAt").textContent = incident.closed_at
+    ? formatIncidentDate(incident.closed_at)
+    : "NOT CLOSED";
 
   const severityField = document.getElementById("severityField");
   severityField.textContent = incident.severity;
@@ -119,7 +133,8 @@ function renderIncident(incident) {
 
 async function loadIncident() {
   if (!incidentReference && linkedIncidentMeta) {
-    incidentReference = linkedIncidentMeta.match(/INC-\d{5}/i)?.[0];
+    const referenceMatch = /INC-\d{5}/i.exec(linkedIncidentMeta);
+    incidentReference = normalizeIncidentReference(referenceMatch?.[0]);
   }
 
   if (!incidentReference && linkedIncidentTitle) {
@@ -131,7 +146,9 @@ async function loadIncident() {
       const matchingIncident = assignedIncidents.find(
         (incident) => incident.title === linkedIncidentTitle,
       );
-      incidentReference = matchingIncident?.incident_reference;
+      incidentReference = normalizeIncidentReference(
+        matchingIncident?.incident_reference,
+      );
     }
   }
 
@@ -304,11 +321,21 @@ document.getElementById("addNoteButton").addEventListener("click", () => {
   // Notes added from this APTM user are styled as the user's chat bubbles.
   // Notes loaded from other users can use the "other" class later.
   note.className = "note-item own";
-  note.innerHTML =
-    "<strong>" +
-    (window.currentUserDisplayName || "User") +
-    " <small>just now</small></strong><p></p>";
-  note.querySelector("p").textContent = noteText;
+
+  const noteHeader = document.createElement("strong");
+  noteHeader.append(
+    document.createTextNode(window.currentUserDisplayName || "User"),
+    document.createTextNode(" ")
+  );
+
+  const noteTimestamp = document.createElement("small");
+  noteTimestamp.textContent = "just now";
+  noteHeader.appendChild(noteTimestamp);
+
+  const noteContent = document.createElement("p");
+  noteContent.textContent = noteText;
+
+  note.append(noteHeader, noteContent);
 
   document.getElementById("notesList").appendChild(note);
   document.querySelector(".notes-empty").style.display = "none";

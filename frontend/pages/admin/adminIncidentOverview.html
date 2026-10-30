@@ -58,55 +58,49 @@
               <div>
                 <div class="incident-meta">
                   <span
-                    ><b>Submitted</b
-                    ><strong id="incidentMeta">Sep 28, 2026</strong></span
+                    ><b>SUBMITTED AT</b
+                    ><strong id="incidentMeta">LOADING</strong></span
                   ><span
-                    ><b>Resolved date</b
-                    ><strong id="resolvedDate">Not resolved</strong></span
+                    ><b>ASSIGNED AT</b
+                    ><strong id="assignedAt">LOADING</strong></span
+                  ><span
+                    ><b>LAST UPDATED AT</b
+                    ><strong id="updatedAt">LOADING</strong></span
+                  ><span
+                    ><b>RESOLVED AT</b
+                    ><strong id="resolvedDate">LOADING</strong></span
+                  ><span id="closedAtField"
+                    ><b>CLOSED AT</b
+                    ><strong id="closedAt">LOADING</strong></span
+                  ><span id="cancelledAtField" hidden
+                    ><b>CANCELLED AT</b
+                    ><strong id="cancelledAt">LOADING</strong></span
                   >
                 </div>
               </div>
-              <span class="status-badge" id="statusBadge">Open</span>
+              <span class="status-badge" id="statusBadge">LOADING</span>
             </div>
             <div class="form-body">
               <div class="form-fields overview-fields">
                 <div class="field">
                   <div class="field-label">Title</div>
-                  <div class="readonly-field" id="titleField">
-                    Lorem ipsum dolor sit amet
-                  </div>
+                  <div class="readonly-field" id="titleField">LOADING</div>
                 </div>
                 <div class="field">
                   <div class="field-label">Severity</div>
-                  <div class="readonly-field severity-high">HIGH</div>
+                  <div class="readonly-field severity-value" id="severityField">LOADING</div>
                 </div>
                 <div class="field">
                   <div class="field-label">Description</div>
                   <div
                     class="readonly-field description-field"
                     id="descriptionField"
-                  >
-                    Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-                    Vivamus sagittis lacus vel augue laoreet rutrum faucibus
-                    dolor auctor.
-                  </div>
-                </div>
-                <div class="field assignment-field">
-                  <label class="field-label" for="aidProvider">Assign to:</label
-                  ><select id="aidProvider">
-                    <option value="">Select an aid provider</option>
-                    <option>Community First Aid</option>
-                    <option>Lakeside Emergency Response</option>
-                    <option>Northside Medical Support</option>
-                    <option>Rapid Relief Services</option>
-                  </select>
+                  >LOADING</div>
                 </div>
               </div>
               <div class="location-result">
                 <span class="coordinates-label">Coordinates</span
-                ><span class="coordinates" id="overviewCoordinates"
-                  >41.878100° N, 87.629800° W</span
-                >
+                ><span class="coordinates" id="overviewCoordinates">LOADING</span>
                 <div class="map-card">
                   <div
                     id="incidentMap"
@@ -166,14 +160,6 @@
               <p class="notes-empty" style="display: none">
                 No notes have been added to this incident.
               </p>
-              <div class="note-item other">
-                <strong>Reviewer Name <small>Today, 9:14 AM</small></strong>
-                <p>Inspection requested for the reported area.</p>
-              </div>
-              <div class="note-item other">
-                <strong>Safety Team <small>Today, 10:02 AM</small></strong>
-                <p>Maintenance has been notified and is reviewing the issue.</p>
-              </div>
             </div>
             <div class="note-composer">
               <label class="visually-hidden" for="noteInput">Add a note</label
@@ -201,7 +187,6 @@
       crossorigin="anonymous"
     ></script>
     <script src="../authHelpers.js"></script>
-    <script src="../assigner/assignerDemoData.js"></script>
-    <script src="adminIncidentOverview.js"></script>
+    <script type="module" src="adminIncidentOverview.js"></script>
   </body>
 </html>

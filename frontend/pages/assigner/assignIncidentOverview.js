@@ -65,19 +65,23 @@ function formatDate(dateValue) {
   const date = new Date(dateValue);
   if (Number.isNaN(date.getTime())) return "date unavailable";
 
-  return new Intl.DateTimeFormat("en-US", {
+  const dateText = new Intl.DateTimeFormat("en-US", {
     month: "short",
     day: "numeric",
     year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
   }).format(date);
+  const hours = date.getHours();
+  const hour12 = hours % 12 || 12;
+  const meridiem = hours >= 12 ? "PM" : "AM";
+  const timeText = [hour12, date.getMinutes(), date.getSeconds()]
+    .map((part) => String(part).padStart(2, "0"))
+    .join(":");
+  return `${dateText} ${timeText} ${meridiem}`;
 }
 
 function parseCoordinates(location) {
-  const coordinateMatch = String(location ?? "").match(
-    /^\s*(\d+(?:\.\d+)?)°\s*([NS])\s*,\s*(\d+(?:\.\d+)?)°\s*([EW])\s*$/i,
-  );
+  const coordinatePattern = /^\s*(\d+(?:\.\d+)?)°\s*([NS])\s*,\s*(\d+(?:\.\d+)?)°\s*([EW])\s*$/i;
+  const coordinateMatch = coordinatePattern.exec(String(location ?? ""));
   if (!coordinateMatch) return {};
 
   const latitude = Number(coordinateMatch[1]);
@@ -141,20 +145,28 @@ async function displayIncident() {
   document.getElementById("incidentNumber").textContent = incident.id;
   document.getElementById("incidentTitle").textContent = incident.title;
 
-  const assignedDate = incident.assignedDate
-    ? new Date(incident.assignedDate).toLocaleDateString("en-US", {
-        month: "short",
-        day: "numeric",
-        year: "numeric",
-      })
-    : "";
-  const dateLabel = assignedDate
-    ? `Assigned ${assignedDate}`
-    : `Submitted ${incident.submitted || "date unavailable"}`;
-
-  document.getElementById("submittedDate").textContent = dateLabel;
-  document.getElementById("resolvedDate").textContent =
-    incident.resolvedDate || "Not resolved";
+  const status = incident.status.toUpperCase();
+  document.getElementById("submittedDate").textContent = formatDate(incident.created_at);
+  document.getElementById("assignedAt").textContent = incident.assigned_at
+    ? formatDate(incident.assigned_at)
+    : "NOT ASSIGNED";
+  document.getElementById("updatedAt").textContent = formatDate(incident.updated_at);
+  document.getElementById("resolvedDate").textContent = incident.resolved_at
+    ? formatDate(incident.resolved_at)
+    : "NOT RESOLVED";
+  document.getElementById("closedAt").textContent = status === "CLOSED"
+    ? formatDate(incident.updated_at)
+    : "NOT CLOSED";
+  document.getElementById("cancelledAt").textContent = incident.cancelled_at
+    ? formatDate(incident.cancelled_at)
+    : "NOT CANCELLED";
+  const isCancelled = status === "CANCELLED";
+  document.getElementById("submittedDate").closest("span").hidden = isCancelled;
+  document.getElementById("assignedAt").closest("span").hidden = isCancelled;
+  document.getElementById("updatedAt").closest("span").hidden = isCancelled;
+  document.getElementById("resolvedDate").closest("span").hidden = isCancelled;
+  document.getElementById("closedAtField").hidden = isCancelled;
+  document.getElementById("cancelledAtField").hidden = !isCancelled;
 
   document.getElementById("incidentDescription").textContent =
     incident.description || "No description provided.";
@@ -190,7 +202,7 @@ function updateStatusBadge() {
     closed: "Closed",
   };
 
-  badge.textContent = labels[incident.status] || incident.status || "New";
+  badge.textContent = (labels[incident.status] || incident.status || "New").toUpperCase();
   badge.className = "status-badge";
 
   if (["resolved", "closed"].includes(incident.status)) {

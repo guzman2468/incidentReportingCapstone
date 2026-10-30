@@ -69,10 +69,15 @@ function escapeHTML(value) {
 
 function renderIncident(incident) {
   const normalizedStatus = incident.status.toLowerCase();
+  const statusClass = ["in_progress", "assigned"].includes(normalizedStatus)
+    ? "active"
+    : normalizedStatus;
   const statusLabel =
     {
       new: "New",
+      assigned: "Assigned",
       active: "In progress",
+      in_progress: "In progress",
       resolved: "Resolved",
       closed: "Closed",
     }[normalizedStatus] || normalizedStatus;
@@ -89,7 +94,7 @@ function renderIncident(incident) {
       </span>
       <span class="row-status">
         <span class="severity-pill ${severityClass}">${escapeHTML(incident.severity)}</span>
-        <span class="status-pill status-${escapeHTML(normalizedStatus)}">${escapeHTML(statusLabel.toUpperCase())}</span>
+        <span class="status-pill status-${escapeHTML(statusClass)}">${escapeHTML(statusLabel.toUpperCase())}</span>
       </span>
       <span class="row-arrow" aria-hidden="true">›</span>
     </button>

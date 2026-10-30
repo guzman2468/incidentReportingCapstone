@@ -644,11 +644,15 @@ a {
   justify-content: center;
   padding: 20px;
   position: fixed;
-  z-index: 10;
+  z-index: 3000;
 }
 
 .confirm-backdrop[hidden] {
   display: none;
+}
+
+#assignmentConfirmBackdrop::backdrop {
+  background: rgba(24, 43, 53, 0.34);
 }
 
 .confirm-dialog {

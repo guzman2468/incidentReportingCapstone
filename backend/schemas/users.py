@@ -37,6 +37,7 @@ class UserProfile(BaseModel):
     last_name: str
     role: UserRole
     must_change_password: bool
+    team_name: str | None = None
 
 
 class UserCreated(BaseModel):

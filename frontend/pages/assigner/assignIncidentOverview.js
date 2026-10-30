@@ -8,6 +8,15 @@ const assignButton = document.getElementById("assignButton");
 const providerSelectError = document.getElementById("providerSelectError");
 const teamSelectError = document.getElementById("teamSelectError");
 const assignmentMessage = document.getElementById("assignmentMessage");
+const assignmentConfirmBackdrop = document.getElementById(
+  "assignmentConfirmBackdrop",
+);
+const assignmentConfirmation = document.getElementById(
+  "assignmentConfirmation",
+);
+const closeAssignmentConfirm = document.getElementById(
+  "closeAssignmentConfirm",
+);
 
 function formatDisplayName(value) {
   return String(value ?? "")
@@ -66,8 +75,8 @@ function formatDate(dateValue) {
 }
 
 function parseCoordinates(location) {
-  const coordinateMatch = /^\s*(\d+(?:\.\d+)?)°\s*([NS])\s*,\s*(\d+(?:\.\d+)?)°\s*([EW])\s*$/i.exec(
-    String(location ?? ""),
+  const coordinateMatch = String(location ?? "").match(
+    /^\s*(\d+(?:\.\d+)?)°\s*([NS])\s*,\s*(\d+(?:\.\d+)?)°\s*([EW])\s*$/i,
   );
   if (!coordinateMatch) return {};
 
@@ -93,6 +102,8 @@ function normalizeIncident(rawIncident) {
     resolvedDate: rawIncident.resolved_at
       ? formatDate(rawIncident.resolved_at)
       : "Not resolved",
+    assignedProvider: rawIncident.assigned_provider_name || "",
+    assignedTeam: rawIncident.assigned_team_name || "",
   };
 }
 
@@ -172,6 +183,8 @@ function updateStatusBadge() {
 
   const labels = {
     new: "New",
+    assigned: "Assigned",
+    in_progress: "In progress",
     active: "In progress",
     resolved: "Resolved",
     closed: "Closed",
@@ -184,7 +197,7 @@ function updateStatusBadge() {
     badge.classList.add(incident.status);
   } else if (incident.status === "active") {
     badge.classList.add("active");
-  } else if (incident.status === "new") {
+  } else if (["new", "assigned"].includes(incident.status)) {
     badge.classList.add("new-status");
   }
 }
@@ -274,7 +287,7 @@ async function updateCurrentProvider() {
     currentProviderText = provider;
     assignmentSummaryText = `Currently assigned to ${provider}`;
     assignmentSummaryText += assignedTeam ? ` · ${assignedTeam}` : "";
-    assignmentSummaryText += ". You can select another team to reassign this incident.";
+    assignmentSummaryText += ".";
   }
 
   document.getElementById("currentProvider").textContent = currentProviderText;
@@ -294,10 +307,11 @@ async function updateCurrentProvider() {
 
   const isPast = ["resolved", "closed"].includes(incident.status);
   const hasCompleteAssignment = providerSelect.value && teamSelect.value;
+  const isAssigned = Boolean(provider && assignedTeam && hasCompleteAssignment);
 
-  providerSelect.disabled = isPast || !providers.length;
-  teamSelect.disabled = isPast || !availableTeams.length;
-  assignButton.disabled = isPast || !hasCompleteAssignment;
+  providerSelect.disabled = isPast || isAssigned || !providers.length;
+  teamSelect.disabled = isPast || isAssigned || !availableTeams.length;
+  assignButton.disabled = isPast || isAssigned || !hasCompleteAssignment;
 
   if (isPast) {
     assignButton.textContent = "Incident is closed";
@@ -545,7 +559,7 @@ teamSelect.addEventListener("change", () => {
 // Provider assignment
 // -------------------------------------
 
-assignButton.addEventListener("click", () => {
+assignButton.addEventListener("click", async () => {
   if (!incident || ["resolved", "closed"].includes(incident.status)) {
     return;
   }
@@ -569,8 +583,53 @@ assignButton.addEventListener("click", () => {
     return;
   }
 
-  assignmentMessage.textContent = `Assign to team clicked for ${formatDisplayName(selectedProvider.name)} — ${formatDisplayName(selectedTeam.name)}.`;
-  assignmentMessage.hidden = false;
+  try {
+    assignButton.disabled = true;
+    const response = await fetch("/api/incidents/assign", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        incident_reference: incident.incident_reference,
+        aid_provider_id: selectedProvider.id,
+        team_id: selectedTeam.id,
+      }),
+    });
+
+    const result = await response.json();
+    if (!response.ok) {
+      throw new Error(result.detail || "Unable to assign incident.");
+    }
+
+    incident.assignedProvider = selectedProvider.name;
+    incident.assignedTeam = selectedTeam.name;
+    incident.status = "assigned";
+    updateStatusBadge();
+    await updateCurrentProvider();
+
+    assignmentConfirmation.textContent =
+      `${formatDisplayName(selectedProvider.name)} — ` +
+      `${formatDisplayName(selectedTeam.name)} will now receive this incident.`;
+    assignmentConfirmBackdrop.hidden = false;
+    assignmentConfirmBackdrop.showModal();
+    closeAssignmentConfirm.focus();
+  } catch (error) {
+    console.error("Unable to assign incident.", error);
+    assignmentMessage.textContent = error.message;
+    assignmentMessage.hidden = false;
+  } finally {
+    assignButton.disabled = Boolean(incident?.assignedTeam);
+  }
+});
+
+function closeAssignmentConfirmation() {
+  if (assignmentConfirmBackdrop.open) assignmentConfirmBackdrop.close();
+  assignmentConfirmBackdrop.hidden = true;
+  assignButton.focus();
+}
+
+closeAssignmentConfirm.addEventListener("click", closeAssignmentConfirmation);
+assignmentConfirmBackdrop.addEventListener("click", (event) => {
+  if (event.target === assignmentConfirmBackdrop) closeAssignmentConfirmation();
 });
 
 // -------------------------------------

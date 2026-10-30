@@ -83,23 +83,171 @@ GET_REPORTER_INCIDENT_QUERY = text(
 GET_ASSIGNER_INCIDENTS_QUERY = text(
     """
     SELECT
-        incident_number,
-        title,
-        description,
-        severity,
-        location,
-        status,
-        created_at,
-        updated_at,
-        resolved_at
+        incidents.incident_number,
+        incidents.title,
+        incidents.description,
+        incidents.severity,
+        incidents.location,
+        incidents.status,
+        incidents.created_at,
+        incidents.updated_at,
+        incidents.assigned_at,
+        incidents.resolved_at,
+        incidents.assigned_aid_provider_id,
+        incidents.assigned_team_id,
+        aid_providers.name AS assigned_provider_name,
+        aid_provider_teams.name AS assigned_team_name
     FROM public.incidents
-    ORDER BY created_at DESC
+    LEFT JOIN public.aid_providers
+        ON aid_providers.id = incidents.assigned_aid_provider_id
+    LEFT JOIN public.aid_provider_teams
+        ON aid_provider_teams.id = incidents.assigned_team_id
+    ORDER BY incidents.created_at DESC
+    """
+)
+
+GET_ASSIGNED_INCIDENTS_QUERY = text(
+    """
+    SELECT DISTINCT
+        incidents.incident_number,
+        incidents.title,
+        incidents.description,
+        incidents.severity,
+        incidents.location,
+        incidents.status,
+        incidents.created_at,
+        incidents.updated_at,
+        incidents.assigned_at,
+        incidents.resolved_at,
+        incidents.assigned_aid_provider_id,
+        incidents.assigned_team_id,
+        aid_providers.name AS assigned_provider_name,
+        aid_provider_teams.name AS assigned_team_name
+    FROM public.incidents
+    INNER JOIN public.team_members
+        ON team_members.team_id = incidents.assigned_team_id
+    INNER JOIN public.users
+        ON users.id = team_members.user_id
+    INNER JOIN public.aid_providers
+        ON aid_providers.id = incidents.assigned_aid_provider_id
+    INNER JOIN public.aid_provider_teams
+        ON aid_provider_teams.id = incidents.assigned_team_id
+    WHERE users.email = :email
+      AND users.role = 'AID_PROVIDER_TEAM_MEMBER'
+      AND users.is_active = true
+      AND aid_provider_teams.is_active = true
+      AND incidents.status IN ('NEW', 'ASSIGNED', 'IN_PROGRESS')
+    ORDER BY incidents.updated_at DESC
+    """
+)
+
+GET_ASSIGNED_INCIDENT_QUERY = text(
+    """
+    SELECT DISTINCT
+        incidents.incident_number,
+        incidents.title,
+        incidents.description,
+        incidents.severity,
+        incidents.location,
+        incidents.status,
+        incidents.created_at,
+        incidents.updated_at,
+        incidents.assigned_at,
+        incidents.resolved_at,
+        incidents.assigned_aid_provider_id,
+        incidents.assigned_team_id,
+        aid_providers.name AS assigned_provider_name,
+        aid_provider_teams.name AS assigned_team_name
+    FROM public.incidents
+    INNER JOIN public.team_members
+        ON team_members.team_id = incidents.assigned_team_id
+    INNER JOIN public.users
+        ON users.id = team_members.user_id
+    INNER JOIN public.aid_providers
+        ON aid_providers.id = incidents.assigned_aid_provider_id
+    INNER JOIN public.aid_provider_teams
+        ON aid_provider_teams.id = incidents.assigned_team_id
+    WHERE incidents.incident_number = :incident_number
+      AND users.email = :email
+      AND users.role = 'AID_PROVIDER_TEAM_MEMBER'
+      AND users.is_active = true
+      AND aid_provider_teams.is_active = true
+    """
+)
+
+ASSIGN_INCIDENT_QUERY = text(
+    """
+    UPDATE public.incidents
+    SET
+        assigned_aid_provider_id = :aid_provider_id,
+        assigned_team_id = :team_id,
+        status = 'ASSIGNED',
+        assigned_at = now(),
+        updated_at = now()
+    WHERE incident_number = :incident_number
+      AND EXISTS (
+          SELECT 1
+          FROM public.aid_provider_teams
+          WHERE id = :team_id
+            AND aid_provider_id = :aid_provider_id
+            AND is_active = true
+      )
+    """
+)
+
+UPDATE_ASSIGNED_INCIDENT_STATUS_QUERY = text(
+    """
+    UPDATE public.incidents
+    SET
+        status = :status,
+        updated_at = now()
+    WHERE incident_number = :incident_number
+      AND assigned_team_id IN (
+          SELECT team_members.team_id
+          FROM public.team_members
+          INNER JOIN public.users
+              ON users.id = team_members.user_id
+          WHERE users.email = :email
+            AND users.role = 'AID_PROVIDER_TEAM_MEMBER'
+            AND users.is_active = true
+      )
+    """
+)
+
+UPDATE_STARTED_AT_QUERY = text(
+    """
+    UPDATE public.incidents
+    SET started_at = COALESCE(started_at, now()),
+        updated_at = now()
+    WHERE incident_number = :incident_number
+    """
+)
+
+UPDATE_RESOLVED_AT_QUERY = text(
+    """
+    UPDATE public.incidents
+    SET resolved_at = COALESCE(resolved_at, now()),
+        updated_at = now()
+    WHERE incident_number = :incident_number
+    """
+)
+
+UPDATE_CANCELLED_AT_QUERY = text(
+    """
+    UPDATE public.incidents
+    SET cancelled_at = COALESCE(cancelled_at, now()),
+        updated_at = now()
+    WHERE incident_number = :incident_number
     """
 )
 
 
 class ReporterNotFound(Exception):
     """Raised when the authenticated reporter no longer has an active account."""
+
+
+class InvalidIncidentAssignment(Exception):
+    """Raised when an incident cannot be assigned to the selected team."""
 
 
 def _add_incident_reference(row: dict[str, object]) -> dict[str, object]:
@@ -162,6 +310,102 @@ def get_assigner_incidents(db: Session) -> list[dict[str, object]]:
 
     rows = db.execute(GET_ASSIGNER_INCIDENTS_QUERY).mappings().all()
     return [_add_incident_reference(dict(row)) for row in rows]
+
+
+def get_assigned_incidents(
+    db: Session,
+    email: str,
+) -> list[dict[str, object]]:
+    """Return incidents assigned to any team containing the authenticated member."""
+
+    rows = db.execute(
+        GET_ASSIGNED_INCIDENTS_QUERY,
+        {"email": email},
+    ).mappings().all()
+    return [_add_incident_reference(dict(row)) for row in rows]
+
+
+def get_assigned_incident(
+    db: Session,
+    email: str,
+    incident_reference: str,
+) -> dict[str, object] | None:
+    """Return one assigned incident visible to the authenticated member."""
+
+    reference_match = re.fullmatch(r"INC-(\d{5})", incident_reference.upper())
+    if reference_match is None:
+        return None
+
+    row = db.execute(
+        GET_ASSIGNED_INCIDENT_QUERY,
+        {
+            "incident_number": int(reference_match.group(1)),
+            "email": email,
+        },
+    ).mappings().one_or_none()
+    return _add_incident_reference(dict(row)) if row else None
+
+
+def assign_incident(
+    db: Session,
+    incident_reference: str,
+    aid_provider_id: str,
+    team_id: str,
+) -> None:
+    """Assign an incident to an active team belonging to the selected provider."""
+
+    incident_number = int(incident_reference.removeprefix("INC-"))
+    result = db.execute(
+        ASSIGN_INCIDENT_QUERY,
+        {
+            "incident_number": incident_number,
+            "aid_provider_id": aid_provider_id,
+            "team_id": team_id,
+        },
+    )
+
+    if result.rowcount == 0:
+        db.rollback()
+        raise InvalidIncidentAssignment(
+            "The incident or selected aid provider team is invalid."
+        )
+
+    db.commit()
+
+
+def update_assigned_incident_status(
+    db: Session,
+    email: str,
+    incident_reference: str,
+    incident_status: str,
+) -> None:
+    """Update an assigned incident only when the member belongs to its team."""
+
+    incident_number = int(incident_reference.removeprefix("INC-"))
+    result = db.execute(
+        UPDATE_ASSIGNED_INCIDENT_STATUS_QUERY,
+        {
+            "email": email,
+            "incident_number": incident_number,
+            "status": incident_status,
+        },
+    )
+
+    if result.rowcount == 0:
+        db.rollback()
+        raise InvalidIncidentAssignment(
+            "The incident is not assigned to one of your teams."
+        )
+
+    timestamp_queries = {
+        "IN_PROGRESS": UPDATE_STARTED_AT_QUERY,
+        "RESOLVED": UPDATE_RESOLVED_AT_QUERY,
+        "CANCELLED": UPDATE_CANCELLED_AT_QUERY,
+    }
+    timestamp_query = timestamp_queries[incident_status]
+    db.execute(timestamp_query, {"incident_number": incident_number})
+
+    db.commit()
 
 
 def get_reporter_incident(

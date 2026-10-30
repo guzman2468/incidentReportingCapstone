@@ -111,7 +111,7 @@
                 </div>
                 <div class="field assignment-field">
                   <label class="field-label" for="providerSelect"
-                    >Assign to aid provider:
+                    >Assigned to aid provider:
                     <span class="required-star">*</span></label
                   >
                   <select id="providerSelect" required>
@@ -123,7 +123,7 @@
                     role="alert"
                   ></span>
                   <label class="field-label" for="teamSelect"
-                    >Assign to team: <span class="required-star">*</span></label
+                    >Assigned to team: <span class="required-star">*</span></label
                   >
                   <select id="teamSelect" required disabled>
                     <option value="">Select a team</option>
@@ -243,5 +243,20 @@
       type="module"
       src="assignIncidentOverview.js?v=database-incidents-1"
     ></script>
+
+    <dialog
+      class="confirm-dialog"
+      id="assignmentConfirmBackdrop"
+      hidden
+      aria-labelledby="assignmentConfirmTitle"
+    >
+      <h2 id="assignmentConfirmTitle">Incident assigned</h2>
+      <p id="assignmentConfirmation"></p>
+      <div class="confirm-actions">
+        <button type="button" class="primary-button" id="closeAssignmentConfirm">
+          Continue
+        </button>
+      </div>
+    </dialog>
   </body>
 </html>

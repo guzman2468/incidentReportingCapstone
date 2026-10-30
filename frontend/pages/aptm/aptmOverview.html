@@ -54,27 +54,25 @@
               <div>
                 <div class="incident-meta">
                   <span
-                    ><b>Submitted</b
-                    ><strong id="incidentMeta">Sep 28, 2026</strong></span
+                    ><b>Assigned</b
+                    ><strong id="incidentMeta">Loading...</strong></span
                   ><span
                     ><b>Resolved date</b
                     ><strong id="resolvedDate">Not resolved</strong></span
                   >
                 </div>
               </div>
-              <span class="status-badge" id="statusBadge">Open</span>
+              <span class="status-badge" id="statusBadge">Loading...</span>
             </div>
             <div class="form-body">
               <div class="form-fields overview-fields">
                 <div class="field">
                   <div class="field-label">Title</div>
-                  <div class="readonly-field" id="titleField">
-                    Lorem ipsum dolor sit amet
-                  </div>
+                  <div class="readonly-field" id="titleField">Loading...</div>
                 </div>
                 <div class="field">
                   <div class="field-label">Severity</div>
-                  <div class="readonly-field severity-high">HIGH</div>
+                  <div class="readonly-field" id="severityField">Loading...</div>
                 </div>
                 <div class="field">
                   <div class="field-label">Description</div>
@@ -82,9 +80,7 @@
                     class="readonly-field description-field"
                     id="descriptionField"
                   >
-                    Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-                    Vivamus sagittis lacus vel augue laoreet rutrum faucibus
-                    dolor auctor.
+                    Loading incident description...
                   </div>
                 </div>
                 <div class="field assignment-field">
@@ -94,7 +90,7 @@
                     <option value="" disabled selected>
                       Select a status to provide an update
                     </option>
-                    <option value="IN PROGRESS">IN PROGRESS</option>
+                    <option value="IN_PROGRESS">IN PROGRESS</option>
                     <option value="RESOLVED">RESOLVED</option>
                     <option value="CANCELLED">CANCELLED</option></select
                   ><button
@@ -109,14 +105,14 @@
               <div class="location-result">
                 <span class="coordinates-label">Coordinates</span
                 ><span class="coordinates" id="overviewCoordinates"
-                  >41.878100° N, 87.629800° W</span
+                  >Loading location...</span
                 >
                 <div class="map-card">
                   <iframe
                     id="mapFrame"
                     title="Map showing the incident location"
                     loading="lazy"
-                    src="https://www.openstreetmap.org/export/embed.html?bbox=-87.6398,41.8681,-87.6198,41.8881&amp;layer=mapnik&amp;marker=41.8781,-87.6298"
+                    src="about:blank"
                   ></iframe>
                 </div>
               </div>
@@ -139,21 +135,9 @@
               </div>
             </div>
             <div class="notes-list" id="notesList">
-              <p class="notes-empty" style="display: none">
+              <p class="notes-empty">
                 No notes have been added to this incident.
               </p>
-              <div class="note-item other">
-                <strong>Reviewer Name <small>Today, 9:14 AM</small></strong>
-                <p>Inspection requested for the reported area.</p>
-              </div>
-              <div class="note-item other">
-                <strong>Safety Team <small>Today, 10:02 AM</small></strong>
-                <p>Maintenance has been notified and is reviewing the issue.</p>
-              </div>
-              <div class="note-item own">
-                <strong data-user-name><small>Today, 10:18 AM</small></strong>
-                <p>Thank you. I can provide more information if needed.</p>
-              </div>
             </div>
             <div class="note-composer">
               <label class="visually-hidden" for="noteInput">Add a note</label
@@ -199,7 +183,21 @@
         </div>
       </dialog>
     </div>
+    <dialog
+      class="confirm-dialog"
+      id="statusSuccessBackdrop"
+      hidden
+      aria-labelledby="statusSuccessTitle"
+    >
+        <h2 id="statusSuccessTitle">Status updated successfully</h2>
+        <p id="statusSuccessMessage"></p>
+        <div class="confirm-actions">
+          <button type="button" class="assignment-confirm" id="closeStatusSuccess">
+            Continue
+          </button>
+        </div>
+    </dialog>
     <script src="../authHelpers.js"></script>
-    <script src="aptmOverview.js"></script>
+    <script type="module" src="aptmOverview.js?v=status-update-api-2"></script>
   </body>
 </html>

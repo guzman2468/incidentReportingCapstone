@@ -22,36 +22,143 @@ document.addEventListener("click", (event) => {
 // -----------------------------
 // Incident data
 // -----------------------------
-// Read the selected incident's basic values from the APTM dashboard URL.
 const params = new URLSearchParams(window.location.search);
-const title = params.get("title");
-const meta = params.get("meta");
-const incidentStatus = params.get("status");
+const initialIncidentReference = params.get("reference");
+const linkedIncidentTitle = params.get("title");
+const linkedIncidentMeta = params.get("meta");
+let incidentReference = initialIncidentReference;
 
-if (title) document.getElementById("titleField").textContent = title;
+function formatIncidentDate(dateValue) {
+  const date = new Date(dateValue);
+  if (Number.isNaN(date.getTime())) return "Unknown date";
 
-if (meta) {
-  const submittedIndex = meta.toLowerCase().indexOf("submitted");
-  const afterSubmitted =
-    submittedIndex === -1
-      ? ""
-      : meta.slice(submittedIndex + "submitted".length);
-
-  const dateText = afterSubmitted.trimStart();
-  const incidentDate =
-    dateText && dateText.length < afterSubmitted.length ? dateText : meta;
-
-  document.getElementById("incidentMeta").textContent = incidentDate;
+  return new Intl.DateTimeFormat("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: true,
+    hourCycle: "h12",
+  }).format(date);
 }
 
-if (incidentStatus) {
+function formatIncidentStatus(status) {
+  return {
+    NEW: "NEW",
+    ASSIGNED: "ASSIGNED",
+    IN_PROGRESS: "IN PROGRESS",
+    RESOLVED: "RESOLVED",
+    CLOSED: "CLOSED",
+    CANCELLED: "CANCELLED",
+  }[String(status || "").toUpperCase()] || String(status || "").toUpperCase();
+}
+
+function getStatusColorClass(status) {
+  return {
+    NEW: "awaiting",
+    ASSIGNED: "awaiting",
+    IN_PROGRESS: "progress",
+    RESOLVED: "resolved",
+    CLOSED: "closed",
+    CANCELLED: "closed",
+  }[String(status || "").toUpperCase()] || "awaiting";
+}
+
+function parseCoordinates(location) {
+  const coordinateMatch = String(location || "").match(
+    /^\s*(\d+(?:\.\d+)?)°\s*([NS])\s*,\s*(\d+(?:\.\d+)?)°\s*([EW])\s*$/i,
+  );
+  if (!coordinateMatch) return null;
+
+  const latitude = Number(coordinateMatch[1]);
+  const longitude = Number(coordinateMatch[3]);
+
+  return {
+    latitude: coordinateMatch[2].toUpperCase() === "S" ? -latitude : latitude,
+    longitude:
+      coordinateMatch[4].toUpperCase() === "W" ? -longitude : longitude,
+  };
+}
+
+function renderIncident(incident) {
+  document.getElementById("titleField").textContent = incident.title;
+  document.getElementById("incidentMeta").textContent = formatIncidentDate(
+    incident.assigned_at || incident.updated_at,
+  );
+  document.getElementById("resolvedDate").textContent = incident.resolved_at
+    ? formatIncidentDate(incident.resolved_at)
+    : "Not resolved";
+
+  const severityField = document.getElementById("severityField");
+  severityField.textContent = incident.severity;
+  severityField.className =
+    `readonly-field severity-value severity-${incident.severity.toLowerCase()}`;
+  document.getElementById("descriptionField").textContent = incident.description;
+
   const statusBadge = document.getElementById("statusBadge");
+  const formattedStatus = formatIncidentStatus(incident.status);
+  const statusColorClass = getStatusColorClass(incident.status);
+  statusBadge.textContent = formattedStatus;
+  statusBadge.className = `status-badge ${statusColorClass}`;
 
-  statusBadge.textContent = incidentStatus;
+  const coordinates = parseCoordinates(incident.location);
+  document.getElementById("overviewCoordinates").textContent =
+    incident.location;
 
-  if (incidentStatus.toLowerCase() !== "resolved") {
-    statusBadge.className = "status-badge active-status";
+  if (coordinates) {
+    const { latitude, longitude } = coordinates;
+    const mapFrame = document.getElementById("mapFrame");
+    const bounds = `${longitude - 0.01},${latitude - 0.01},${longitude + 0.01},${latitude + 0.01}`;
+    mapFrame.src =
+      `https://www.openstreetmap.org/export/embed.html?bbox=${bounds}` +
+      `&layer=mapnik&marker=${latitude},${longitude}`;
   }
+}
+
+async function loadIncident() {
+  if (!incidentReference && linkedIncidentMeta) {
+    incidentReference = linkedIncidentMeta.match(/INC-\d{5}/i)?.[0];
+  }
+
+  if (!incidentReference && linkedIncidentTitle) {
+    const assignedIncidentsResponse = await fetch(
+      "/api/incidents/assigned-to-me",
+    );
+    if (assignedIncidentsResponse.ok) {
+      const assignedIncidents = await assignedIncidentsResponse.json();
+      const matchingIncident = assignedIncidents.find(
+        (incident) => incident.title === linkedIncidentTitle,
+      );
+      incidentReference = matchingIncident?.incident_reference;
+    }
+  }
+
+  if (!incidentReference) {
+    throw new Error("Incident reference is missing from this dashboard link.");
+  }
+
+  const response = await fetch(
+    `/api/incidents/assigned-to-me/${encodeURIComponent(incidentReference)}`,
+  );
+  if (!response.ok) {
+    throw new Error("Unable to load this assigned incident.");
+  }
+
+  renderIncident(await response.json());
+}
+
+try {
+  await loadIncident();
+} catch (error) {
+  console.error(error);
+  document.getElementById("titleField").textContent =
+    "Unable to load this incident.";
+  document.getElementById("incidentMeta").textContent = error.message;
+  document.getElementById("descriptionField").textContent = "No incident data available.";
+  document.getElementById("severityField").textContent = "Unavailable";
+  document.getElementById("overviewCoordinates").textContent = "Unavailable";
 }
 
 // -----------------------------
@@ -108,12 +215,61 @@ document
 
 document
   .getElementById("applyStatusButton")
-  .addEventListener("click", () => {
+  .addEventListener("click", async () => {
     const status = document.getElementById("incidentStatusSelect").value;
 
-    closeStatusConfirm();
-    document.getElementById("statusBadge").textContent = status;
-    showToast(`Incident status updated to ${status}.`);
+    try {
+      const response = await fetch(
+        `/api/incidents/assigned-to-me/${encodeURIComponent(incidentReference)}/status`,
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ status }),
+        },
+      );
+
+      const result = await response.json();
+      if (!response.ok) {
+        throw new Error(result.detail || "Unable to update incident status.");
+      }
+
+      closeStatusConfirm();
+      const formattedStatus = formatIncidentStatus(status);
+      const statusColorClass = getStatusColorClass(status);
+      document.getElementById("statusBadge").textContent = formattedStatus;
+      document.getElementById("statusBadge").className =
+        `status-badge ${statusColorClass}`;
+      document.getElementById("statusSuccessMessage").textContent =
+        `The incident is now ${formatIncidentStatus(status)}.`;
+      const statusSuccessBackdrop = document.getElementById(
+        "statusSuccessBackdrop",
+      );
+      statusSuccessBackdrop.hidden = false;
+      statusSuccessBackdrop.showModal();
+      document.getElementById("closeStatusSuccess").focus();
+    } catch (error) {
+      console.error("Unable to update incident status.", error);
+      closeStatusConfirm();
+      showToast(error.message);
+    }
+  });
+
+const closeStatusSuccess = () => {
+  const statusSuccessBackdrop = document.getElementById("statusSuccessBackdrop");
+  if (statusSuccessBackdrop.open) statusSuccessBackdrop.close();
+  statusSuccessBackdrop.hidden = true;
+};
+
+document
+  .getElementById("closeStatusSuccess")
+  .addEventListener("click", closeStatusSuccess);
+
+document
+  .getElementById("statusSuccessBackdrop")
+  .addEventListener("click", (event) => {
+    if (event.target.id === "statusSuccessBackdrop") {
+      closeStatusSuccess();
+    }
   });
 
 // Clicking outside the dialog keeps the user on the incident overview.

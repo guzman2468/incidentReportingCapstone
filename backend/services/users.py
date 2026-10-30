@@ -31,10 +31,20 @@ AUTHENTICATE_USER_QUERY = text(
 
 GET_USER_PROFILE_QUERY = text(
     """
-    SELECT email, first_name, last_name, role, must_change_password
+    SELECT
+        users.email,
+        users.first_name,
+        users.last_name,
+        users.role,
+        users.must_change_password,
+        aid_provider_teams.name AS team_name
     FROM public.users
-    WHERE email = :email
-      AND is_active = true
+    LEFT JOIN public.team_members
+        ON team_members.user_id = users.id
+    LEFT JOIN public.aid_provider_teams
+        ON aid_provider_teams.id = team_members.team_id
+    WHERE users.email = :email
+      AND users.is_active = true
     """
 )
 

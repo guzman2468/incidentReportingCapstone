@@ -113,7 +113,7 @@ const loadIncident = async () => {
     : "NOT RESOLVED";
   const status = incident.status.toUpperCase();
   document.getElementById("closedAt").textContent = formatStatusDate(
-    status === "CLOSED" ? incident.updated_at : null,
+    status === "CLOSED" ? incident.closed_at : null,
     "NOT CLOSED",
   );
   document.getElementById("cancelledAt").textContent = formatStatusDate(

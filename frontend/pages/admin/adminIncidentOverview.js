@@ -42,6 +42,7 @@ if (nearbyCard && formFields) {
 
 let incidentMap = null;
 let mapMarkers = null;
+const nearbyMarkers = new Map();
 
 const escapeHTML = (value) =>
   String(value ?? "").replace(
@@ -125,6 +126,7 @@ const updateMap = (nearby) => {
   }
 
   mapMarkers.clearLayers();
+  nearbyMarkers.clear();
   const radiusMiles = Number(document.getElementById("radiusSelect").value);
   const radiusCircle = L.circle([latitude, longitude], {
     radius: radiusMiles * 1609.344,
@@ -146,25 +148,38 @@ const updateMap = (nearby) => {
     )
     .addTo(mapMarkers);
 
-  nearby.forEach((item) =>
-    L.circleMarker([item.coordinates.latitude, item.coordinates.longitude], {
+  nearby.forEach((item) => {
+    const nearbyMarker = L.circleMarker(
+      [item.coordinates.latitude, item.coordinates.longitude],
+      {
       radius: 6,
       color: "#fff",
       weight: 2,
       fillColor: "#ee806d",
       fillOpacity: 1,
-    })
+      },
+    )
       .bindPopup(
         `<strong>${escapeHTML(item.incident_reference)} · ${escapeHTML(item.title)}</strong><br>${item.distance.toFixed(1)} MILES AWAY`,
       )
-      .addTo(mapMarkers),
-  );
+      .addTo(mapMarkers);
+
+    nearbyMarkers.set(item.incident_reference, nearbyMarker);
+  });
 
   incidentMap.fitBounds(radiusCircle.getBounds(), {
     padding: [16, 16],
     maxZoom: 14,
   });
   window.setTimeout(() => incidentMap.invalidateSize(), 0);
+};
+
+const focusNearbyIncident = (incidentReference) => {
+  const marker = nearbyMarkers.get(incidentReference);
+  if (!marker || !incidentMap) return;
+
+  incidentMap.setView(marker.getLatLng(), Math.max(incidentMap.getZoom(), 13));
+  marker.openPopup();
 };
 
 const updateNearbyIncidents = () => {
@@ -175,12 +190,12 @@ const updateNearbyIncidents = () => {
 
   list.innerHTML = nearby
     .map(
-      (item) => `<div class="nearby-row">
+      (item) => `<button type="button" class="nearby-row" data-nearby-incident="${escapeHTML(item.incident_reference)}">
     <span class="nearby-info">
       <strong>${escapeHTML(item.title)}</strong>
       <small>${escapeHTML(item.incident_reference)} · ${item.distance.toFixed(1)} MILES AWAY</small>
       <small>${escapeHTML(item.severity)} · ${escapeHTML(String(item.status || "").toUpperCase())}</small>
-    </span></div>`,
+    </span></button>`,
     )
     .join("");
   empty.style.display = nearby.length ? "none" : "block";
@@ -188,6 +203,13 @@ const updateNearbyIncidents = () => {
 };
 
 document.getElementById("radiusSelect").addEventListener("change", updateNearbyIncidents);
+
+document.getElementById("nearbyList").addEventListener("click", (event) => {
+  const nearbyRow = event.target.closest("[data-nearby-incident]");
+  if (!nearbyRow) return;
+
+  focusNearbyIncident(nearbyRow.dataset.nearbyIncident);
+});
 
 const renderIncident = () => {
   if (!selectedIncident) return;
@@ -220,7 +242,7 @@ const renderIncident = () => {
   document.getElementById("updatedAt").textContent = formatDateTime(selectedIncident.updated_at, "UNKNOWN DATE");
   document.getElementById("resolvedDate").textContent = formatDateTime(selectedIncident.resolved_at, "NOT RESOLVED");
   document.getElementById("closedAt").textContent = formatDateTime(
-    status === "CLOSED" ? selectedIncident.updated_at : null,
+    status === "CLOSED" ? selectedIncident.closed_at : null,
     "NOT CLOSED",
   );
   document.getElementById("cancelledAt").textContent = formatDateTime(

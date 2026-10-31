@@ -73,6 +73,7 @@ GET_REPORTER_INCIDENTS_QUERY = text(
         incidents.updated_at,
         incidents.assigned_at,
         incidents.resolved_at,
+        incidents.closed_at,
         incidents.cancelled_at,
         incidents.assigned_aid_provider_id,
         incidents.assigned_team_id,
@@ -88,7 +89,7 @@ GET_REPORTER_INCIDENTS_QUERY = text(
     WHERE users.email = :email
       AND users.role = 'REPORTER'
       AND users.is_active = true
-    ORDER BY incidents.created_at DESC
+    ORDER BY incidents.updated_at DESC
     """
 )
 
@@ -105,6 +106,7 @@ GET_REPORTER_INCIDENT_QUERY = text(
         incidents.updated_at,
         incidents.assigned_at,
         incidents.resolved_at,
+        incidents.closed_at,
         incidents.cancelled_at,
         incidents.assigned_aid_provider_id,
         incidents.assigned_team_id,
@@ -137,6 +139,7 @@ GET_ASSIGNER_INCIDENTS_QUERY = text(
         incidents.updated_at,
         incidents.assigned_at,
         incidents.resolved_at,
+        incidents.closed_at,
         incidents.cancelled_at,
         incidents.assigned_aid_provider_id,
         incidents.assigned_team_id,
@@ -147,7 +150,7 @@ GET_ASSIGNER_INCIDENTS_QUERY = text(
         ON aid_providers.id = incidents.assigned_aid_provider_id
     LEFT JOIN public.aid_provider_teams
         ON aid_provider_teams.id = incidents.assigned_team_id
-    ORDER BY incidents.created_at DESC
+    ORDER BY incidents.updated_at DESC
     """
 )
 
@@ -164,6 +167,7 @@ GET_ASSIGNED_INCIDENTS_QUERY = text(
         incidents.updated_at,
         incidents.assigned_at,
         incidents.resolved_at,
+        incidents.closed_at,
         incidents.cancelled_at,
         incidents.assigned_aid_provider_id,
         incidents.assigned_team_id,
@@ -200,6 +204,7 @@ GET_ASSIGNED_INCIDENT_QUERY = text(
         incidents.updated_at,
         incidents.assigned_at,
         incidents.resolved_at,
+        incidents.closed_at,
         incidents.assigned_aid_provider_id,
         incidents.assigned_team_id,
         aid_providers.name AS assigned_provider_name,

@@ -174,8 +174,22 @@ function renderAssignedIncidents(incidents) {
   const teamName = document.getElementById("teamName");
 
   list.replaceChildren();
-  assignedIncidents = incidents;
-  document.getElementById("activeTotalCount").textContent = incidents.length;
+  assignedIncidents = [...incidents].sort(
+    (firstIncident, secondIncident) =>
+      new Date(
+        getIncidentTimestamp(
+          secondIncident,
+          getIncidentStatus(secondIncident.status),
+        ),
+      ) -
+      new Date(
+        getIncidentTimestamp(
+          firstIncident,
+          getIncidentStatus(firstIncident.status),
+        ),
+      ),
+  );
+  document.getElementById("activeTotalCount").textContent = assignedIncidents.length;
   assignedCount.textContent = incidents.filter(
     (incident) => getIncidentStatus(incident.status) === "assigned",
   ).length;
@@ -183,11 +197,11 @@ function renderAssignedIncidents(incidents) {
     (incident) => getIncidentStatus(incident.status) === "progress",
   ).length;
 
-  if (incidents[0]?.assigned_team_name) {
-    teamName.textContent = formatTeamName(incidents[0].assigned_team_name);
+  if (assignedIncidents[0]?.assigned_team_name) {
+    teamName.textContent = formatTeamName(assignedIncidents[0].assigned_team_name);
   }
 
-  incidents.forEach((incident) => {
+  assignedIncidents.forEach((incident) => {
     const status = getIncidentStatus(incident.status);
     const statusLabel = {
       new: "New",
@@ -300,7 +314,9 @@ function connectIncidentControls(
         selectedSeverity === "all" ||
         row.dataset.severity === selectedSeverity;
 
-      const matchesSearch = row.dataset.search.startsWith(query);
+      const matchesSearch = row.querySelector(".incident-info strong").textContent
+        .toLowerCase()
+        .startsWith(query);
       const matchesTime = !cutoff || !incidentDate || incidentDate >= cutoff;
 
       const isVisible =

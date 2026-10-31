@@ -77,6 +77,7 @@ const getIncidentTimestamp = (incident) => {
   if (incident.status === "ASSIGNED") return incident.assigned_at || incident.updated_at;
   if (incident.status === "IN_PROGRESS") return incident.updated_at;
   if (incident.status === "RESOLVED") return incident.resolved_at || incident.updated_at;
+  if (incident.status === "CLOSED") return incident.closed_at || incident.updated_at;
   if (incident.status === "CANCELLED") return incident.cancelled_at || incident.updated_at;
   return incident.updated_at;
 };
@@ -171,7 +172,9 @@ function connectIncidentControls(
       const incident = incidents.find(
         (item) => item.incident_reference === row.dataset.incidentReference,
       );
-      const matchesSearch = row.dataset.search.includes(query);
+      const matchesSearch = String(incident?.title || "")
+        .toLowerCase()
+        .startsWith(query);
       const matchesStatus =
         selectedStatus === "all" ||
         getStatusFilterValue(incident.status) === selectedStatus;
@@ -213,9 +216,17 @@ const updateResolvedSummary = () => {
 const renderDashboard = () => {
   const pastIncidents = incidents.filter(
     (incident) => getColumn(incident) === "past",
+  ).sort(
+    (firstIncident, secondIncident) =>
+      new Date(getIncidentTimestamp(secondIncident)) -
+      new Date(getIncidentTimestamp(firstIncident)),
   );
   const activeIncidents = incidents.filter(
     (incident) => getColumn(incident) === "active",
+  ).sort(
+    (firstIncident, secondIncident) =>
+      new Date(getIncidentTimestamp(secondIncident)) -
+      new Date(getIncidentTimestamp(firstIncident)),
   );
 
   document.getElementById("pastIncidentList").innerHTML = pastIncidents

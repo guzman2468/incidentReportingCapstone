@@ -67,6 +67,8 @@ function getIncidentTimestamp(incident) {
   if (status === "ASSIGNED") return incident.assigned_at || incident.updated_at;
   if (status === "IN_PROGRESS") return incident.updated_at;
   if (status === "RESOLVED") return incident.resolved_at || incident.updated_at;
+  if (status === "CLOSED") return incident.closed_at || incident.updated_at;
+  if (status === "CANCELLED") return incident.cancelled_at || incident.updated_at;
   return incident.updated_at;
 }
 
@@ -139,6 +141,10 @@ function renderDashboard() {
   listSettings.forEach((settings) => {
     const matchingIncidents = incidents.filter(
       (incident) => getColumn(incident) === settings.status,
+    ).sort(
+      (firstIncident, secondIncident) =>
+        new Date(getIncidentTimestamp(secondIncident)) -
+        new Date(getIncidentTimestamp(firstIncident)),
     );
 
     const searchInput = document.getElementById(settings.searchId);
@@ -152,19 +158,10 @@ function renderDashboard() {
       : "all";
 
     const filtered = matchingIncidents.filter((incident) => {
-      const searchableText = [
-        incident.incident_reference,
-        incident.title,
-        incident.description,
-        incident.location,
-        incident.severity,
-        incident.assignedProvider,
-      ]
-        .join(" ")
-        .toLowerCase();
+      const incidentTitle = String(incident.title || "").toLowerCase();
 
       return (
-        searchableText.includes(query) &&
+        incidentTitle.startsWith(query) &&
         (selectedStatus === "all" ||
           incident.status.toUpperCase() === selectedStatus) &&
         (selectedSeverity === "all" ||

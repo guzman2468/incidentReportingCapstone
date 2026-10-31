@@ -157,7 +157,7 @@ async function displayIncident() {
     ? formatDate(incident.resolved_at)
     : "NOT RESOLVED";
   document.getElementById("closedAt").textContent = status === "CLOSED"
-    ? formatDate(incident.updated_at)
+    ? formatDate(incident.closed_at)
     : "NOT CLOSED";
   document.getElementById("cancelledAt").textContent = incident.cancelled_at
     ? formatDate(incident.cancelled_at)

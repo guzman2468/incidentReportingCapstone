@@ -264,9 +264,11 @@ document.getElementById("logoutButton").addEventListener("click", window.logoutU
 
 const loadAdminIncidents = async () => {
   try {
-    const response = await fetch("/api/incidents/admin");
+    const response = await fetch("/api/incidents/admin", {
+      cache: "no-store",
+    });
     if (!response.ok) throw new Error("Unable to load incidents.");
-    incidents.push(...(await response.json()));
+    incidents.splice(0, incidents.length, ...(await response.json()));
     updateDashboard();
   } catch (error) {
     console.error("Unable to load admin incidents.", error);
@@ -279,3 +281,8 @@ const loadAdminIncidents = async () => {
 
 connectControls();
 await loadAdminIncidents();
+
+connectIncidentRealtime({
+  onEvent: loadAdminIncidents,
+  onReconnect: loadAdminIncidents,
+});

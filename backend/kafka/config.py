@@ -27,5 +27,5 @@ KAFKA_TOPIC = os.getenv(
 
 KAFKA_CONSUMER_GROUP = os.getenv(
     "KAFKA_CONSUMER_GROUP",
-    "incident-reporting-consumers",
+    "incident-realtime",
 )

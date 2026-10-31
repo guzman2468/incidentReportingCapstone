@@ -231,7 +231,9 @@ function renderAssignedIncidents(incidents) {
 }
 
 async function loadAssignedIncidents() {
-  const response = await fetch("/api/incidents/assigned-to-me");
+  const response = await fetch("/api/incidents/assigned-to-me", {
+    cache: "no-store",
+  });
   if (!response.ok) {
     throw new Error("Unable to load incidents assigned to your team.");
   }
@@ -520,3 +522,8 @@ document.addEventListener("click", (event) => {
 document
   .getElementById("logoutButton")
   .addEventListener("click", window.logoutUser);
+
+connectIncidentRealtime({
+  onEvent: loadAssignedIncidents,
+  onReconnect: loadAssignedIncidents,
+});

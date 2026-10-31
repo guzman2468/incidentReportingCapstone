@@ -326,7 +326,9 @@ function formatDate(dateValue) {
 
 async function loadAssignerIncidents() {
   try {
-    const response = await fetch("/api/incidents/assigner");
+    const response = await fetch("/api/incidents/assigner", {
+      cache: "no-store",
+    });
     if (!response.ok) throw new Error("Unable to load incidents.");
 
     const loadedIncidents = await response.json();
@@ -342,3 +344,8 @@ async function loadAssignerIncidents() {
 }
 
 await loadAssignerIncidents();
+
+connectIncidentRealtime({
+  onEvent: loadAssignerIncidents,
+  onReconnect: loadAssignerIncidents,
+});

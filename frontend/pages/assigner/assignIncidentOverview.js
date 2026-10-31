@@ -116,7 +116,9 @@ function normalizeIncident(rawIncident) {
 // -------------------------------------
 
 async function displayIncident() {
-  const response = await fetch("/api/incidents/assigner");
+  const response = await fetch("/api/incidents/assigner", {
+    cache: "no-store",
+  });
   if (!response.ok) throw new Error("Unable to load incident.");
 
   const loadedIncidents = await response.json();
@@ -729,3 +731,14 @@ if (!incidentId) {
     `;
   }
 }
+
+connectIncidentRealtime({
+  onEvent: (event) => {
+    if (event.incident_reference === incidentId) {
+      displayIncident().catch((error) => console.error(error));
+    }
+  },
+  onReconnect: () => {
+    if (incidentId) displayIncident().catch((error) => console.error(error));
+  },
+});

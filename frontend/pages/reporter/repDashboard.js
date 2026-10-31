@@ -280,7 +280,7 @@ const renderDashboard = () => {
 };
 
 const loadReporterIncidents = async () => {
-  const response = await fetch("/api/incidents/mine");
+  const response = await fetch("/api/incidents/mine", { cache: "no-store" });
   if (!response.ok) throw new Error("Unable to load incidents.");
 
   const loadedIncidents = await response.json();
@@ -372,3 +372,16 @@ try {
   document.getElementById("pastEmptyState").textContent =
     "Unable to load your incidents.";
 }
+
+connectIncidentRealtime({
+  onEvent: () => {
+    loadReporterIncidents().catch((error) => {
+      console.error("Unable to refresh reporter incidents.", error);
+    });
+  },
+  onReconnect: () => {
+    loadReporterIncidents().catch((error) => {
+      console.error("Unable to recover reporter incidents.", error);
+    });
+  },
+});

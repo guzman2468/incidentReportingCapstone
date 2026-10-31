@@ -59,6 +59,7 @@ class IncidentSummary(BaseModel):
     assigned_at: datetime | None = None
     started_at: datetime | None = None
     resolved_at: datetime | None = None
+    closed_at: datetime | None = None
     cancelled_at: datetime | None = None
     assigned_aid_provider_id: UUID | None = None
     assigned_team_id: UUID | None = None

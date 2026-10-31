@@ -1656,16 +1656,32 @@ a {
 
 .nearby-row {
   align-items: flex-start;
+  background: transparent;
+  -webkit-appearance: none;
+  appearance: none;
   border: 1px solid #edf2f0;
   border-radius: 9px;
+  color: inherit;
+  cursor: pointer;
   display: flex;
   gap: 10px;
   padding: 12px;
+  text-align: left;
+  width: 100%;
 }
 
 .nearby-row:hover {
-  background: #f7fcfa;
+  background: transparent;
   border-color: #c8e5df;
+}
+
+.nearby-row:focus {
+  background: transparent;
+}
+
+.nearby-row:focus-visible {
+  outline: 2px solid var(--teal);
+  outline-offset: 2px;
 }
 
 .nearby-info {

@@ -253,6 +253,7 @@ document
       }
 
       closeStatusConfirm();
+      await loadIncident();
       const formattedStatus = formatIncidentStatus(status);
       const statusColorClass = getStatusColorClass(status);
       document.getElementById("statusBadge").textContent = formattedStatus;

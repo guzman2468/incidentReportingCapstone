@@ -78,11 +78,19 @@ const isPastIncident = (incident) =>
   ["RESOLVED", "CLOSED", "CANCELLED"].includes(normalizeStatus(incident.status));
 
 const getIncidentDate = (incident) => {
-  if (isPastIncident(incident)) {
+  const status = normalizeStatus(incident.status);
+  if (status === "RESOLVED") {
     return incident.resolved_at || incident.updated_at || incident.created_at;
   }
 
-  const status = normalizeStatus(incident.status);
+  if (status === "CLOSED") {
+    return incident.closed_at || incident.updated_at || incident.created_at;
+  }
+
+  if (status === "CANCELLED") {
+    return incident.cancelled_at || incident.updated_at || incident.created_at;
+  }
+
   if (status === "ASSIGNED") {
     return incident.assigned_at || incident.updated_at || incident.created_at;
   }
@@ -147,7 +155,13 @@ const renderIncident = (incident) => {
 };
 
 const getListIncidents = (past) =>
-  incidents.filter((incident) => isPastIncident(incident) === past);
+  incidents
+    .filter((incident) => isPastIncident(incident) === past)
+    .sort(
+      (firstIncident, secondIncident) =>
+        new Date(getIncidentDate(secondIncident)) -
+        new Date(getIncidentDate(firstIncident)),
+    );
 
 const filterIncidents = (incidentList, searchId, statusFilterId, severityFilterId, timeFilterId) => {
   const query = document.getElementById(searchId).value.trim().toLowerCase();
@@ -158,9 +172,9 @@ const filterIncidents = (incidentList, searchId, statusFilterId, severityFilterI
   return incidentList.filter((incident) => {
     const status = normalizeStatus(incident.status);
     const severity = normalizeStatus(incident.severity);
-    const searchableText = `${incident.incident_reference} ${incident.title} ${incident.description} ${incident.location}`.toLowerCase();
+    const incidentTitle = String(incident.title || "").toLowerCase();
     return (
-      searchableText.includes(query) &&
+      incidentTitle.startsWith(query) &&
       (selectedStatus === "ALL" || status === selectedStatus) &&
       (selectedSeverity === "ALL" || severity === selectedSeverity) &&
       isWithinTimeRange(getIncidentDate(incident), selectedRange)

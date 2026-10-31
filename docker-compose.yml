@@ -8,6 +8,7 @@ services:
     environment:
       KAFKA_BOOTSTRAP_SERVERS: kafka:9092
       KAFKA_TOPIC: incident-events
+      KAFKA_CONSUMER_GROUP: incident-realtime
     depends_on:
       - kafka
 

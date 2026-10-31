@@ -3,6 +3,15 @@ import re
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
+from backend.kafka.incident_event_outbox import add_incident_event_to_outbox
+from backend.kafka.incident_event_schemas import (
+    IncidentAssignedEvent,
+    IncidentAssignedEventData,
+    IncidentSubmittedEvent,
+    IncidentSubmittedEventData,
+    IncidentUpdatedEvent,
+    IncidentUpdatedEventData,
+)
 from backend.schemas.incidents import IncidentCreate
 
 GET_ACTIVE_REPORTER_ID_QUERY = text(
@@ -36,6 +45,21 @@ CREATE_INCIDENT_QUERY = text(
     """
 )
 
+GET_CREATED_INCIDENT_IDENTITY_QUERY = text(
+    """
+    SELECT
+        id,
+        incident_number
+    FROM public.incidents
+    WHERE incident_number = currval(
+        pg_get_serial_sequence(
+            'public.incidents',
+            'incident_number'
+        )
+    )
+    """
+)
+
 GET_REPORTER_INCIDENTS_QUERY = text(
     """
     SELECT
@@ -49,10 +73,18 @@ GET_REPORTER_INCIDENTS_QUERY = text(
         incidents.updated_at,
         incidents.assigned_at,
         incidents.resolved_at,
-        incidents.cancelled_at
+        incidents.cancelled_at,
+        incidents.assigned_aid_provider_id,
+        incidents.assigned_team_id,
+        aid_providers.name AS assigned_provider_name,
+        aid_provider_teams.name AS assigned_team_name
     FROM public.incidents
     INNER JOIN public.users
         ON users.id = incidents.reporter_id
+    LEFT JOIN public.aid_providers
+        ON aid_providers.id = incidents.assigned_aid_provider_id
+    LEFT JOIN public.aid_provider_teams
+        ON aid_provider_teams.id = incidents.assigned_team_id
     WHERE users.email = :email
       AND users.role = 'REPORTER'
       AND users.is_active = true
@@ -73,10 +105,18 @@ GET_REPORTER_INCIDENT_QUERY = text(
         incidents.updated_at,
         incidents.assigned_at,
         incidents.resolved_at,
-        incidents.cancelled_at
+        incidents.cancelled_at,
+        incidents.assigned_aid_provider_id,
+        incidents.assigned_team_id,
+        aid_providers.name AS assigned_provider_name,
+        aid_provider_teams.name AS assigned_team_name
     FROM public.incidents
     INNER JOIN public.users
         ON users.id = incidents.reporter_id
+    LEFT JOIN public.aid_providers
+        ON aid_providers.id = incidents.assigned_aid_provider_id
+    LEFT JOIN public.aid_provider_teams
+        ON aid_provider_teams.id = incidents.assigned_team_id
     WHERE incidents.incident_number = :incident_number
       AND users.email = :email
       AND users.role = 'REPORTER'
@@ -238,6 +278,15 @@ UPDATE_RESOLVED_AT_QUERY = text(
     """
 )
 
+UPDATE_CLOSED_AT_QUERY = text(
+    """
+    UPDATE public.incidents
+    SET closed_at = COALESCE(closed_at, now()),
+        updated_at = now()
+    WHERE incident_number = :incident_number
+    """
+)
+
 UPDATE_CANCELLED_AT_QUERY = text(
     """
     UPDATE public.incidents
@@ -247,6 +296,46 @@ UPDATE_CANCELLED_AT_QUERY = text(
     """
 )
 
+GET_CURRENT_ASSIGNER_ID_QUERY = text(
+    """
+    SELECT id
+    FROM public.users
+    WHERE email = :email
+      AND role = 'ASSIGNER'
+      AND is_active = true
+    """
+)
+
+GET_INCIDENT_ASSIGNMENT_CONTEXT_QUERY = text(
+    """
+    SELECT
+        id,
+        assigned_aid_provider_id,
+        assigned_team_id
+    FROM public.incidents
+    WHERE incident_number = :incident_number
+    FOR UPDATE
+    """
+)
+
+GET_ASSIGNED_INCIDENT_STATUS_CONTEXT_QUERY = text(
+    """
+    SELECT
+        incidents.id,
+        incidents.status,
+        users.id AS actor_id
+    FROM public.incidents
+    INNER JOIN public.team_members
+        ON team_members.team_id = incidents.assigned_team_id
+    INNER JOIN public.users
+        ON users.id = team_members.user_id
+    WHERE incidents.incident_number = :incident_number
+      AND users.email = :email
+      AND users.role = 'AID_PROVIDER_TEAM_MEMBER'
+      AND users.is_active = true
+    FOR UPDATE OF incidents
+    """
+)
 
 class ReporterNotFound(Exception):
     """Raised when the authenticated reporter no longer has an active account."""
@@ -290,12 +379,39 @@ def create_incident(
                 "location": incident_data.location.strip(),
             },
         )
+
+        created_incident = db.execute(
+            GET_CREATED_INCIDENT_IDENTITY_QUERY,
+        ).mappings().one()
+
+        incident_reference = (
+            f"INC-{int(created_incident['incident_number']):05d}"
+        )
+        submitted_event = IncidentSubmittedEvent(
+            incident_id=created_incident["id"],
+            event_type="IncidentSubmitted",
+            actor_id=reporter_id,
+            actor_role="REPORTER",
+            event_data=IncidentSubmittedEventData(
+                incident_reference=incident_reference,
+                title=incident_data.title.strip(),
+                description=incident_data.description.strip(),
+                severity=incident_data.severity,
+                location=incident_data.location.strip(),
+                status="NEW",
+            ),
+        )
+        add_incident_event_to_outbox(db, submitted_event)
         db.commit()
     except Exception:
         db.rollback()
         raise
 
-    return {"success": True}
+    return {
+        "success": True,
+        "incident_id": str(created_incident["id"]),
+        "incident_reference": incident_reference,
+    }
 
 
 def get_reporter_incidents(
@@ -354,6 +470,7 @@ def get_assigned_incident(
 
 def assign_incident(
     db: Session,
+    email: str,
     incident_reference: str,
     aid_provider_id: str,
     team_id: str,
@@ -361,22 +478,57 @@ def assign_incident(
     """Assign an incident to an active team belonging to the selected provider."""
 
     incident_number = int(incident_reference.removeprefix("INC-"))
-    result = db.execute(
-        ASSIGN_INCIDENT_QUERY,
-        {
-            "incident_number": incident_number,
-            "aid_provider_id": aid_provider_id,
-            "team_id": team_id,
-        },
-    )
 
-    if result.rowcount == 0:
-        db.rollback()
-        raise InvalidIncidentAssignment(
-            "The incident or selected aid provider team is invalid."
+    try:
+        assigner_id = db.execute(
+            GET_CURRENT_ASSIGNER_ID_QUERY,
+            {"email": email},
+        ).scalar_one_or_none()
+
+        if assigner_id is None:
+            raise InvalidIncidentAssignment(
+                "The assigner account is not active."
+            )
+
+        incident = db.execute(
+            GET_INCIDENT_ASSIGNMENT_CONTEXT_QUERY,
+            {"incident_number": incident_number},
+        ).mappings().one_or_none()
+
+        if incident is None:
+            raise InvalidIncidentAssignment("The incident does not exist.")
+
+        result = db.execute(
+            ASSIGN_INCIDENT_QUERY,
+            {
+                "incident_number": incident_number,
+                "aid_provider_id": aid_provider_id,
+                "team_id": team_id,
+            },
         )
 
-    db.commit()
+        if result.rowcount == 0:
+            raise InvalidIncidentAssignment(
+                "The incident or selected aid provider team is invalid."
+            )
+
+        assigned_event = IncidentAssignedEvent(
+            incident_id=incident["id"],
+            event_type="IncidentAssigned",
+            actor_id=assigner_id,
+            actor_role="ASSIGNER",
+            event_data=IncidentAssignedEventData(
+                incident_reference=incident_reference.upper(),
+                aid_provider_id=aid_provider_id,
+                team_id=team_id,
+                status="ASSIGNED",
+            ),
+        )
+        add_incident_event_to_outbox(db, assigned_event)
+        db.commit()
+    except Exception:
+        db.rollback()
+        raise
 
 
 def update_assigned_incident_status(
@@ -388,30 +540,60 @@ def update_assigned_incident_status(
     """Update an assigned incident only when the member belongs to its team."""
 
     incident_number = int(incident_reference.removeprefix("INC-"))
-    result = db.execute(
-        UPDATE_ASSIGNED_INCIDENT_STATUS_QUERY,
-        {
-            "email": email,
-            "incident_number": incident_number,
-            "status": incident_status,
-        },
-    )
 
-    if result.rowcount == 0:
-        db.rollback()
-        raise InvalidIncidentAssignment(
-            "The incident is not assigned to one of your teams."
+    try:
+        incident = db.execute(
+            GET_ASSIGNED_INCIDENT_STATUS_CONTEXT_QUERY,
+            {
+                "email": email,
+                "incident_number": incident_number,
+            },
+        ).mappings().one_or_none()
+
+        if incident is None:
+            raise InvalidIncidentAssignment(
+                "The incident is not assigned to one of your teams."
+            )
+
+        result = db.execute(
+            UPDATE_ASSIGNED_INCIDENT_STATUS_QUERY,
+            {
+                "email": email,
+                "incident_number": incident_number,
+                "status": incident_status,
+            },
         )
 
-    timestamp_queries = {
-        "IN_PROGRESS": UPDATE_STARTED_AT_QUERY,
-        "RESOLVED": UPDATE_RESOLVED_AT_QUERY,
-        "CANCELLED": UPDATE_CANCELLED_AT_QUERY,
-    }
-    timestamp_query = timestamp_queries[incident_status]
-    db.execute(timestamp_query, {"incident_number": incident_number})
+        if result.rowcount == 0:
+            raise InvalidIncidentAssignment(
+                "The incident is not assigned to one of your teams."
+            )
 
-    db.commit()
+        timestamp_queries = {
+            "IN_PROGRESS": UPDATE_STARTED_AT_QUERY,
+            "RESOLVED": UPDATE_RESOLVED_AT_QUERY,
+            "CLOSED": UPDATE_CLOSED_AT_QUERY,
+            "CANCELLED": UPDATE_CANCELLED_AT_QUERY,
+        }
+        timestamp_query = timestamp_queries[incident_status]
+        db.execute(timestamp_query, {"incident_number": incident_number})
+
+        updated_event = IncidentUpdatedEvent(
+            incident_id=incident["id"],
+            event_type="IncidentUpdated",
+            actor_id=incident["actor_id"],
+            actor_role="AID_PROVIDER_TEAM_MEMBER",
+            event_data=IncidentUpdatedEventData(
+                incident_reference=incident_reference.upper(),
+                old_status=incident["status"],
+                new_status=incident_status,
+            ),
+        )
+        add_incident_event_to_outbox(db, updated_event)
+        db.commit()
+    except Exception:
+        db.rollback()
+        raise
 
 
 def get_reporter_incident(

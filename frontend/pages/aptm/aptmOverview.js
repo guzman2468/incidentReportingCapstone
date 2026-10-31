@@ -140,6 +140,7 @@ async function loadIncident() {
   if (!incidentReference && linkedIncidentTitle) {
     const assignedIncidentsResponse = await fetch(
       "/api/incidents/assigned-to-me",
+      { cache: "no-store" },
     );
     if (assignedIncidentsResponse.ok) {
       const assignedIncidents = await assignedIncidentsResponse.json();
@@ -158,6 +159,7 @@ async function loadIncident() {
 
   const response = await fetch(
     `/api/incidents/assigned-to-me/${encodeURIComponent(incidentReference)}`,
+    { cache: "no-store" },
   );
   if (!response.ok) {
     throw new Error("Unable to load this assigned incident.");
@@ -348,4 +350,15 @@ document.getElementById("addNoteButton").addEventListener("click", () => {
     top: notesList.scrollHeight,
     behavior: "smooth",
   });
+});
+
+connectIncidentRealtime({
+  onEvent: (event) => {
+    if (event.incident_reference === incidentReference) {
+      loadIncident().catch((error) => console.error(error));
+    }
+  },
+  onReconnect: () => {
+    if (incidentReference) loadIncident().catch((error) => console.error(error));
+  },
 });

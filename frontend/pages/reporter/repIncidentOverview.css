@@ -486,6 +486,16 @@ a {
   color: #805a00;
 }
 
+.overview-wrap .assigned-status {
+  background: #e8e4ff;
+  color: #51429a;
+}
+
+.overview-wrap .progress-status {
+  background: #e7f3ff;
+  color: #245b86;
+}
+
 .incident-meta {
   display: flex;
   gap: 34px;

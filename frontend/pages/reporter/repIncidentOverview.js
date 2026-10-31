@@ -43,13 +43,24 @@ const formatLocalDateTime = (dateValue) => {
 const formatStatusDate = (dateValue, fallback) =>
   dateValue ? formatLocalDateTime(dateValue) : fallback;
 
+const formatAssignmentName = (value) =>
+  String(value || "")
+    .trim()
+    .toLowerCase()
+    .replace(/(^|[\s'-])\w/g, (character) => character.toUpperCase());
+
 const setIncidentStatus = (status) => {
   const statusBadge = document.getElementById("statusBadge");
   statusBadge.textContent = status.toUpperCase();
-  statusBadge.className =
-    status === "RESOLVED" || status === "CLOSED"
-      ? "status-badge"
-      : "status-badge active-status";
+  let statusClass = "active-status";
+  if (status === "ASSIGNED") {
+    statusClass = "assigned-status";
+  } else if (status === "IN_PROGRESS") {
+    statusClass = "progress-status";
+  } else if (status === "RESOLVED" || status === "CLOSED") {
+    statusClass = "";
+  }
+  statusBadge.className = `status-badge ${statusClass}`;
 };
 
 const setIncidentLocation = (location) => {
@@ -81,6 +92,7 @@ const loadIncident = async () => {
 
   const response = await fetch(
     `/api/incidents/reference/${encodeURIComponent(incidentReference)}`,
+    { cache: "no-store" },
   );
   if (!response.ok) throw new Error("Unable to load incident.");
 
@@ -119,6 +131,14 @@ const loadIncident = async () => {
   document.getElementById("severityField").className =
     `readonly-field severity-value severity-${incident.severity.toLowerCase()}`;
   document.getElementById("descriptionField").textContent = incident.description;
+  document.getElementById("assignedProviderName").textContent =
+    incident.assigned_provider_name
+      ? formatAssignmentName(incident.assigned_provider_name)
+      : "NOT ASSIGNED";
+  document.getElementById("assignedTeamName").textContent =
+    incident.assigned_team_name
+      ? formatAssignmentName(incident.assigned_team_name)
+      : "NOT ASSIGNED";
   setIncidentLocation(incident.location);
   setIncidentStatus(incident.status);
   document.getElementById("incidentOverviewContent").hidden = false;
@@ -150,6 +170,8 @@ const setLoadingState = () => {
   document.getElementById("severityField").textContent = "Loading...";
   document.getElementById("severityField").className = "readonly-field";
   document.getElementById("descriptionField").textContent = "Loading...";
+  document.getElementById("assignedProviderName").textContent = "Loading...";
+  document.getElementById("assignedTeamName").textContent = "Loading...";
   document.getElementById("overviewCoordinates").textContent = "Loading...";
 };
 
@@ -215,3 +237,12 @@ if (followUpButton) {
     showToast("Follow-up action will be available soon.");
   });
 }
+
+connectIncidentRealtime({
+  onEvent: (event) => {
+    if (event.incident_reference === incidentReference) {
+      reloadIncidentOverview();
+    }
+  },
+  onReconnect: reloadIncidentOverview,
+});

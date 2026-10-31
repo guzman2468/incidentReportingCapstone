@@ -252,7 +252,9 @@ const renderIncident = () => {
 
 const loadAdminIncident = async () => {
   try {
-    const response = await fetch("/api/incidents/admin");
+    const response = await fetch("/api/incidents/admin", {
+      cache: "no-store",
+    });
     if (!response.ok) throw new Error("Unable to load incident.");
     adminIncidents = await response.json();
     selectedIncident = adminIncidents.find((item) => item.incident_reference === incidentId);
@@ -265,6 +267,17 @@ const loadAdminIncident = async () => {
 };
 
 await loadAdminIncident();
+
+connectIncidentRealtime({
+  onEvent: (event) => {
+    if (event.incident_reference === incidentId) {
+      loadAdminIncident().catch((error) => console.error(error));
+    }
+  },
+  onReconnect: () => {
+    if (incidentId) loadAdminIncident().catch((error) => console.error(error));
+  },
+});
 
 // -----------------------------
 // Incident actions

@@ -8,7 +8,12 @@ from pydantic import BaseModel, Field
 
 
 IncidentSeverity = Literal["LOW", "MEDIUM", "HIGH", "SEVERE", "CRITICAL"]
-TeamIncidentStatus = Literal["IN_PROGRESS", "RESOLVED", "CANCELLED"]
+TeamIncidentStatus = Literal[
+    "IN_PROGRESS",
+    "RESOLVED",
+    "CLOSED",
+    "CANCELLED",
+]
 
 
 class IncidentCreate(BaseModel):

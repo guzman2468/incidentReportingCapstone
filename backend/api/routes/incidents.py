@@ -144,7 +144,7 @@ def list_admin_incidents(
 @router.post("/assign")
 def assign_incident_to_team(
     assignment: IncidentAssignmentCreate,
-    _email: str = Depends(require_assigner),
+    email: str = Depends(require_assigner),
     db: Session = Depends(get_db),
 ) -> dict[str, bool]:
     """Assign an incident to an active aid provider team."""
@@ -152,6 +152,7 @@ def assign_incident_to_team(
     try:
         assign_incident(
             db,
+            email,
             assignment.incident_reference,
             str(assignment.aid_provider_id),
             str(assignment.team_id),

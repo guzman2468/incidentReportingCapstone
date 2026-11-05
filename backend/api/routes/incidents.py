@@ -13,6 +13,7 @@ from backend.schemas.incidents import (
     IncidentSummary,
 )
 from backend.services.incidents import (
+    IncidentAssignmentConflict,
     InvalidIncidentAssignment,
     ReporterNotFound,
     assign_incident,
@@ -157,6 +158,11 @@ def assign_incident_to_team(
             str(assignment.aid_provider_id),
             str(assignment.team_id),
         )
+    except IncidentAssignmentConflict as error:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=str(error),
+        ) from error
     except InvalidIncidentAssignment as error:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,

@@ -267,6 +267,8 @@ const renderIncident = () => {
     statusClass = "progress";
   }
   statusBadge.className = `status-badge ${statusClass}`;
+  document.getElementById("noteInput").disabled = isCancelled;
+  document.getElementById("addNoteButton").disabled = isCancelled;
   selectedCoordinates = parseCoordinates(selectedIncident.location);
   document.getElementById("overviewCoordinates").textContent = selectedIncident.location;
   updateNearbyIncidents();

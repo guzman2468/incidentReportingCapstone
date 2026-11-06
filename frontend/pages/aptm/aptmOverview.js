@@ -116,6 +116,12 @@ function renderIncident(incident) {
   const statusColorClass = getStatusColorClass(incident.status);
   statusBadge.textContent = formattedStatus;
   statusBadge.className = `status-badge ${statusColorClass}`;
+  const isCancelled = String(incident.status || "").toUpperCase() === "CANCELLED";
+  document.getElementById("incidentStatusSelect").disabled = isCancelled;
+  document.getElementById("confirmStatusButton").disabled = isCancelled;
+  document.getElementById("applyStatusButton").disabled = isCancelled;
+  document.getElementById("noteInput").disabled = isCancelled;
+  document.getElementById("addNoteButton").disabled = isCancelled;
 
   const coordinates = parseCoordinates(incident.location);
   document.getElementById("overviewCoordinates").textContent =

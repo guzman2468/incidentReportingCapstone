@@ -12,7 +12,6 @@ TeamIncidentStatus = Literal[
     "IN_PROGRESS",
     "RESOLVED",
     "CLOSED",
-    "CANCELLED",
 ]
 
 
@@ -37,6 +36,13 @@ class IncidentStatusUpdate(BaseModel):
     """A status transition submitted by an aid provider team member."""
 
     status: TeamIncidentStatus
+
+
+class IncidentReporterUpdate(BaseModel):
+    """Fields a reporter may edit after submitting an incident."""
+
+    description: str | None = Field(default=None, min_length=1, max_length=500)
+    severity: IncidentSeverity | None = None
 
 
 class IncidentSubmitted(BaseModel):

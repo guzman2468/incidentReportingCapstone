@@ -104,6 +104,11 @@ function renderIncident(incident) {
   document.getElementById("closedAt").textContent = incident.closed_at
     ? formatIncidentDate(incident.closed_at)
     : "NOT CLOSED";
+  const isCancelled =
+    String(incident.status || "").trim().toUpperCase() === "CANCELLED";
+  document.getElementById("cancelledAt").textContent = incident.cancelled_at || isCancelled
+    ? formatIncidentDate(incident.cancelled_at || incident.updated_at)
+    : "NOT CANCELLED";
 
   const severityField = document.getElementById("severityField");
   severityField.textContent = incident.severity;
@@ -116,7 +121,17 @@ function renderIncident(incident) {
   const statusColorClass = getStatusColorClass(incident.status);
   statusBadge.textContent = formattedStatus;
   statusBadge.className = `status-badge ${statusColorClass}`;
-  const isCancelled = String(incident.status || "").toUpperCase() === "CANCELLED";
+  const timestampFields = [
+    "submittedAtField",
+    "assignedAtField",
+    "updatedAtField",
+    "resolvedAtField",
+    "closedAtField",
+  ];
+  timestampFields.forEach((fieldId) => {
+    document.getElementById(fieldId).hidden = false;
+  });
+  document.getElementById("cancelledAtField").hidden = false;
   document.getElementById("incidentStatusSelect").disabled = isCancelled;
   document.getElementById("confirmStatusButton").disabled = isCancelled;
   document.getElementById("applyStatusButton").disabled = isCancelled;

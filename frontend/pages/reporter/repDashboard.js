@@ -295,6 +295,7 @@ const loadReporterIncidents = async () => {
   if (!response.ok) throw new Error("Unable to load incidents.");
 
   const loadedIncidents = await response.json();
+  window.notificationBell.setIncidents(loadedIncidents);
   incidents.splice(0, incidents.length, ...loadedIncidents);
   renderDashboard();
 };
@@ -385,7 +386,8 @@ try {
 }
 
 connectIncidentRealtime({
-  onEvent: () => {
+  onEvent: (event) => {
+    window.notificationBell.recordEvent(event);
     loadReporterIncidents().catch((error) => {
       console.error("Unable to refresh reporter incidents.", error);
     });

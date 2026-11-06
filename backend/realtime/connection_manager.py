@@ -192,6 +192,8 @@ class ConnectionManager(IncidentEventRouter):
             relevant_event_data = {
                 "old_status": event_data.get("old_status"),
                 "new_status": event_data.get("new_status"),
+                "severity_updated": event_data.get("severity") is not None,
+                "description_updated": event_data.get("description") is not None,
             }
         else:
             relevant_event_data = {

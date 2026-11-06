@@ -246,16 +246,16 @@ const renderIncident = () => {
     "NOT CLOSED",
   );
   document.getElementById("cancelledAt").textContent = formatDateTime(
-    selectedIncident.cancelled_at,
+    selectedIncident.cancelled_at || (status === "CANCELLED" ? selectedIncident.updated_at : null),
     "NOT CANCELLED",
   );
   const isCancelled = status === "CANCELLED";
-  document.getElementById("incidentMeta").closest("span").hidden = isCancelled;
-  document.getElementById("assignedAt").closest("span").hidden = isCancelled;
-  document.getElementById("updatedAt").closest("span").hidden = isCancelled;
-  document.getElementById("resolvedDate").closest("span").hidden = isCancelled;
-  document.getElementById("closedAtField").hidden = isCancelled;
-  document.getElementById("cancelledAtField").hidden = !isCancelled;
+  document.getElementById("incidentMeta").closest("span").hidden = false;
+  document.getElementById("assignedAt").closest("span").hidden = false;
+  document.getElementById("updatedAt").closest("span").hidden = false;
+  document.getElementById("resolvedDate").closest("span").hidden = false;
+  document.getElementById("closedAtField").hidden = false;
+  document.getElementById("cancelledAtField").hidden = false;
   const statusBadge = document.getElementById("statusBadge");
   statusBadge.textContent = status.replaceAll("_", " ");
   let statusClass = "active-status";

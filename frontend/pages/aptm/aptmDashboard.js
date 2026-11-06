@@ -272,7 +272,9 @@ async function loadAssignedIncidents() {
     throw new Error("Unable to load incidents assigned to your team.");
   }
 
-  renderAssignedIncidents(await response.json());
+  const loadedIncidents = await response.json();
+  window.notificationBell.setIncidents(loadedIncidents);
+  renderAssignedIncidents(loadedIncidents);
 }
 
 // -----------------------------
@@ -559,6 +561,9 @@ document
   .addEventListener("click", window.logoutUser);
 
 connectIncidentRealtime({
-  onEvent: loadAssignedIncidents,
+  onEvent: (event) => {
+    window.notificationBell.recordEvent(event);
+    return loadAssignedIncidents();
+  },
   onReconnect: loadAssignedIncidents,
 });

@@ -231,6 +231,7 @@ GET_ASSIGNED_INCIDENT_QUERY = text(
         incidents.assigned_at,
         incidents.resolved_at,
         incidents.closed_at,
+        incidents.cancelled_at,
         incidents.assigned_aid_provider_id,
         incidents.assigned_team_id,
         aid_providers.name AS assigned_provider_name,

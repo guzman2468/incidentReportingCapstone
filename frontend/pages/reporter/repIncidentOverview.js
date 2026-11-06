@@ -227,11 +227,11 @@ const loadIncident = async () => {
   const isReadOnlyStatus = ["CANCELLED", "RESOLVED", "CLOSED"].includes(
     status,
   );
-  document.getElementById("incidentMeta").closest("span").hidden = isCancelled;
-  document.getElementById("assignedAt").closest("span").hidden = isCancelled;
-  document.getElementById("updatedAt").closest("span").hidden = isCancelled;
-  document.getElementById("resolvedDate").closest("span").hidden = isCancelled;
-  document.getElementById("closedAtField").hidden = isCancelled;
+  document.getElementById("incidentMeta").closest("span").hidden = false;
+  document.getElementById("assignedAt").closest("span").hidden = false;
+  document.getElementById("updatedAt").closest("span").hidden = false;
+  document.getElementById("resolvedDate").closest("span").hidden = false;
+  document.getElementById("closedAtField").hidden = false;
   document.getElementById("cancelledAtField").hidden = !isCancelled;
   document.getElementById("severityField").textContent = incident.severity;
   document.getElementById("severityField").className =

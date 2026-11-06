@@ -530,6 +530,12 @@ a {
 
 .overview-fields .description-field {
   min-height: 0;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  white-space: pre-wrap;
 }
 
 .overview-wrap .form-body .location-result {

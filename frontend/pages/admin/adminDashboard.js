@@ -282,7 +282,9 @@ const loadAdminIncidents = async () => {
       cache: "no-store",
     });
     if (!response.ok) throw new Error("Unable to load incidents.");
-    incidents.splice(0, incidents.length, ...(await response.json()));
+    const loadedIncidents = await response.json();
+    window.notificationBell.setIncidents(loadedIncidents);
+    incidents.splice(0, incidents.length, ...loadedIncidents);
     updateDashboard();
   } catch (error) {
     console.error("Unable to load admin incidents.", error);
@@ -297,6 +299,9 @@ connectControls();
 await loadAdminIncidents();
 
 connectIncidentRealtime({
-  onEvent: loadAdminIncidents,
+  onEvent: (event) => {
+    window.notificationBell.recordEvent(event);
+    return loadAdminIncidents();
+  },
   onReconnect: loadAdminIncidents,
 });

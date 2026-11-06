@@ -159,16 +159,15 @@ async function displayIncident() {
   document.getElementById("closedAt").textContent = status === "CLOSED"
     ? formatDate(incident.closed_at)
     : "NOT CLOSED";
-  document.getElementById("cancelledAt").textContent = incident.cancelled_at
-    ? formatDate(incident.cancelled_at)
+  document.getElementById("cancelledAt").textContent = incident.cancelled_at || status === "CANCELLED"
+    ? formatDate(incident.cancelled_at || incident.updated_at)
     : "NOT CANCELLED";
-  const isCancelled = status === "CANCELLED";
-  document.getElementById("submittedDate").closest("span").hidden = isCancelled;
-  document.getElementById("assignedAt").closest("span").hidden = isCancelled;
-  document.getElementById("updatedAt").closest("span").hidden = isCancelled;
-  document.getElementById("resolvedDate").closest("span").hidden = isCancelled;
-  document.getElementById("closedAtField").hidden = isCancelled;
-  document.getElementById("cancelledAtField").hidden = !isCancelled;
+  document.getElementById("submittedDate").closest("span").hidden = false;
+  document.getElementById("assignedAt").closest("span").hidden = false;
+  document.getElementById("updatedAt").closest("span").hidden = false;
+  document.getElementById("resolvedDate").closest("span").hidden = false;
+  document.getElementById("closedAtField").hidden = false;
+  document.getElementById("cancelledAtField").hidden = false;
 
   document.getElementById("incidentDescription").textContent =
     incident.description || "No description provided.";

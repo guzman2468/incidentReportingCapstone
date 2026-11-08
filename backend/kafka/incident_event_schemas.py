@@ -46,11 +46,13 @@ class IncidentAssignedEventData(BaseModel):
 
 
 class IncidentUpdatedEventData(BaseModel):
-    """Status transition data published after an incident is updated."""
+    """Data published after an incident is updated."""
 
     incident_reference: str
     old_status: IncidentStatus
     new_status: IncidentStatus
+    description: str | None = None
+    severity: IncidentSeverity | None = None
 
 
 class IncidentSubmittedEvent(BaseModel):

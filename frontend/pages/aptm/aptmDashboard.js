@@ -76,20 +76,6 @@ const updatePastCount = () => {
   cancelledCount.textContent = counts.cancelled;
 };
 
-const updatePastDateLabels = () => {
-  document
-    .querySelectorAll("#pastIncidentList .incident-row")
-    .forEach((row) => {
-      let label = "Resolved";
-      if (row.dataset.status === "closed") {
-        label = "Closed";
-      } else if (row.dataset.status === "cancelled") {
-        label = "Cancelled";
-      }
-      row.querySelector(".date-label").textContent = label;
-    });
-};
-
 function clearPastIncidentMockData() {
   document.getElementById("pastIncidentList").replaceChildren();
   const emptyState = document.getElementById("pastEmptyState");
@@ -139,11 +125,17 @@ const getIncidentTimestampLabel = (status) =>
     new: "Submitted",
     assigned: "Assigned",
     progress: "Last updated",
+    resolved: "Resolved",
+    closed: "Closed",
+    cancelled: "Cancelled",
   })[status] || "Last updated";
 
 const getIncidentTimestamp = (incident, status) => {
   if (status === "new") return incident.created_at;
   if (status === "assigned") return incident.assigned_at || incident.updated_at;
+  if (status === "resolved") return incident.resolved_at || incident.updated_at;
+  if (status === "closed") return incident.closed_at || incident.updated_at;
+  if (status === "cancelled") return incident.cancelled_at || incident.updated_at;
   return incident.updated_at || incident.created_at;
 };
 
@@ -168,55 +160,75 @@ const getIncidentSymbolClass = (severity) => {
 };
 
 function renderAssignedIncidents(incidents) {
-  const list = document.getElementById("activeIncidentList");
+  const activeList = document.getElementById("activeIncidentList");
+  const pastList = document.getElementById("pastIncidentList");
   const assignedCount = document.getElementById("assignedCount");
   const progressCount = document.getElementById("progressCount");
   const teamName = document.getElementById("teamName");
 
-  list.replaceChildren();
-  assignedIncidents = [...incidents].sort(
-    (firstIncident, secondIncident) =>
-      new Date(
-        getIncidentTimestamp(
-          secondIncident,
-          getIncidentStatus(secondIncident.status),
-        ),
-      ) -
-      new Date(
-        getIncidentTimestamp(
-          firstIncident,
-          getIncidentStatus(firstIncident.status),
-        ),
+  const sortByIncidentDate = (firstIncident, secondIncident) =>
+    new Date(
+      getIncidentTimestamp(
+        secondIncident,
+        getIncidentStatus(secondIncident.status),
       ),
+    ) -
+    new Date(
+      getIncidentTimestamp(
+        firstIncident,
+        getIncidentStatus(firstIncident.status),
+      ),
+    );
+  const activeIncidents = incidents.filter(
+    (incident) => !["resolved", "closed", "cancelled"].includes(
+      getIncidentStatus(incident.status),
+    ),
   );
+  const pastIncidents = incidents.filter((incident) =>
+    ["resolved", "closed", "cancelled"].includes(
+      getIncidentStatus(incident.status),
+    ),
+  );
+
+  activeList.replaceChildren();
+  pastList.replaceChildren();
+  assignedIncidents = [...activeIncidents].sort(sortByIncidentDate);
+  const sortedPastIncidents = [...pastIncidents].sort(sortByIncidentDate);
+
   document.getElementById("activeTotalCount").textContent = assignedIncidents.length;
-  assignedCount.textContent = incidents.filter(
+  document.getElementById("pastTotalCount").textContent = sortedPastIncidents.length;
+  assignedCount.textContent = activeIncidents.filter(
     (incident) => getIncidentStatus(incident.status) === "assigned",
   ).length;
-  progressCount.textContent = incidents.filter(
+  progressCount.textContent = activeIncidents.filter(
     (incident) => getIncidentStatus(incident.status) === "progress",
   ).length;
 
-  if (assignedIncidents[0]?.assigned_team_name) {
-    teamName.textContent = formatTeamName(assignedIncidents[0].assigned_team_name);
+  if (incidents[0]?.assigned_team_name) {
+    teamName.textContent = formatTeamName(incidents[0].assigned_team_name);
   }
 
-  assignedIncidents.forEach((incident) => {
+  const renderIncidentRow = (incident) => {
     const status = getIncidentStatus(incident.status);
     const statusLabel = {
       new: "New",
       assigned: "Assigned",
       progress: "In progress",
+      resolved: "Resolved",
+      closed: "Closed",
+      cancelled: "Cancelled",
     }[status] || status;
     const row = document.createElement("article");
 
     row.className = "incident-row";
+    row.dataset.incidentReference = incident.incident_reference;
     row.dataset.search = [
       incident.incident_reference,
       incident.title,
       incident.description,
       incident.location,
       incident.severity,
+      statusLabel,
     ]
       .join(" ")
       .toLowerCase();
@@ -226,7 +238,7 @@ function renderAssignedIncidents(incidents) {
       <div class="incident-symbol ${getIncidentSymbolClass(incident.severity)}">!</div>
       <div class="incident-info">
         <strong></strong>
-        <span></span>
+        <span><span class="date-label"></span></span>
       </div>
       <span class="severity-pill severity-${String(incident.severity || "").toLowerCase()}">${incident.severity || "Unknown"}</span>
       <span class="status-pill ${getStatusClass(status)}">${statusLabel}</span>
@@ -234,14 +246,22 @@ function renderAssignedIncidents(incidents) {
     `;
 
     row.querySelector("strong").textContent = incident.title;
-    row.querySelector(".incident-info span").textContent =
-      `${incident.incident_reference} · ${getIncidentTimestampLabel(status)} ${formatIncidentDate(getIncidentTimestamp(incident, status))}`;
-    list.appendChild(row);
-  });
+    row.querySelector(".date-label").textContent =
+      `${getIncidentTimestampLabel(status)} ${formatIncidentDate(getIncidentTimestamp(incident, status))}`;
+    row.querySelector(".incident-info span").prepend(
+      `${incident.incident_reference} · `,
+    );
+    return row;
+  };
+
+  assignedIncidents.forEach((incident) => activeList.appendChild(renderIncidentRow(incident)));
+  sortedPastIncidents.forEach((incident) => pastList.appendChild(renderIncidentRow(incident)));
 
   connectIncidentNavigation();
+  updatePastCount();
   updateOpenSummary();
   document.getElementById("activeFilter").dispatchEvent(new Event("change"));
+  document.getElementById("pastFilter").dispatchEvent(new Event("change"));
 }
 
 async function loadAssignedIncidents() {
@@ -252,7 +272,9 @@ async function loadAssignedIncidents() {
     throw new Error("Unable to load incidents assigned to your team.");
   }
 
-  renderAssignedIncidents(await response.json());
+  const loadedIncidents = await response.json();
+  window.notificationBell.setIncidents(loadedIncidents);
+  renderAssignedIncidents(loadedIncidents);
 }
 
 // -----------------------------
@@ -462,7 +484,6 @@ document.getElementById("openIncidentFilter").addEventListener(
 
 clearPastIncidentMockData();
 connectResolvedSummary();
-updatePastDateLabels();
 updatePastCount();
 
 try {
@@ -540,6 +561,9 @@ document
   .addEventListener("click", window.logoutUser);
 
 connectIncidentRealtime({
-  onEvent: loadAssignedIncidents,
+  onEvent: (event) => {
+    window.notificationBell.recordEvent(event);
+    return loadAssignedIncidents();
+  },
   onReconnect: loadAssignedIncidents,
 });

@@ -87,11 +87,17 @@
                   </div>
                 </div>
                 <div class="field">
-                  <div class="field-label">Severity</div>
+                  <div class="field-label editable-field-label">
+                    <span>Severity</span>
+                    <button type="button" class="edit-button" id="editSeverityButton" aria-label="Edit severity" title="Edit severity">✎</button>
+                  </div>
                   <div class="readonly-field" id="severityField">Loading...</div>
                 </div>
                 <div class="field">
-                  <div class="field-label">Description</div>
+                  <div class="field-label editable-field-label">
+                    <span>Description</span>
+                    <button type="button" class="edit-button" id="editDescriptionButton" aria-label="Edit description" title="Edit description">✎</button>
+                  </div>
                   <div
                     class="readonly-field description-field"
                     id="descriptionField"
@@ -109,6 +115,9 @@
                     NOT ASSIGNED
                   </div>
                 </div>
+                <button type="button" class="primary-button update-incident-button" id="updateIncidentButton" hidden>
+                  Update this incident
+                </button>
               </div>
               <div class="location-result">
                 <span class="coordinates-label">Coordinates</span>
@@ -127,6 +136,9 @@
                 <a class="secondary-button" href="repDashboard.html"
                   >Back to dashboard</a
                 >
+                <button type="button" class="danger-button" id="cancelIncidentButton" hidden>
+                  Cancel incident
+                </button>
               </div>
             </div>
           </section>
@@ -159,8 +171,45 @@
         </div>
       </section>
     </main>
+    <dialog
+      class="confirm-dialog update-confirm-dialog"
+      id="updateConfirmDialog"
+      hidden
+      aria-labelledby="updateConfirmTitle"
+    >
+      <h2 id="updateConfirmTitle">Update incident?</h2>
+      <p>Are you sure you want to update this incident?</p>
+      <div class="confirm-actions update-confirm-actions">
+        <button type="button" class="secondary-button" id="cancelIncidentUpdate">
+          Cancel
+        </button>
+        <button type="button" class="primary-button" id="confirmIncidentUpdate">
+          Update incident
+        </button>
+      </div>
+    </dialog>
+    <dialog
+      class="confirm-dialog cancel-incident-dialog"
+      id="cancelIncidentDialog"
+      hidden
+      aria-labelledby="cancelIncidentTitle"
+    >
+      <h2 id="cancelIncidentTitle">Cancel incident?</h2>
+      <p>
+        Are you sure you want to cancel this incident? This action is permanent,
+        and you will no longer be considered in need of help.
+      </p>
+      <div class="confirm-actions">
+        <button type="button" class="secondary-button" id="keepIncident">
+          Cancel
+        </button>
+        <button type="button" class="danger-button" id="confirmIncidentCancellation">
+          Cancel incident
+        </button>
+      </div>
+    </dialog>
     <script src="../authHelpers.js"></script>
     <script src="../realtime.js"></script>
-    <script src="repIncidentOverview.js"></script>
+    <script src="repIncidentOverview.js?v=cancelled-timestamps-1"></script>
   </body>
 </html>

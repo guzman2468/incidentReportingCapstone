@@ -18,6 +18,16 @@
         <header class="topbar">
           <div class="breadcrumbs"><strong>Dashboard</strong></div>
           <div class="topbar-actions">
+            <div class="notification-menu">
+              <button type="button" class="notification-button" id="notificationButton" aria-expanded="false" aria-label="Open incident notifications">
+              <svg class="notification-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4" /></svg><span class="notification-count" id="notificationCount" hidden>0</span>
+              </button>
+              <div class="notification-dropdown" id="notificationDropdown" hidden>
+                <div class="notification-heading">Notifications</div>
+                <div class="notification-list" id="notificationList"></div>
+                <p class="notification-empty" id="notificationEmpty">No new incident updates.</p>
+              </div>
+            </div>
             <div class="user-menu">
               <button
                 type="button"
@@ -385,6 +395,7 @@
     </div>
     <script src="../authHelpers.js"></script>
     <script src="../realtime.js"></script>
-    <script type="module" src="aptmDashboard.js?v=real-incident-links-2"></script>
+    <script src="../notificationBell.js?v=notification-bell-3"></script>
+    <script type="module" src="aptmDashboard.js?v=assigned-history-split-2"></script>
   </body>
 </html>

@@ -8,18 +8,22 @@ from backend.database import get_db
 from backend.schemas.incidents import (
     IncidentAssignmentCreate,
     IncidentCreate,
+    IncidentReporterUpdate,
     IncidentSubmitted,
     IncidentStatusUpdate,
     IncidentSummary,
 )
 from backend.services.incidents import (
     InvalidIncidentAssignment,
+    InvalidReporterIncidentCancellation,
     ReporterNotFound,
     assign_incident,
     create_incident,
     get_assigned_incident,
     get_assigned_incidents,
     update_assigned_incident_status,
+    update_reporter_incident,
+    cancel_reporter_incident,
 )
 from backend.services.incidents import (
     get_assigner_incidents,
@@ -235,3 +239,46 @@ def get_my_incident(
         )
 
     return incident
+
+
+@router.patch("/reference/{incident_reference}")
+def update_my_incident(
+    incident_reference: str,
+    incident_data: IncidentReporterUpdate,
+    email: str = Depends(require_reporter),
+    db: Session = Depends(get_db),
+) -> dict[str, bool]:
+    """Update severity and description on an incident owned by the reporter."""
+
+    if incident_data.description is None and incident_data.severity is None:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="At least one editable incident field is required",
+        )
+
+    if not update_reporter_incident(db, email, incident_reference, incident_data):
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Incident not found",
+        )
+
+    return {"success": True}
+
+
+@router.patch("/reference/{incident_reference}/cancel")
+def cancel_my_incident(
+    incident_reference: str,
+    email: str = Depends(require_reporter),
+    db: Session = Depends(get_db),
+) -> dict[str, bool]:
+    """Permanently cancel a NEW, ASSIGNED, or IN_PROGRESS incident owned by the reporter."""
+
+    try:
+        cancel_reporter_incident(db, email, incident_reference)
+    except InvalidReporterIncidentCancellation as error:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=str(error),
+        ) from error
+
+    return {"success": True}

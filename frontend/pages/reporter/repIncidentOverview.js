@@ -23,6 +23,15 @@ document.addEventListener("click", (event) => {
 // -----------------------------
 const params = new URLSearchParams(window.location.search);
 const incidentReference = params.get("reference");
+const updateConfirmDialog = document.getElementById("updateConfirmDialog");
+const cancelIncidentUpdate = document.getElementById("cancelIncidentUpdate");
+const confirmIncidentUpdate = document.getElementById("confirmIncidentUpdate");
+const cancelIncidentButton = document.getElementById("cancelIncidentButton");
+const cancelIncidentDialog = document.getElementById("cancelIncidentDialog");
+const keepIncident = document.getElementById("keepIncident");
+const confirmIncidentCancellation = document.getElementById(
+  "confirmIncidentCancellation",
+);
 
 const formatLocalDateTime = (dateValue) => {
   const date = new Date(dateValue);
@@ -48,6 +57,97 @@ const formatAssignmentName = (value) =>
     .trim()
     .toLowerCase()
     .replace(/(^|[\s'-])\w/g, (character) => character.toUpperCase());
+
+let currentIncident = null;
+
+const severityOptions = ["LOW", "MEDIUM", "HIGH", "SEVERE", "CRITICAL"];
+
+const updateButtonVisibility = () => {
+  document.getElementById("updateIncidentButton").hidden =
+    !document.getElementById("severityEditor") &&
+    !document.getElementById("descriptionEditor");
+};
+
+const setReporterReadOnly = (isReadOnly) => {
+  document.querySelectorAll(".edit-button").forEach((button) => {
+    button.disabled = isReadOnly;
+  });
+  document.getElementById("updateIncidentButton").disabled = isReadOnly;
+  document.getElementById("addNoteButton").disabled = isReadOnly;
+  document.getElementById("noteInput").disabled = isReadOnly;
+};
+
+const createSeverityEditor = () => {
+  const severityField = document.getElementById("severityField");
+  if (!severityField) return;
+
+  const severitySelect = document.createElement("select");
+  severitySelect.id = "severityEditor";
+  severitySelect.className = "incident-editor";
+  severityOptions.forEach((severity) => {
+    const option = document.createElement("option");
+    option.value = severity;
+    option.textContent = severity;
+    option.selected = severity === currentIncident.severity;
+    severitySelect.appendChild(option);
+  });
+  severityField.replaceWith(severitySelect);
+  const editButton = document.getElementById("editSeverityButton");
+  editButton.classList.add("active");
+  editButton.setAttribute("aria-pressed", "true");
+  severitySelect.focus();
+};
+
+const restoreSeverityField = () => {
+  const severityEditor = document.getElementById("severityEditor");
+  if (!severityEditor) return;
+
+  const severityField = document.createElement("div");
+  severityField.id = "severityField";
+  severityField.className = `readonly-field severity-value severity-${currentIncident.severity.toLowerCase()}`;
+  severityField.textContent = currentIncident.severity;
+  severityEditor.replaceWith(severityField);
+  const editButton = document.getElementById("editSeverityButton");
+  editButton.classList.remove("active");
+  editButton.setAttribute("aria-pressed", "false");
+};
+
+const createDescriptionEditor = () => {
+  const descriptionField = document.getElementById("descriptionField");
+  if (!descriptionField) return;
+
+  const descriptionEditor = document.createElement("textarea");
+  descriptionEditor.id = "descriptionEditor";
+  descriptionEditor.className = "incident-editor description-editor";
+  descriptionEditor.maxLength = 500;
+  descriptionEditor.value = currentIncident.description;
+  descriptionField.replaceWith(descriptionEditor);
+  const editButton = document.getElementById("editDescriptionButton");
+  editButton.classList.add("active");
+  editButton.setAttribute("aria-pressed", "true");
+  descriptionEditor.focus();
+};
+
+const restoreDescriptionField = () => {
+  const descriptionEditor = document.getElementById("descriptionEditor");
+  if (!descriptionEditor) return;
+
+  const descriptionField = document.createElement("div");
+  descriptionField.id = "descriptionField";
+  descriptionField.className = "readonly-field description-field";
+  descriptionField.textContent = currentIncident.description;
+  descriptionEditor.replaceWith(descriptionField);
+  const editButton = document.getElementById("editDescriptionButton");
+  editButton.classList.remove("active");
+  editButton.setAttribute("aria-pressed", "false");
+};
+
+const resetIncidentEditors = () => {
+  if (!currentIncident) return;
+  restoreSeverityField();
+  restoreDescriptionField();
+  updateButtonVisibility();
+};
 
 const setIncidentStatus = (status) => {
   const statusBadge = document.getElementById("statusBadge");
@@ -90,6 +190,8 @@ const setIncidentLocation = (location) => {
 const loadIncident = async () => {
   if (!incidentReference) throw new Error("Incident reference is missing.");
 
+  resetIncidentEditors();
+
   const response = await fetch(
     `/api/incidents/reference/${encodeURIComponent(incidentReference)}`,
     { cache: "no-store" },
@@ -97,6 +199,7 @@ const loadIncident = async () => {
   if (!response.ok) throw new Error("Unable to load incident.");
 
   const incident = await response.json();
+  currentIncident = incident;
   document.getElementById("titleField").textContent = incident.title;
   document.getElementById("incidentMeta").textContent = formatLocalDateTime(
     incident.created_at,
@@ -121,11 +224,14 @@ const loadIncident = async () => {
     "NOT CANCELLED",
   );
   const isCancelled = status === "CANCELLED";
-  document.getElementById("incidentMeta").closest("span").hidden = isCancelled;
-  document.getElementById("assignedAt").closest("span").hidden = isCancelled;
-  document.getElementById("updatedAt").closest("span").hidden = isCancelled;
-  document.getElementById("resolvedDate").closest("span").hidden = isCancelled;
-  document.getElementById("closedAtField").hidden = isCancelled;
+  const isReadOnlyStatus = ["CANCELLED", "RESOLVED", "CLOSED"].includes(
+    status,
+  );
+  document.getElementById("incidentMeta").closest("span").hidden = false;
+  document.getElementById("assignedAt").closest("span").hidden = false;
+  document.getElementById("updatedAt").closest("span").hidden = false;
+  document.getElementById("resolvedDate").closest("span").hidden = false;
+  document.getElementById("closedAtField").hidden = false;
   document.getElementById("cancelledAtField").hidden = !isCancelled;
   document.getElementById("severityField").textContent = incident.severity;
   document.getElementById("severityField").className =
@@ -141,6 +247,12 @@ const loadIncident = async () => {
       : "NOT ASSIGNED";
   setIncidentLocation(incident.location);
   setIncidentStatus(incident.status);
+  cancelIncidentButton.hidden = !["NEW", "ASSIGNED", "IN_PROGRESS"].includes(
+    status,
+  );
+  setReporterReadOnly(isReadOnlyStatus);
+  document.getElementById("updateIncidentButton").hidden = !isReadOnlyStatus;
+  cancelIncidentButton.disabled = isReadOnlyStatus;
   document.getElementById("incidentOverviewContent").hidden = false;
 };
 
@@ -152,6 +264,7 @@ const showIncidentLoadError = (error) => {
 };
 
 const setLoadingState = () => {
+  resetIncidentEditors();
   document.getElementById("incidentMeta").textContent = "Loading...";
   document.getElementById("assignedAt").textContent = "Loading...";
   document.getElementById("updatedAt").textContent = "Loading...";
@@ -166,6 +279,8 @@ const setLoadingState = () => {
   document.getElementById("cancelledAtField").hidden = true;
   document.getElementById("statusBadge").textContent = "Loading...";
   document.getElementById("statusBadge").className = "status-badge";
+  setReporterReadOnly(false);
+  cancelIncidentButton.hidden = true;
   document.getElementById("titleField").textContent = "Loading...";
   document.getElementById("severityField").textContent = "Loading...";
   document.getElementById("severityField").className = "readonly-field";
@@ -201,6 +316,112 @@ function showToast(message) {
 document
   .getElementById("logoutButton")
   .addEventListener("click", window.logoutUser);
+
+document.getElementById("editSeverityButton").addEventListener("click", () => {
+  if (document.getElementById("severityEditor")) {
+    restoreSeverityField();
+  } else {
+    createSeverityEditor();
+  }
+  updateButtonVisibility();
+});
+
+document.getElementById("editDescriptionButton").addEventListener("click", () => {
+  if (document.getElementById("descriptionEditor")) {
+    restoreDescriptionField();
+  } else {
+    createDescriptionEditor();
+  }
+  updateButtonVisibility();
+});
+
+const submitIncidentUpdate = async () => {
+  const descriptionEditor = document.getElementById("descriptionEditor");
+  const severityEditor = document.getElementById("severityEditor");
+  const description = descriptionEditor?.value.trim();
+  const severity = severityEditor?.value;
+  confirmIncidentUpdate.disabled = true;
+  try {
+    const response = await fetch(
+      `/api/incidents/reference/${encodeURIComponent(incidentReference)}`,
+      {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...(descriptionEditor ? { description } : {}),
+          ...(severityEditor ? { severity } : {}),
+        }),
+      },
+    );
+    if (!response.ok) throw new Error("Unable to update incident.");
+    closeUpdateConfirmation();
+    showToast("Incident updated successfully.");
+    reloadIncidentOverview();
+  } catch (error) {
+    console.error("Unable to update incident.", error);
+    showToast("Unable to update this incident.");
+  } finally {
+    confirmIncidentUpdate.disabled = false;
+  }
+};
+
+const closeUpdateConfirmation = () => {
+  if (updateConfirmDialog.open) updateConfirmDialog.close();
+  updateConfirmDialog.hidden = true;
+};
+
+document.getElementById("updateIncidentButton").addEventListener("click", () => {
+  const descriptionEditor = document.getElementById("descriptionEditor");
+  if (descriptionEditor && !descriptionEditor.value.trim()) {
+    descriptionEditor.focus();
+    return;
+  }
+
+  updateConfirmDialog.hidden = false;
+  updateConfirmDialog.showModal();
+  cancelIncidentUpdate.focus();
+});
+
+cancelIncidentUpdate.addEventListener("click", closeUpdateConfirmation);
+confirmIncidentUpdate.addEventListener("click", submitIncidentUpdate);
+updateConfirmDialog.addEventListener("click", (event) => {
+  if (event.target === updateConfirmDialog) closeUpdateConfirmation();
+});
+
+const closeCancellationConfirmation = () => {
+  if (cancelIncidentDialog.open) cancelIncidentDialog.close();
+  cancelIncidentDialog.hidden = true;
+};
+
+cancelIncidentButton.addEventListener("click", () => {
+  cancelIncidentDialog.hidden = false;
+  cancelIncidentDialog.showModal();
+  keepIncident.focus();
+});
+
+keepIncident.addEventListener("click", closeCancellationConfirmation);
+cancelIncidentDialog.addEventListener("click", (event) => {
+  if (event.target === cancelIncidentDialog) closeCancellationConfirmation();
+});
+
+confirmIncidentCancellation.addEventListener("click", async () => {
+  confirmIncidentCancellation.disabled = true;
+  try {
+    const response = await fetch(
+      `/api/incidents/reference/${encodeURIComponent(incidentReference)}/cancel`,
+      { method: "PATCH" },
+    );
+    if (!response.ok) throw new Error("Unable to cancel incident.");
+    closeCancellationConfirmation();
+    showToast("Incident cancelled.");
+    reloadIncidentOverview();
+  } catch (error) {
+    console.error("Unable to cancel incident.", error);
+    showToast("Unable to cancel this incident.");
+  } finally {
+    confirmIncidentCancellation.disabled = false;
+  }
+});
 
 // Add a note to the page for visual testing until persistence is connected.
 document.getElementById("addNoteButton").addEventListener("click", () => {

@@ -104,6 +104,18 @@
   background: var(--teal-dark);
 }
 
+.assignment-button:disabled {
+  background: #687679;
+  color: #ffffff;
+  cursor: not-allowed;
+}
+
+.assignment-field select:disabled {
+  background: #eef1f1;
+  color: #4f5e62;
+  cursor: not-allowed;
+}
+
 .assignment-confirm {
   background: var(--teal);
   border: 0;

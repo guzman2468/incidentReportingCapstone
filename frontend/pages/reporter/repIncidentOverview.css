@@ -434,6 +434,77 @@ a {
   margin-bottom: 8px;
 }
 
+.overview-fields .editable-field-label {
+  align-items: center;
+  display: flex;
+  gap: 8px;
+}
+
+.edit-button {
+  background: transparent;
+  border: 0;
+  color: #a7b4b5;
+  font-size: 18px;
+  line-height: 1;
+  padding: 0 3px;
+}
+
+.edit-button.active,
+.edit-button.active:hover {
+  color: var(--teal);
+}
+
+.incident-editor {
+  background: #fff;
+  border: 1px solid #9dcec8;
+  border-radius: 8px;
+  color: var(--ink);
+  font: inherit;
+  min-height: 42px;
+  padding: 10px 12px;
+  width: 100%;
+}
+
+.description-editor {
+  min-height: 155px;
+  resize: vertical;
+}
+
+.update-incident-button {
+  margin-top: 2px;
+  width: fit-content;
+}
+
+.update-incident-button:disabled {
+  background: #a9b6b8;
+  box-shadow: none;
+  color: #28383c;
+  cursor: not-allowed;
+  opacity: 1;
+}
+
+.update-confirm-dialog::backdrop {
+  background: rgba(24, 43, 53, 0.34);
+}
+
+.update-confirm-dialog .secondary-button,
+.update-confirm-dialog .primary-button {
+  padding: 12px 17px;
+}
+
+.update-confirm-dialog .secondary-button {
+  background: #f4f8f7;
+  border-color: #dbe6e4;
+}
+
+.cancel-incident-dialog::backdrop {
+  background: rgba(24, 43, 53, 0.34);
+}
+
+.cancel-incident-dialog p {
+  line-height: 1.6;
+}
+
 .readonly-field {
   background: #f8fbfa;
   border: 1px solid #dce8e5;
@@ -459,6 +530,12 @@ a {
 
 .overview-fields .description-field {
   min-height: 0;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  white-space: pre-wrap;
 }
 
 .overview-wrap .form-body .location-result {

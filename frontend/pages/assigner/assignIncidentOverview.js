@@ -159,16 +159,15 @@ async function displayIncident() {
   document.getElementById("closedAt").textContent = status === "CLOSED"
     ? formatDate(incident.closed_at)
     : "NOT CLOSED";
-  document.getElementById("cancelledAt").textContent = incident.cancelled_at
-    ? formatDate(incident.cancelled_at)
+  document.getElementById("cancelledAt").textContent = incident.cancelled_at || status === "CANCELLED"
+    ? formatDate(incident.cancelled_at || incident.updated_at)
     : "NOT CANCELLED";
-  const isCancelled = status === "CANCELLED";
-  document.getElementById("submittedDate").closest("span").hidden = isCancelled;
-  document.getElementById("assignedAt").closest("span").hidden = isCancelled;
-  document.getElementById("updatedAt").closest("span").hidden = isCancelled;
-  document.getElementById("resolvedDate").closest("span").hidden = isCancelled;
-  document.getElementById("closedAtField").hidden = isCancelled;
-  document.getElementById("cancelledAtField").hidden = !isCancelled;
+  document.getElementById("submittedDate").closest("span").hidden = false;
+  document.getElementById("assignedAt").closest("span").hidden = false;
+  document.getElementById("updatedAt").closest("span").hidden = false;
+  document.getElementById("resolvedDate").closest("span").hidden = false;
+  document.getElementById("closedAtField").hidden = false;
+  document.getElementById("cancelledAtField").hidden = false;
 
   document.getElementById("incidentDescription").textContent =
     incident.description || "No description provided.";
@@ -202,6 +201,7 @@ function updateStatusBadge() {
     active: "In progress",
     resolved: "Resolved",
     closed: "Closed",
+    cancelled: "Cancelled",
   };
 
   badge.textContent = (labels[incident.status] || incident.status || "New").toUpperCase();
@@ -320,14 +320,19 @@ async function updateCurrentProvider() {
   teamSelect.value = assignedTeamOption?.id || "";
 
   const isPast = ["resolved", "closed"].includes(incident.status);
+  const isCancelled = incident.status === "cancelled";
   const hasCompleteAssignment = providerSelect.value && teamSelect.value;
   const isAssigned = Boolean(provider && assignedTeam && hasCompleteAssignment);
 
-  providerSelect.disabled = isPast || isAssigned || !providers.length;
-  teamSelect.disabled = isPast || isAssigned || !availableTeams.length;
-  assignButton.disabled = isPast || isAssigned || !hasCompleteAssignment;
+  providerSelect.disabled = isCancelled || isPast || isAssigned || !providers.length;
+  teamSelect.disabled = isCancelled || isPast || isAssigned || !availableTeams.length;
+  assignButton.disabled = isCancelled || isPast || isAssigned || !hasCompleteAssignment;
+  document.getElementById("noteInput").disabled = isCancelled;
+  document.getElementById("addNoteButton").disabled = isCancelled;
 
-  if (isPast) {
+  if (isCancelled) {
+    assignButton.textContent = "Incident is cancelled";
+  } else if (isPast) {
     assignButton.textContent = "Incident is closed";
   } else {
     assignButton.textContent = "Assign to team";

@@ -12,7 +12,9 @@ from backend.kafka.incident_event_schemas import (
     IncidentUpdatedEvent,
     IncidentUpdatedEventData,
 )
-from backend.schemas.incidents import IncidentCreate
+from backend.schemas.incidents import IncidentCreate, IncidentReporterUpdate
+
+INCIDENT_REFERENCE_PATTERN = re.compile(r"INC-(\d{5})", re.IGNORECASE)
 
 GET_ACTIVE_REPORTER_ID_QUERY = text(
     """
@@ -126,6 +128,31 @@ GET_REPORTER_INCIDENT_QUERY = text(
     """
 )
 
+GET_REPORTER_CANCELLATION_CONTEXT_QUERY = text(
+    """
+    SELECT incidents.id, incidents.status
+    FROM public.incidents
+    INNER JOIN public.users
+        ON users.id = incidents.reporter_id
+    WHERE incidents.incident_number = :incident_number
+      AND users.email = :email
+      AND users.role = 'REPORTER'
+      AND users.is_active = true
+    FOR UPDATE OF incidents
+    """
+)
+
+CANCEL_REPORTER_INCIDENT_QUERY = text(
+    """
+    UPDATE public.incidents
+    SET
+        status = 'CANCELLED',
+        cancelled_at = COALESCE(cancelled_at, now()),
+        updated_at = now()
+    WHERE incident_number = :incident_number
+    """
+)
+
 GET_ASSIGNER_INCIDENTS_QUERY = text(
     """
     SELECT
@@ -186,7 +213,6 @@ GET_ASSIGNED_INCIDENTS_QUERY = text(
       AND users.role = 'AID_PROVIDER_TEAM_MEMBER'
       AND users.is_active = true
       AND aid_provider_teams.is_active = true
-      AND incidents.status IN ('NEW', 'ASSIGNED', 'IN_PROGRESS')
     ORDER BY incidents.updated_at DESC
     """
 )
@@ -205,6 +231,7 @@ GET_ASSIGNED_INCIDENT_QUERY = text(
         incidents.assigned_at,
         incidents.resolved_at,
         incidents.closed_at,
+        incidents.cancelled_at,
         incidents.assigned_aid_provider_id,
         incidents.assigned_team_id,
         aid_providers.name AS assigned_provider_name,
@@ -265,6 +292,26 @@ UPDATE_ASSIGNED_INCIDENT_STATUS_QUERY = text(
     """
 )
 
+UPDATE_REPORTER_INCIDENT_QUERY = text(
+    """
+    UPDATE public.incidents
+    SET
+        description = COALESCE(:description, description),
+        severity = COALESCE(:severity, severity),
+        updated_at = now()
+    WHERE incident_number = :incident_number
+      AND status NOT IN ('CANCELLED', 'RESOLVED', 'CLOSED')
+      AND reporter_id = (
+          SELECT id
+          FROM public.users
+          WHERE email = :email
+            AND role = 'REPORTER'
+            AND is_active = true
+      )
+    RETURNING id, status
+    """
+)
+
 UPDATE_STARTED_AT_QUERY = text(
     """
     UPDATE public.incidents
@@ -316,7 +363,8 @@ GET_INCIDENT_ASSIGNMENT_CONTEXT_QUERY = text(
     SELECT
         id,
         assigned_aid_provider_id,
-        assigned_team_id
+        assigned_team_id,
+        status
     FROM public.incidents
     WHERE incident_number = :incident_number
     FOR UPDATE
@@ -348,6 +396,10 @@ class ReporterNotFound(Exception):
 
 class InvalidIncidentAssignment(Exception):
     """Raised when an incident cannot be assigned to the selected team."""
+
+
+class InvalidReporterIncidentCancellation(Exception):
+    """Raised when a reporter cannot cancel an incident in its current state."""
 
 
 def _add_incident_reference(row: dict[str, object]) -> dict[str, object]:
@@ -459,7 +511,7 @@ def get_assigned_incident(
 ) -> dict[str, object] | None:
     """Return one assigned incident visible to the authenticated member."""
 
-    reference_match = re.fullmatch(r"INC-(\d{5})", incident_reference.upper())
+    reference_match = INCIDENT_REFERENCE_PATTERN.fullmatch(incident_reference)
     if reference_match is None:
         return None
 
@@ -502,6 +554,11 @@ def assign_incident(
 
         if incident is None:
             raise InvalidIncidentAssignment("The incident does not exist.")
+
+        if incident["status"] == "CANCELLED":
+            raise InvalidIncidentAssignment(
+                "Cancelled incidents are read-only."
+            )
 
         result = db.execute(
             ASSIGN_INCIDENT_QUERY,
@@ -560,6 +617,11 @@ def update_assigned_incident_status(
                 "The incident is not assigned to one of your teams."
             )
 
+        if incident["status"] == "CANCELLED":
+            raise InvalidIncidentAssignment(
+                "Cancelled incidents are read-only."
+            )
+
         result = db.execute(
             UPDATE_ASSIGNED_INCIDENT_STATUS_QUERY,
             {
@@ -578,7 +640,6 @@ def update_assigned_incident_status(
             "IN_PROGRESS": UPDATE_STARTED_AT_QUERY,
             "RESOLVED": UPDATE_RESOLVED_AT_QUERY,
             "CLOSED": UPDATE_CLOSED_AT_QUERY,
-            "CANCELLED": UPDATE_CANCELLED_AT_QUERY,
         }
         timestamp_query = timestamp_queries[incident_status]
         db.execute(timestamp_query, {"incident_number": incident_number})
@@ -608,7 +669,7 @@ def get_reporter_incident(
 ) -> dict[str, object] | None:
     """Return one incident by display reference for the authenticated reporter."""
 
-    reference_match = re.fullmatch(r"INC-(\d{5})", incident_reference.upper())
+    reference_match = INCIDENT_REFERENCE_PATTERN.fullmatch(incident_reference)
     if reference_match is None:
         return None
 
@@ -618,3 +679,106 @@ def get_reporter_incident(
         {"email": email, "incident_number": incident_number},
     ).mappings().one_or_none()
     return _add_incident_reference(dict(row)) if row else None
+
+
+def update_reporter_incident(
+    db: Session,
+    email: str,
+    incident_reference: str,
+    incident_data: IncidentReporterUpdate,
+) -> bool:
+    """Update reporter-editable fields on an incident owned by the reporter."""
+
+    reference_match = INCIDENT_REFERENCE_PATTERN.fullmatch(incident_reference)
+    if reference_match is None:
+        return False
+
+    try:
+        result = db.execute(
+            UPDATE_REPORTER_INCIDENT_QUERY,
+            {
+                "email": email,
+                "incident_number": int(reference_match.group(1)),
+                "description": (
+                    incident_data.description.strip()
+                    if incident_data.description is not None
+                    else None
+                ),
+                "severity": incident_data.severity,
+            },
+        ).mappings().one_or_none()
+
+        if result is None:
+            return False
+
+        updated_event = IncidentUpdatedEvent(
+            incident_id=result["id"],
+            event_type="IncidentUpdated",
+            actor_role="REPORTER",
+            event_data=IncidentUpdatedEventData(
+                incident_reference=incident_reference.upper(),
+                old_status=result["status"],
+                new_status=result["status"],
+                description=(
+                    incident_data.description.strip()
+                    if incident_data.description is not None
+                    else None
+                ),
+                severity=incident_data.severity,
+            ),
+        )
+        add_incident_event_to_outbox(db, updated_event)
+        db.commit()
+        return True
+    except Exception:
+        db.rollback()
+        raise
+
+
+def cancel_reporter_incident(
+    db: Session,
+    email: str,
+    incident_reference: str,
+) -> None:
+    """Permanently cancel a reporter-owned NEW, ASSIGNED, or IN_PROGRESS incident."""
+
+    reference_match = INCIDENT_REFERENCE_PATTERN.fullmatch(incident_reference)
+    if reference_match is None:
+        raise InvalidReporterIncidentCancellation("The incident reference is invalid.")
+
+    try:
+        incident = db.execute(
+            GET_REPORTER_CANCELLATION_CONTEXT_QUERY,
+            {
+                "email": email,
+                "incident_number": int(reference_match.group(1)),
+            },
+        ).mappings().one_or_none()
+
+        if incident is None:
+            raise InvalidReporterIncidentCancellation("The incident was not found.")
+
+        if incident["status"] not in {"NEW", "ASSIGNED", "IN_PROGRESS"}:
+            raise InvalidReporterIncidentCancellation(
+                "Only NEW, ASSIGNED, or IN_PROGRESS incidents can be cancelled."
+            )
+
+        db.execute(
+            CANCEL_REPORTER_INCIDENT_QUERY,
+            {"incident_number": int(reference_match.group(1))},
+        )
+        updated_event = IncidentUpdatedEvent(
+            incident_id=incident["id"],
+            event_type="IncidentUpdated",
+            actor_role="REPORTER",
+            event_data=IncidentUpdatedEventData(
+                incident_reference=incident_reference.upper(),
+                old_status=incident["status"],
+                new_status="CANCELLED",
+            ),
+        )
+        add_incident_event_to_outbox(db, updated_event)
+        db.commit()
+    except Exception:
+        db.rollback()
+        raise

@@ -329,6 +329,7 @@ async function loadAssignerIncidents() {
     if (!response.ok) throw new Error("Unable to load incidents.");
 
     const loadedIncidents = await response.json();
+    window.notificationBell.setIncidents(loadedIncidents);
     incidents.splice(0, incidents.length, ...loadedIncidents);
     renderDashboard();
   } catch (error) {
@@ -343,6 +344,9 @@ async function loadAssignerIncidents() {
 await loadAssignerIncidents();
 
 connectIncidentRealtime({
-  onEvent: loadAssignerIncidents,
+  onEvent: (event) => {
+    window.notificationBell.recordEvent(event);
+    return loadAssignerIncidents();
+  },
   onReconnect: loadAssignerIncidents,
 });

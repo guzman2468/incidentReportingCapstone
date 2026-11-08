@@ -105,3 +105,23 @@ The features that are currently working are up to Milestone 3 as describe in the
 Account creation by both the Admin user role and self creation for reporters is implemented. Incident related logic is not yet implemented, all data is dummy data used to see how UIs would look once real data is being used.
 
 Please use the **main** branch to view the working version of the project up until this point.
+
+## Backend endpoint tests
+
+The backend test suite uses FastAPI's `TestClient` for authentication, incident,
+and assignment endpoint coverage. It does not start Kafka or require Docker.
+
+Run the tests from the project root:
+
+```bat
+.venv\Scripts\activate.bat
+python -m pytest
+```
+
+Run one test file or one test while developing:
+
+```bat
+python -m pytest backend\tests\test_authentication_endpoints.py
+python -m pytest backend\tests\test_incident_endpoints.py
+python -m pytest backend\tests\test_incident_endpoints.py::test_assignment_conflict_returns_clear_message
+```

@@ -105,3 +105,12 @@ The features that are currently working are up to Milestone 3 as describe in the
 Account creation by both the Admin user role and self creation for reporters is implemented. Incident related logic is not yet implemented, all data is dummy data used to see how UIs would look once real data is being used.
 
 Please use the **main** branch to view the working version of the project up until this point.
+
+## Release Notes (11-10-2026)
+As of this point, the real time updates and kafka messaging has been setup and is working. 
+This means that the ./start.sh script is now obsolete and the application must be run with the docker-start script.
+Setup steps are the same sitll, but you now must install and sign into Docker Desktop to run the application.
+
+The features that are currently working are up to Milestone 4 in the project plan (kafka messaging, real time updates).
+
+Please use the **main** branch to view the working version of the project up until this point.

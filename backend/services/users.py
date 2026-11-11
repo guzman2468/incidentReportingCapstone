@@ -32,6 +32,7 @@ AUTHENTICATE_USER_QUERY = text(
 GET_USER_PROFILE_QUERY = text(
     """
     SELECT
+        users.id,
         users.email,
         users.first_name,
         users.last_name,

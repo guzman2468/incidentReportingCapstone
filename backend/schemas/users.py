@@ -32,6 +32,7 @@ class UserLogin(BaseModel):
 
 
 class UserProfile(BaseModel):
+    id: UUID
     email: str
     first_name: str
     last_name: str

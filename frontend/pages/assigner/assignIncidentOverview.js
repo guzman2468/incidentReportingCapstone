@@ -105,7 +105,7 @@ function normalizeIncident(rawIncident) {
     status: String(rawIncident.status).toLowerCase(),
     resolvedDate: rawIncident.resolved_at
       ? formatDate(rawIncident.resolved_at)
-      : "Not resolved",
+      : "NOT RESOLVED",
     assignedProvider: rawIncident.assigned_provider_name || "",
     assignedTeam: rawIncident.assigned_team_name || "",
   };
@@ -195,16 +195,16 @@ function updateStatusBadge() {
   const badge = document.getElementById("statusBadge");
 
   const labels = {
-    new: "New",
-    assigned: "Assigned",
-    in_progress: "In progress",
-    active: "In progress",
-    resolved: "Resolved",
-    closed: "Closed",
-    cancelled: "Cancelled",
+    new: "NEW",
+    assigned: "ASSIGNED",
+    in_progress: "IN PROGRESS",
+    active: "IN PROGRESS",
+    resolved: "RESOLVED",
+    closed: "CLOSED",
+    cancelled: "CANCELLED",
   };
 
-  badge.textContent = (labels[incident.status] || incident.status || "New").toUpperCase();
+  badge.textContent = (labels[incident.status] || incident.status || "NEW").toUpperCase();
   badge.className = "status-badge";
 
   if (["resolved", "closed"].includes(incident.status)) {
@@ -294,7 +294,7 @@ function updateAvailableProviders() {
 async function updateCurrentProvider() {
   const provider = incident.assignedProvider || "";
   const assignedTeam = incident.assignedTeam || "";
-  let currentProviderText = "Not assigned";
+  let currentProviderText = "NOT ASSIGNED";
   let assignmentSummaryText = "No provider has been assigned yet.";
 
   if (provider) {
@@ -329,11 +329,12 @@ async function updateCurrentProvider() {
   assignButton.disabled = isCancelled || isPast || isAssigned || !hasCompleteAssignment;
   document.getElementById("noteInput").disabled = isCancelled;
   document.getElementById("addNoteButton").disabled = isCancelled;
+  window.renderIncidentNotes(incident.notes);
 
   if (isCancelled) {
-    assignButton.textContent = "Incident is cancelled";
+    assignButton.textContent = "Incident is CANCELLED";
   } else if (isPast) {
-    assignButton.textContent = "Incident is closed";
+    assignButton.textContent = "Incident is CLOSED";
   } else {
     assignButton.textContent = "Assign to team";
   }
@@ -677,36 +678,6 @@ document
   .getElementById("logoutButton")
   .addEventListener("click", window.logoutUser);
 
-// Add notes to the incident timeline for the current page session.
-document.getElementById("addNoteButton").addEventListener("click", () => {
-  const noteInput = document.getElementById("noteInput");
-  const noteText = noteInput.value.trim();
-
-  if (!noteText) {
-    noteInput.focus();
-    return;
-  }
-
-  const note = document.createElement("div");
-  note.className = "note-item own";
-
-  const author = document.createElement("strong");
-  author.textContent = window.currentUserDisplayName || "You";
-
-  const timestamp = document.createElement("small");
-  timestamp.textContent = "just now";
-  author.append(" ", timestamp);
-
-  const message = document.createElement("p");
-  message.textContent = noteText;
-
-  note.append(author, message);
-  const notesList = document.getElementById("notesList");
-  notesList.appendChild(note);
-  noteInput.value = "";
-  notesList.scrollTo({ top: notesList.scrollHeight, behavior: "smooth" });
-});
-
 // Initialize the page.
 if (!incidentId) {
   document.querySelector(".overview-wrap").innerHTML = `
@@ -740,7 +711,13 @@ if (!incidentId) {
 connectIncidentRealtime({
   onEvent: (event) => {
     if (event.incident_reference === incidentId) {
-      displayIncident().catch((error) => console.error(error));
+      if (event.event_type === "IncidentNoteAdded") {
+        window.refreshIncidentNotes(incidentId).catch((error) =>
+          console.error(error),
+        );
+      } else {
+        displayIncident().catch((error) => console.error(error));
+      }
     }
   },
   onReconnect: () => {

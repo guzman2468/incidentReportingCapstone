@@ -57,19 +57,19 @@
                     ><b>Submitted at</b
                     ><strong id="incidentMeta">Loading...</strong></span
                   ><span id="assignedAtField"
-                    ><b>Assigned at</b
+                    ><b>ASSIGNED AT</b
                     ><strong id="assignedAt">NOT ASSIGNED</strong></span
                   ><span id="updatedAtField"
                     ><b>Last updated at</b
                     ><strong id="updatedAt">Loading...</strong></span
                   ><span id="resolvedAtField"
-                    ><b>Resolved at</b
+                    ><b>RESOLVED AT</b
                     ><strong id="resolvedDate">NOT RESOLVED</strong></span
                   ><span id="closedAtField"
-                    ><b>Closed at</b
+                    ><b>CLOSED AT</b
                     ><strong id="closedAt">NOT CLOSED</strong></span
                   ><span id="cancelledAtField"
-                    ><b>Cancelled at</b
+                    ><b>CANCELLED AT</b
                     ><strong id="cancelledAt">NOT CANCELLED</strong></span
                   >
                 </div>
@@ -113,6 +113,7 @@
                   >
                     Update Status
                   </button>
+                  <p id="statusUpdateError" class="status-update-error" role="alert"></p>
                 </div>
               </div>
               <div class="location-result">
@@ -159,6 +160,7 @@
                 rows="5"
                 placeholder="Write a note..."
               ></textarea
+              ><p id="noteInputError" class="note-input-error" role="alert"></p
               ><button type="button" class="outline-button" id="addNoteButton">
                 + Add note
               </button>

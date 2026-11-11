@@ -246,6 +246,7 @@ const loadIncident = async () => {
       ? formatAssignmentName(incident.assigned_team_name)
       : "NOT ASSIGNED";
   setIncidentLocation(incident.location);
+  window.renderIncidentNotes(incident.notes);
   setIncidentStatus(incident.status);
   cancelIncidentButton.hidden = !["NEW", "ASSIGNED", "IN_PROGRESS"].includes(
     status,
@@ -423,35 +424,6 @@ confirmIncidentCancellation.addEventListener("click", async () => {
   }
 });
 
-// Add a note to the page for visual testing until persistence is connected.
-document.getElementById("addNoteButton").addEventListener("click", () => {
-  const noteInput = document.getElementById("noteInput");
-  const noteText = noteInput.value.trim();
-
-  if (!noteText) {
-    noteInput.focus();
-    return;
-  }
-
-  const note = document.createElement("div");
-  // Notes added from this reporter are styled as the user's chat bubbles.
-  // Notes loaded from other users can use the "other" class later.
-  note.className = "note-item own";
-  note.innerHTML = `<strong>${window.currentUserDisplayName || "User"} <small>just now</small></strong><p></p>`;
-
-  note.querySelector("p").textContent = noteText;
-  const notesList = document.getElementById("notesList");
-  notesList.appendChild(note);
-  document.querySelector(".notes-empty").style.display = "none";
-  noteInput.value = "";
-
-  // Keep the newest note visible at the bottom of the scroll window.
-  notesList.scrollTo({
-    top: notesList.scrollHeight,
-    behavior: "smooth",
-  });
-});
-
 const followUpButton = document.getElementById("followUpButton");
 if (followUpButton) {
   followUpButton.addEventListener("click", () => {
@@ -462,7 +434,13 @@ if (followUpButton) {
 connectIncidentRealtime({
   onEvent: (event) => {
     if (event.incident_reference === incidentReference) {
-      reloadIncidentOverview();
+      if (event.event_type === "IncidentNoteAdded") {
+        window.refreshIncidentNotes(incidentReference).catch((error) =>
+          console.error(error),
+        );
+      } else {
+        reloadIncidentOverview();
+      }
     }
   },
   onReconnect: reloadIncidentOverview,

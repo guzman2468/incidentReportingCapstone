@@ -123,11 +123,11 @@ const getIncidentStatus = (status) => {
 const getIncidentTimestampLabel = (status) =>
   ({
     new: "Submitted",
-    assigned: "Assigned",
+    assigned: "ASSIGNED",
     progress: "Last updated",
-    resolved: "Resolved",
-    closed: "Closed",
-    cancelled: "Cancelled",
+    resolved: "RESOLVED",
+    closed: "CLOSED",
+    cancelled: "CANCELLED",
   })[status] || "Last updated";
 
 const getIncidentTimestamp = (incident, status) => {
@@ -139,6 +139,13 @@ const getIncidentTimestamp = (incident, status) => {
   return incident.updated_at || incident.created_at;
 };
 
+const getCardTimestamp = (incident, status) => {
+  const activity = window.notificationBell.getIncidentActivity(
+    incident.incident_reference,
+  );
+  return activity?.occurredAt || getIncidentTimestamp(incident, status);
+};
+
 const getStatusClass = (status) => {
   if (status === "new") return "awaiting";
   if (status === "assigned") return "assigned";
@@ -146,6 +153,10 @@ const getStatusClass = (status) => {
   if (status === "resolved") return "resolved";
   return "closed";
 };
+
+const getCardTimestampLabel = (incident, status) =>
+  window.notificationBell.getIncidentActivity(incident.incident_reference)
+    ?.label || getIncidentTimestampLabel(status);
 
 const getIncidentSymbolClass = (severity) => {
   const symbols = {
@@ -211,12 +222,12 @@ function renderAssignedIncidents(incidents) {
   const renderIncidentRow = (incident) => {
     const status = getIncidentStatus(incident.status);
     const statusLabel = {
-      new: "New",
-      assigned: "Assigned",
-      progress: "In progress",
-      resolved: "Resolved",
-      closed: "Closed",
-      cancelled: "Cancelled",
+      new: "NEW",
+      assigned: "ASSIGNED",
+      progress: "IN PROGRESS",
+      resolved: "RESOLVED",
+      closed: "CLOSED",
+      cancelled: "CANCELLED",
     }[status] || status;
     const row = document.createElement("article");
 
@@ -247,7 +258,7 @@ function renderAssignedIncidents(incidents) {
 
     row.querySelector("strong").textContent = incident.title;
     row.querySelector(".date-label").textContent =
-      `${getIncidentTimestampLabel(status)} ${formatIncidentDate(getIncidentTimestamp(incident, status))}`;
+      `${getCardTimestampLabel(incident, status)} ${formatIncidentDate(getCardTimestamp(incident, status))}`;
     row.querySelector(".incident-info span").prepend(
       `${incident.incident_reference} · `,
     );
@@ -432,11 +443,11 @@ function connectResolvedSummary() {
     const status = statusFilter.value;
     const days = ranges[selectedFilter];
     const cutoff = days ? new Date(Date.now() - days * 86400000) : null;
-    let statusLabel = "Resolved";
+    let statusLabel = "RESOLVED";
     if (status === "closed") {
-      statusLabel = "Closed";
+      statusLabel = "CLOSED";
     } else if (status === "cancelled") {
-      statusLabel = "Cancelled";
+      statusLabel = "CANCELLED";
     }
     const timeLabel = timeLabels[selectedFilter] || "all time";
 

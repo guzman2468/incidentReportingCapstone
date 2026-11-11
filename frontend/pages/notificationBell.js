@@ -6,7 +6,7 @@
   };
 
   function getStorageKey() {
-    return `incidentNotifications:${window.location.pathname}`;
+    return `incidentNotifications:v2:${window.location.pathname}`;
   }
 
   function loadNotifications() {
@@ -54,14 +54,32 @@
     list.innerHTML = state.notifications
       .map(
         (notification) => `
-          <div class="notification-item" role="button" tabindex="0" data-notification-id="${notification.id}" data-incident-reference="${escapeHTML(notification.incidentReference)}">
+          <div class="notification-item${notification.eventType === "IncidentNoteAdded" ? " note-added" : ""}" role="button" tabindex="0" data-notification-id="${notification.id}" data-incident-reference="${escapeHTML(notification.incidentReference)}">
             <strong>${escapeHTML(notification.title)}</strong>
-            <span>${escapeHTML(notification.incidentReference)} · ${escapeHTML(notification.message)}</span>
+            <span class="notification-reference">${escapeHTML(notification.incidentReference)}</span>
+            <span class="notification-message">${escapeHTML(notification.message)}</span>
+            <small class="notification-timestamp">${escapeHTML(formatNotificationTimestamp(notification.occurredAt))}</small>
             <button type="button" class="notification-remove" data-notification-id="${notification.id}" aria-label="Remove notification">×</button>
           </div>
         `,
       )
       .join("");
+  }
+
+  function formatNotificationTimestamp(timestamp) {
+    const date = new Date(timestamp);
+    if (Number.isNaN(date.getTime())) return "Time unavailable";
+
+    return new Intl.DateTimeFormat("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+      hour12: true,
+      hourCycle: "h12",
+    }).format(date);
   }
 
   function escapeHTML(value) {
@@ -80,8 +98,10 @@
 
   function getIncidentMessage(event, incident) {
     const eventData = event.event_data || {};
+    if (event.event_type === "IncidentNoteAdded") return "Note Added";
     const updatedFields = [];
     const status = eventData.new_status || eventData.status;
+    const formattedStatus = formatStatusLabel(status);
 
     if (eventData.severity_updated) updatedFields.push("SEVERITY");
     if (eventData.description_updated) updatedFields.push("DESCRIPTION");
@@ -95,10 +115,40 @@
     }
 
     if (status) {
-      return `has been given the ${status} status`;
+      return `has been given the ${formattedStatus} status`;
     }
 
     return "has received an update";
+  }
+
+  function getCardActivity(event) {
+    const eventData = event.event_data || {};
+    if (event.event_type === "IncidentNoteAdded") {
+      return "Note Added at";
+    }
+
+    if (event.event_type === "IncidentAssigned") {
+      return "ASSIGNED";
+    }
+
+    if (
+      event.event_type === "IncidentUpdated" &&
+      (eventData.severity_updated || eventData.description_updated)
+    ) {
+      return "Last Updated at";
+    }
+
+    if (event.event_type === "IncidentUpdated" && eventData.new_status) {
+      return `${formatStatusLabel(eventData.new_status)} at`;
+    }
+
+    return null;
+  }
+
+  function formatStatusLabel(status) {
+    return String(status)
+      .toUpperCase()
+      .replaceAll("_", " ");
   }
 
   function recordEvent(event) {
@@ -106,10 +156,15 @@
 
     state.receivedEventIds.add(event.event_id);
     const incident = state.incidents.get(event.incident_reference);
+    const eventData = event.event_data || {};
     const notification = {
       id: event.event_id,
       title: incident?.title || "Incident update",
       message: getIncidentMessage(event, incident),
+      cardLabel: getCardActivity(event),
+      eventType: event.event_type,
+      occurredAt:
+        event.occurred_at || eventData.created_at || new Date().toISOString(),
       incidentReference:
         event.incident_reference || incident?.incident_reference || "",
     };
@@ -123,6 +178,44 @@
     state.incidents = new Map(
       incidents.map((incident) => [incident.incident_reference, incident]),
     );
+  }
+
+  function getIncidentActivity(incidentReference) {
+    const latestNotification = state.notifications
+      .filter((notification) => notification.incidentReference === incidentReference)
+      .sort(
+        (firstNotification, secondNotification) =>
+          new Date(secondNotification.occurredAt) -
+          new Date(firstNotification.occurredAt),
+      )
+      .find((notification) => notification.cardLabel);
+
+    const incident = state.incidents.get(incidentReference);
+    const latestNote = [...(incident?.notes || [])].sort(
+      (firstNote, secondNote) =>
+        new Date(secondNote.created_at) - new Date(firstNote.created_at),
+    )[0];
+
+    const notificationActivity = latestNotification
+      ? {
+          label: latestNotification.cardLabel,
+          occurredAt: latestNotification.occurredAt,
+        }
+      : null;
+    const noteActivity = latestNote
+      ? {
+          label: "Note Added at",
+          occurredAt: latestNote.created_at,
+        }
+      : null;
+
+    if (!notificationActivity) return noteActivity;
+    if (!noteActivity) return notificationActivity;
+
+    return new Date(noteActivity.occurredAt) >
+      new Date(notificationActivity.occurredAt)
+      ? noteActivity
+      : notificationActivity;
   }
 
   function closeDropdown() {
@@ -202,6 +295,7 @@
   window.notificationBell = {
     recordEvent,
     setIncidents,
+    getIncidentActivity,
   };
 
   connect();

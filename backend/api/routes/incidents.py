@@ -12,9 +12,12 @@ from backend.schemas.incidents import (
     IncidentSubmitted,
     IncidentStatusUpdate,
     IncidentSummary,
+    IncidentNote,
+    IncidentNoteCreate,
 )
 from backend.services.incidents import (
     InvalidIncidentAssignment,
+    InvalidIncidentStatusTransition,
     InvalidReporterIncidentCancellation,
     ReporterNotFound,
     assign_incident,
@@ -24,6 +27,8 @@ from backend.services.incidents import (
     update_assigned_incident_status,
     update_reporter_incident,
     cancel_reporter_incident,
+    add_incident_note,
+    get_incident_notes,
 )
 from backend.services.incidents import (
     get_assigner_incidents,
@@ -32,6 +37,7 @@ from backend.services.incidents import (
 )
 
 router = APIRouter(prefix="/api/incidents", tags=["incidents"])
+INCIDENT_NOT_FOUND_DETAIL = "Incident not found"
 
 
 def require_reporter(
@@ -219,6 +225,11 @@ def update_incident_status(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=str(error),
         ) from error
+    except InvalidIncidentStatusTransition as error:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=str(error),
+        ) from error
 
     return {"success": True}
 
@@ -235,7 +246,7 @@ def get_my_incident(
     if incident is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="Incident not found",
+            detail=INCIDENT_NOT_FOUND_DETAIL,
         )
 
     return incident
@@ -259,7 +270,7 @@ def update_my_incident(
     if not update_reporter_incident(db, email, incident_reference, incident_data):
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="Incident not found",
+            detail=INCIDENT_NOT_FOUND_DETAIL,
         )
 
     return {"success": True}
@@ -282,3 +293,50 @@ def cancel_my_incident(
         ) from error
 
     return {"success": True}
+
+
+@router.post(
+    "/reference/{incident_reference}/notes",
+    response_model=IncidentNote,
+    status_code=status.HTTP_201_CREATED,
+)
+def create_incident_note(
+    incident_reference: str,
+    note_data: IncidentNoteCreate,
+    email: str = Depends(require_session),
+    db: Session = Depends(get_db),
+) -> IncidentNote:
+    """Add a note when the authenticated user is an incident stakeholder."""
+
+    note = add_incident_note(
+        db,
+        email,
+        incident_reference,
+        note_data.note,
+    )
+    if note is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Incident not found or note cannot be added",
+        )
+    return note
+
+
+@router.get(
+    "/reference/{incident_reference}/notes",
+    response_model=list[IncidentNote],
+)
+def list_incident_notes(
+    incident_reference: str,
+    email: str = Depends(require_session),
+    db: Session = Depends(get_db),
+) -> list[IncidentNote]:
+    """Return persisted notes for an incident stakeholder."""
+
+    notes = get_incident_notes(db, email, incident_reference)
+    if notes is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=INCIDENT_NOT_FOUND_DETAIL,
+        )
+    return notes

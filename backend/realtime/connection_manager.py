@@ -152,7 +152,11 @@ class ConnectionManager(IncidentEventRouter):
                 {"incident_id": incident_id},
             ).scalars().all()
 
-            if event_type in {"IncidentAssigned", "IncidentUpdated"}:
+            if event_type in {
+                "IncidentAssigned",
+                "IncidentUpdated",
+                "IncidentNoteAdded",
+            }:
                 team_id = event_data.get("team_id")
                 if team_id is None:
                     incident_team_rows = db.execute(
@@ -195,6 +199,14 @@ class ConnectionManager(IncidentEventRouter):
                 "severity_updated": event_data.get("severity") is not None,
                 "description_updated": event_data.get("description") is not None,
             }
+        elif event_type == "IncidentNoteAdded":
+            relevant_event_data = {
+                "actor_id": event.get("actor_id"),
+                "actor_name": event_data.get("actor_name"),
+                "actor_role": event_data.get("actor_role"),
+                "message": event_data.get("message"),
+                "created_at": event_data.get("created_at"),
+            }
         else:
             relevant_event_data = {
                 "status": event_data.get("status"),
@@ -204,5 +216,6 @@ class ConnectionManager(IncidentEventRouter):
             "event_id": str(event.get("event_id", "")),
             "event_type": event_type,
             "incident_reference": event_data.get("incident_reference"),
+            "occurred_at": event.get("occurred_at"),
             "event_data": relevant_event_data,
         }

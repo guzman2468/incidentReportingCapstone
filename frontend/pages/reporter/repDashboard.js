@@ -82,15 +82,26 @@ const getIncidentTimestamp = (incident) => {
   return incident.updated_at;
 };
 
+const getCardTimestamp = (incident) => {
+  const activity = window.notificationBell.getIncidentActivity(
+    incident.incident_reference,
+  );
+  return activity?.occurredAt || getIncidentTimestamp(incident);
+};
+
 const getIncidentTimestampLabel = (status) =>
   ({
     NEW: "Submitted",
-    ASSIGNED: "Assigned",
+    ASSIGNED: "ASSIGNED",
     IN_PROGRESS: "Last updated",
-    RESOLVED: "Resolved",
-    CLOSED: "Closed",
-    CANCELLED: "Cancelled",
+    RESOLVED: "RESOLVED",
+    CLOSED: "CLOSED",
+    CANCELLED: "CANCELLED",
   })[status] || "Last updated";
+
+const getCardTimestampLabel = (incident) =>
+  window.notificationBell.getIncidentActivity(incident.incident_reference)
+    ?.label || getIncidentTimestampLabel(incident.status);
 
 const getIncidentSymbol = (incident) => {
   if (incident.status === "NEW") {
@@ -128,7 +139,7 @@ const renderIncident = (incident) => {
       <div class="incident-symbol ${className}">${symbol}</div>
       <div class="incident-info">
         <strong>${escapeHTML(incident.title)}</strong>
-        <span>${escapeHTML(incident.incident_reference)} · ${getIncidentTimestampLabel(incident.status)} ${escapeHTML(formatDate(getIncidentTimestamp(incident)))}</span>
+        <span>${escapeHTML(incident.incident_reference)} · ${getCardTimestampLabel(incident)} ${escapeHTML(formatDate(getCardTimestamp(incident)))}</span>
       </div>
       <span class="severity-pill severity-${escapeHTML(severity)}">${escapeHTML(incident.severity || "Unknown")}</span>
       <span class="status-pill ${getStatusClass(incident.status)}">${escapeHTML(statusLabel)}</span>

@@ -32,6 +32,7 @@ const initialIncidentReference = normalizeIncidentReference(params.get("referenc
 const linkedIncidentTitle = params.get("title");
 const linkedIncidentMeta = params.get("meta");
 let incidentReference = initialIncidentReference;
+let currentIncidentStatus = null;
 
 function formatIncidentDate(dateValue) {
   const date = new Date(dateValue);
@@ -88,6 +89,7 @@ function parseCoordinates(location) {
 }
 
 function renderIncident(incident) {
+  currentIncidentStatus = String(incident.status || "").toUpperCase();
   document.getElementById("titleField").textContent = incident.title;
   document.getElementById("incidentMeta").textContent = formatIncidentDate(
     incident.created_at,
@@ -115,6 +117,7 @@ function renderIncident(incident) {
   severityField.className =
     `readonly-field severity-value severity-${incident.severity.toLowerCase()}`;
   document.getElementById("descriptionField").textContent = incident.description;
+  window.renderIncidentNotes(incident.notes);
 
   const statusBadge = document.getElementById("statusBadge");
   const formattedStatus = formatIncidentStatus(incident.status);
@@ -150,6 +153,26 @@ function renderIncident(incident) {
       `https://www.openstreetmap.org/export/embed.html?bbox=${bounds}` +
       `&layer=mapnik&marker=${latitude},${longitude}`;
   }
+}
+
+function getInvalidStatusTransitionMessage(selectedStatus) {
+  const requiredPreviousStatus = {
+    IN_PROGRESS: "ASSIGNED",
+    RESOLVED: "IN_PROGRESS",
+    CLOSED: "RESOLVED",
+  }[selectedStatus];
+  if (!requiredPreviousStatus || currentIncidentStatus === requiredPreviousStatus) {
+    return "";
+  }
+
+  return `You cannot apply ${selectedStatus} before applying ${requiredPreviousStatus}.`;
+}
+
+function setStatusUpdateError(message) {
+  document
+    .getElementById("incidentStatusSelect")
+    .classList.toggle("input-error", Boolean(message));
+  document.getElementById("statusUpdateError").textContent = message;
 }
 
 async function loadIncident() {
@@ -224,10 +247,17 @@ document
   .addEventListener("click", () => {
     const statusSelect = document.getElementById("incidentStatusSelect");
     const status = statusSelect.value;
+    setStatusUpdateError("");
 
     if (!status) {
+      setStatusUpdateError("Select a status before updating the current incident status.");
       statusSelect.focus();
-      showToast("Select a status first.");
+      return;
+    }
+
+    const invalidTransitionMessage = getInvalidStatusTransitionMessage(status);
+    if (invalidTransitionMessage) {
+      setStatusUpdateError(invalidTransitionMessage);
       return;
     }
 
@@ -239,6 +269,10 @@ document
     statusConfirmBackdrop.hidden = false;
     document.getElementById("statusConfirm").showModal();
   });
+
+document
+  .getElementById("incidentStatusSelect")
+  .addEventListener("change", () => setStatusUpdateError(""));
 
 const closeStatusConfirm = () => {
   document.getElementById("statusConfirm").close();
@@ -270,7 +304,9 @@ document
 
       const result = await response.json();
       if (!response.ok) {
-        throw new Error(result.detail || "Unable to update incident status.");
+        setStatusUpdateError(result.detail || "Unable to update incident status.");
+        closeStatusConfirm();
+        return;
       }
 
       closeStatusConfirm();
@@ -331,53 +367,16 @@ document
     }
   });
 
-// Add a note to the page for visual testing until persistence is connected.
-document.getElementById("addNoteButton").addEventListener("click", () => {
-  const noteInput = document.getElementById("noteInput");
-  const noteText = noteInput.value.trim();
-
-  if (!noteText) {
-    noteInput.focus();
-    return;
-  }
-
-  const note = document.createElement("div");
-  // Notes added from this APTM user are styled as the user's chat bubbles.
-  // Notes loaded from other users can use the "other" class later.
-  note.className = "note-item own";
-
-  const noteHeader = document.createElement("strong");
-  noteHeader.append(
-    document.createTextNode(window.currentUserDisplayName || "User"),
-    document.createTextNode(" ")
-  );
-
-  const noteTimestamp = document.createElement("small");
-  noteTimestamp.textContent = "just now";
-  noteHeader.appendChild(noteTimestamp);
-
-  const noteContent = document.createElement("p");
-  noteContent.textContent = noteText;
-
-  note.append(noteHeader, noteContent);
-
-  document.getElementById("notesList").appendChild(note);
-  document.querySelector(".notes-empty").style.display = "none";
-
-  noteInput.value = "";
-
-  // Keep the newest note visible at the bottom of the scroll window.
-  const notesList = document.getElementById("notesList");
-  notesList.scrollTo({
-    top: notesList.scrollHeight,
-    behavior: "smooth",
-  });
-});
-
 connectIncidentRealtime({
   onEvent: (event) => {
     if (event.incident_reference === incidentReference) {
-      loadIncident().catch((error) => console.error(error));
+      if (event.event_type === "IncidentNoteAdded") {
+        window.refreshIncidentNotes(incidentReference).catch((error) =>
+          console.error(error),
+        );
+      } else {
+        loadIncident().catch((error) => console.error(error));
+      }
     }
   },
   onReconnect: () => {

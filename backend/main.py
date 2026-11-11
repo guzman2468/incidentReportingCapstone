@@ -60,7 +60,7 @@ async def _run_outbox_publisher(
         except Exception:
             logger.exception("The incident outbox publisher failed")
 
-        await _wait_for_stop_or_timeout(stop_event, timeout_seconds=1)
+        await _wait_for_stop_or_timeout(stop_event, timeout_seconds=0.5)
 
 
 async def _run_incident_consumer(

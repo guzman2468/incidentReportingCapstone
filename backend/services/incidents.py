@@ -1,4 +1,5 @@
 import re
+from uuid import uuid4
 
 from sqlalchemy import text
 from sqlalchemy.orm import Session
@@ -11,6 +12,8 @@ from backend.kafka.incident_event_schemas import (
     IncidentSubmittedEventData,
     IncidentUpdatedEvent,
     IncidentUpdatedEventData,
+    IncidentNoteAddedEvent,
+    IncidentNoteAddedEventData,
 )
 from backend.schemas.incidents import IncidentCreate, IncidentReporterUpdate
 
@@ -65,6 +68,7 @@ GET_CREATED_INCIDENT_IDENTITY_QUERY = text(
 GET_REPORTER_INCIDENTS_QUERY = text(
     """
     SELECT
+        incidents.id,
         incidents.incident_number,
         incidents.title,
         incidents.description,
@@ -98,6 +102,7 @@ GET_REPORTER_INCIDENTS_QUERY = text(
 GET_REPORTER_INCIDENT_QUERY = text(
     """
     SELECT
+        incidents.id,
         incidents.incident_number,
         incidents.title,
         incidents.description,
@@ -156,6 +161,7 @@ CANCEL_REPORTER_INCIDENT_QUERY = text(
 GET_ASSIGNER_INCIDENTS_QUERY = text(
     """
     SELECT
+        incidents.id,
         incidents.incident_number,
         incidents.title,
         incidents.description,
@@ -184,6 +190,7 @@ GET_ASSIGNER_INCIDENTS_QUERY = text(
 GET_ASSIGNED_INCIDENTS_QUERY = text(
     """
     SELECT DISTINCT
+        incidents.id,
         incidents.incident_number,
         incidents.title,
         incidents.description,
@@ -220,6 +227,7 @@ GET_ASSIGNED_INCIDENTS_QUERY = text(
 GET_ASSIGNED_INCIDENT_QUERY = text(
     """
     SELECT DISTINCT
+        incidents.id,
         incidents.incident_number,
         incidents.title,
         incidents.description,
@@ -308,7 +316,19 @@ UPDATE_REPORTER_INCIDENT_QUERY = text(
             AND role = 'REPORTER'
             AND is_active = true
       )
-    RETURNING id, status
+    """
+)
+
+GET_REPORTER_INCIDENT_UPDATE_CONTEXT_QUERY = text(
+    """
+    SELECT incidents.id, incidents.status
+    FROM public.incidents
+    INNER JOIN public.users ON users.id = incidents.reporter_id
+    WHERE incidents.incident_number = :incident_number
+      AND incidents.status NOT IN ('CANCELLED', 'RESOLVED', 'CLOSED')
+      AND users.email = :email
+      AND users.role = 'REPORTER'
+      AND users.is_active = true
     """
 )
 
@@ -390,12 +410,203 @@ GET_ASSIGNED_INCIDENT_STATUS_CONTEXT_QUERY = text(
     """
 )
 
+GET_INCIDENT_NOTES_QUERY = text(
+    """
+    SELECT
+        incident_notes.id,
+        incident_notes.author_id,
+        CONCAT(users.first_name, ' ', users.last_name) AS author_name,
+        users.role AS author_role,
+        incident_notes.note,
+        incident_notes.created_at
+    FROM public.incident_notes
+    INNER JOIN public.users ON users.id = incident_notes.author_id
+    WHERE incident_notes.incident_id = :incident_id
+    ORDER BY incident_notes.created_at ASC
+    """
+)
+
+GET_NOTE_ACTOR_AND_INCIDENT_QUERY = text(
+    """
+    SELECT
+        incidents.id AS incident_id,
+        incidents.incident_number,
+        incidents.status,
+        users.id AS actor_id,
+        users.first_name,
+        users.last_name,
+        users.role
+    FROM public.incidents
+    INNER JOIN public.users ON users.email = :email
+    WHERE incidents.incident_number = :incident_number
+      AND users.is_active = true
+      AND (
+          users.role IN ('ADMIN', 'ASSIGNER')
+          OR incidents.reporter_id = users.id
+          OR EXISTS (
+              SELECT 1
+              FROM public.team_members
+              WHERE team_members.team_id = incidents.assigned_team_id
+                AND team_members.user_id = users.id
+          )
+      )
+    """
+)
+
+CREATE_INCIDENT_NOTE_QUERY = text(
+    """
+    INSERT INTO public.incident_notes (id, incident_id, author_id, note)
+    VALUES (:note_id, :incident_id, :actor_id, :note)
+    """
+)
+
+GET_CREATED_INCIDENT_NOTE_QUERY = text(
+    """
+    SELECT id, created_at
+    FROM public.incident_notes
+    WHERE id = :note_id
+    """
+)
+
+UPDATE_INCIDENT_NOTE_ACTIVITY_QUERY = text(
+    """
+    UPDATE public.incidents
+    SET updated_at = now()
+    WHERE id = :incident_id
+    """
+)
+
+
+def _attach_notes(
+    db: Session,
+    rows: list[dict[str, object]],
+) -> list[dict[str, object]]:
+    """Attach persisted notes to each incident returned by an overview query."""
+
+    for row in rows:
+        row["notes"] = [
+            dict(note)
+            for note in db.execute(
+                GET_INCIDENT_NOTES_QUERY,
+                {"incident_id": row["id"]},
+            ).mappings().all()
+        ]
+    return rows
+
+
+def add_incident_note(
+    db: Session,
+    email: str,
+    incident_reference: str,
+    note: str,
+) -> dict[str, object] | None:
+    """Persist a note and its outbox event for an incident stakeholder."""
+
+    reference_match = INCIDENT_REFERENCE_PATTERN.fullmatch(incident_reference)
+    if reference_match is None:
+        return None
+
+    try:
+        actor = db.execute(
+            GET_NOTE_ACTOR_AND_INCIDENT_QUERY,
+            {
+                "email": email,
+                "incident_number": int(reference_match.group(1)),
+            },
+        ).mappings().one_or_none()
+        if actor is None or actor["status"] in {"CANCELLED", "CLOSED"}:
+            return None
+
+        cleaned_note = note.strip()
+        if not cleaned_note:
+            return None
+
+        note_id = uuid4()
+        db.execute(
+            CREATE_INCIDENT_NOTE_QUERY,
+            {
+                "note_id": note_id,
+                "incident_id": actor["incident_id"],
+                "actor_id": actor["actor_id"],
+                "note": cleaned_note,
+            },
+        )
+        created_note = db.execute(
+            GET_CREATED_INCIDENT_NOTE_QUERY,
+            {"note_id": note_id},
+        ).mappings().one()
+        db.execute(
+            UPDATE_INCIDENT_NOTE_ACTIVITY_QUERY,
+            {"incident_id": actor["incident_id"]},
+        )
+        author_name = f"{actor['first_name']} {actor['last_name']}"
+        event = IncidentNoteAddedEvent(
+            incident_id=actor["incident_id"],
+            event_type="IncidentNoteAdded",
+            actor_id=actor["actor_id"],
+            actor_role=actor["role"],
+            event_data=IncidentNoteAddedEventData(
+                incident_reference=f"INC-{int(actor['incident_number']):05d}",
+                actor_name=author_name,
+                actor_role=actor["role"],
+                message=cleaned_note,
+                created_at=created_note["created_at"],
+            ),
+        )
+        add_incident_event_to_outbox(db, event)
+        db.commit()
+        return {
+            "id": created_note["id"],
+            "author_id": actor["actor_id"],
+            "author_name": author_name,
+            "author_role": actor["role"],
+            "note": cleaned_note,
+            "created_at": created_note["created_at"],
+        }
+    except Exception:
+        db.rollback()
+        raise
+
+
+def get_incident_notes(
+    db: Session,
+    email: str,
+    incident_reference: str,
+) -> list[dict[str, object]] | None:
+    """Return persisted notes when the authenticated user is a stakeholder."""
+
+    reference_match = INCIDENT_REFERENCE_PATTERN.fullmatch(incident_reference)
+    if reference_match is None:
+        return None
+
+    actor = db.execute(
+        GET_NOTE_ACTOR_AND_INCIDENT_QUERY,
+        {
+            "email": email,
+            "incident_number": int(reference_match.group(1)),
+        },
+    ).mappings().one_or_none()
+    if actor is None:
+        return None
+
+    return [
+        dict(note)
+        for note in db.execute(
+            GET_INCIDENT_NOTES_QUERY,
+            {"incident_id": actor["incident_id"]},
+        ).mappings().all()
+    ]
+
 class ReporterNotFound(Exception):
     """Raised when the authenticated reporter no longer has an active account."""
 
 
 class InvalidIncidentAssignment(Exception):
     """Raised when an incident cannot be assigned to the selected team."""
+
+
+class InvalidIncidentStatusTransition(Exception):
+    """Raised when an APTM skips a required incident status."""
 
 
 class InvalidReporterIncidentCancellation(Exception):
@@ -481,14 +692,16 @@ def get_reporter_incidents(
         GET_REPORTER_INCIDENTS_QUERY,
         {"email": email},
     ).mappings().all()
-    return [_add_incident_reference(dict(row)) for row in rows]
+    incidents = [_add_incident_reference(dict(row)) for row in rows]
+    return _attach_notes(db, incidents)
 
 
 def get_assigner_incidents(db: Session) -> list[dict[str, object]]:
     """Return incidents available to the assigner workspace."""
 
     rows = db.execute(GET_ASSIGNER_INCIDENTS_QUERY).mappings().all()
-    return [_add_incident_reference(dict(row)) for row in rows]
+    incidents = [_add_incident_reference(dict(row)) for row in rows]
+    return _attach_notes(db, incidents)
 
 
 def get_assigned_incidents(
@@ -501,7 +714,8 @@ def get_assigned_incidents(
         GET_ASSIGNED_INCIDENTS_QUERY,
         {"email": email},
     ).mappings().all()
-    return [_add_incident_reference(dict(row)) for row in rows]
+    incidents = [_add_incident_reference(dict(row)) for row in rows]
+    return _attach_notes(db, incidents)
 
 
 def get_assigned_incident(
@@ -522,7 +736,10 @@ def get_assigned_incident(
             "email": email,
         },
     ).mappings().one_or_none()
-    return _add_incident_reference(dict(row)) if row else None
+    if not row:
+        return None
+    incident = _add_incident_reference(dict(row))
+    return _attach_notes(db, [incident])[0]
 
 
 def assign_incident(
@@ -622,6 +839,17 @@ def update_assigned_incident_status(
                 "Cancelled incidents are read-only."
             )
 
+        required_previous_status = {
+            "IN_PROGRESS": "ASSIGNED",
+            "RESOLVED": "IN_PROGRESS",
+            "CLOSED": "RESOLVED",
+        }[incident_status]
+        if incident["status"] != required_previous_status:
+            raise InvalidIncidentStatusTransition(
+                f"you cannot apply {incident_status} before applying "
+                f"{required_previous_status}."
+            )
+
         result = db.execute(
             UPDATE_ASSIGNED_INCIDENT_STATUS_QUERY,
             {
@@ -678,7 +906,10 @@ def get_reporter_incident(
         GET_REPORTER_INCIDENT_QUERY,
         {"email": email, "incident_number": incident_number},
     ).mappings().one_or_none()
-    return _add_incident_reference(dict(row)) if row else None
+    if not row:
+        return None
+    incident = _add_incident_reference(dict(row))
+    return _attach_notes(db, [incident])[0]
 
 
 def update_reporter_incident(
@@ -694,6 +925,16 @@ def update_reporter_incident(
         return False
 
     try:
+        update_context = db.execute(
+            GET_REPORTER_INCIDENT_UPDATE_CONTEXT_QUERY,
+            {
+                "email": email,
+                "incident_number": int(reference_match.group(1)),
+            },
+        ).mappings().one_or_none()
+        if update_context is None:
+            return False
+
         result = db.execute(
             UPDATE_REPORTER_INCIDENT_QUERY,
             {
@@ -706,19 +947,19 @@ def update_reporter_incident(
                 ),
                 "severity": incident_data.severity,
             },
-        ).mappings().one_or_none()
+        )
 
-        if result is None:
+        if result.rowcount == 0:
             return False
 
         updated_event = IncidentUpdatedEvent(
-            incident_id=result["id"],
+            incident_id=update_context["id"],
             event_type="IncidentUpdated",
             actor_role="REPORTER",
             event_data=IncidentUpdatedEventData(
                 incident_reference=incident_reference.upper(),
-                old_status=result["status"],
-                new_status=result["status"],
+                old_status=update_context["status"],
+                new_status=update_context["status"],
                 description=(
                     incident_data.description.strip()
                     if incident_data.description is not None

@@ -269,6 +269,7 @@ const renderIncident = () => {
   statusBadge.className = `status-badge ${statusClass}`;
   document.getElementById("noteInput").disabled = isCancelled;
   document.getElementById("addNoteButton").disabled = isCancelled;
+  window.renderIncidentNotes(selectedIncident.notes);
   selectedCoordinates = parseCoordinates(selectedIncident.location);
   document.getElementById("overviewCoordinates").textContent = selectedIncident.location;
   updateNearbyIncidents();
@@ -295,7 +296,13 @@ await loadAdminIncident();
 connectIncidentRealtime({
   onEvent: (event) => {
     if (event.incident_reference === incidentId) {
-      loadAdminIncident().catch((error) => console.error(error));
+      if (event.event_type === "IncidentNoteAdded") {
+        window.refreshIncidentNotes(incidentId).catch((error) =>
+          console.error(error),
+        );
+      } else {
+        loadAdminIncident().catch((error) => console.error(error));
+      }
     }
   },
   onReconnect: () => {
@@ -319,45 +326,6 @@ const showToast = (message) => {
 document
   .getElementById("logoutButton")
   .addEventListener("click", window.logoutUser);
-
-// Add a note to the current incident while note persistence is unavailable.
-document.getElementById("addNoteButton").addEventListener("click", () => {
-  const noteInput = document.getElementById("noteInput");
-  const noteText = noteInput.value.trim();
-
-  if (!noteText) {
-    noteInput.focus();
-    return;
-  }
-
-  const note = document.createElement("div");
-  // Notes added from this admin user are styled as the user's chat bubbles.
-  // Notes loaded from other users can use the "other" class later.
-  note.className = "note-item own";
-  const noteHeader = document.createElement("strong");
-  noteHeader.append(
-    document.createTextNode(window.currentUserDisplayName || "User"),
-    document.createTextNode(" "),
-  );
-  const noteTimestamp = document.createElement("small");
-  noteTimestamp.textContent = "JUST NOW";
-  noteHeader.appendChild(noteTimestamp);
-  const noteContent = document.createElement("p");
-  noteContent.textContent = noteText;
-  note.append(noteHeader, noteContent);
-
-  document.getElementById("notesList").appendChild(note);
-  document.querySelector(".notes-empty").style.display = "none";
-
-  noteInput.value = "";
-
-  // Keep the newest note visible at the bottom of the scroll window.
-  const notesList = document.getElementById("notesList");
-  notesList.scrollTo({
-    top: notesList.scrollHeight,
-    behavior: "smooth",
-  });
-});
 
 const getReportText = (id, fallback = "Not provided") => {
   const element = document.getElementById(id);

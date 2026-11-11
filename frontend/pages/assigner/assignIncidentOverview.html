@@ -69,7 +69,7 @@
                   >Incident type</span
                 >
                 <span class="visually-hidden" id="currentProvider"
-                  >Not assigned</span
+                  >NOT ASSIGNED</span
                 >
                 <span class="visually-hidden" id="incidentCounty"
                   >Not available</span
@@ -99,7 +99,7 @@
                   ><strong id="cancelledAt">LOADING</strong></span
                 >
               </div>
-              <span class="status-badge" id="statusBadge">New</span>
+              <span class="status-badge" id="statusBadge">NEW</span>
             </div>
 
             <div class="form-body">
@@ -127,7 +127,7 @@
                 </div>
                 <div class="field assignment-field">
                   <label class="field-label" for="providerSelect"
-                    >Assigned to aid provider:
+                    >ASSIGNED to aid provider:
                     <span class="required-star">*</span></label
                   >
                   <select id="providerSelect" required>
@@ -224,14 +224,7 @@
               </div>
             </div>
             <div class="notes-list" id="notesList">
-              <div class="note-item other">
-                <strong>Reviewer Name <small>Today, 9:14 AM</small></strong>
-                <p>Inspection requested for the reported area.</p>
-              </div>
-              <div class="note-item other">
-                <strong>Safety Team <small>Today, 10:02 AM</small></strong>
-                <p>Maintenance has been notified and is reviewing the issue.</p>
-              </div>
+              <p class="notes-empty">No notes have been added to this incident.</p>
             </div>
             <div class="note-composer">
               <label class="visually-hidden" for="noteInput">Add a note</label
@@ -240,6 +233,7 @@
                 rows="5"
                 placeholder="Write a note..."
               ></textarea
+              ><p id="noteInputError" class="note-input-error" role="alert"></p
               ><button type="button" class="outline-button" id="addNoteButton">
                 + Add note
               </button>

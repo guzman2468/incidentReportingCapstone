@@ -1204,7 +1204,6 @@ a {
   min-width: 0;
   max-width: 100%;
   overflow-wrap: anywhere;
-  word-break: break-word;
   white-space: pre-wrap;
 }
 
@@ -1282,7 +1281,9 @@ a {
   box-shadow: none;
   display: flex;
   flex-direction: column;
-  height: 100%;
+  align-self: start;
+  height: calc(100vh - 120px);
+  max-height: calc(100vh - 120px);
   min-height: 0;
   padding: 8px 0 25px;
   position: sticky;
@@ -1336,9 +1337,9 @@ a {
 }
 
 .notes-list {
-  flex: 0 0 420px;
-  height: 420px;
-  max-height: 420px;
+  flex: 1 1 auto;
+  height: auto;
+  max-height: none;
   min-height: 0;
   overflow-y: auto;
   padding-right: 5px;
@@ -1358,6 +1359,21 @@ a {
 .overview-notes textarea:focus {
   border-color: #d8b967;
   box-shadow: 0 0 0 3px #fff0ce;
+}
+
+.overview-notes textarea.input-error {
+  border-color: #c94343;
+  box-shadow: 0 0 0 3px #fbe2e2;
+}
+
+.note-input-error {
+  color: #c94343;
+  font-size: 11px;
+  margin: 5px 0 0;
+}
+
+.note-input-error:empty {
+  display: none;
 }
 
 .note-item {

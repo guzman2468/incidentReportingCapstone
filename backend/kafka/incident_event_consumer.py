@@ -80,7 +80,7 @@ async def consume_incident_events(
         while not stop_event.is_set():
             records = await asyncio.to_thread(
                 consumer.poll,
-                timeout_ms=1000,
+                timeout_ms=500,
             )
 
             for messages in records.values():

@@ -20,16 +20,16 @@ const statusLabels = {
 
 const metadataStatusLabels = {
   NEW: "Submitted",
-  ASSIGNED: "Assigned",
+  ASSIGNED: "ASSIGNED",
   IN_PROGRESS: "Last updated",
-  RESOLVED: "Resolved",
-  CLOSED: "Closed",
-  CANCELLED: "Cancelled",
+  RESOLVED: "RESOLVED",
+  CLOSED: "CLOSED",
+  CANCELLED: "CANCELLED",
 };
 
 const summaryStatusLabels = {
-  RESOLVED: "Resolved",
-  CLOSED: "Closed",
+  RESOLVED: "RESOLVED",
+  CLOSED: "CLOSED",
 };
 
 const timeRangeLabels = {
@@ -128,14 +128,26 @@ const getIncidentSymbol = (status) => {
 };
 
 const getMetadataLabel = (incident) => {
+  const activity = window.notificationBell.getIncidentActivity(
+    incident.incident_reference,
+  );
+  if (activity) return activity.label;
+
   const status = normalizeStatus(incident.status);
   return metadataStatusLabels[status] || "Submitted";
+};
+
+const getMetadataDate = (incident) => {
+  const activity = window.notificationBell.getIncidentActivity(
+    incident.incident_reference,
+  );
+  return activity?.occurredAt || getIncidentDate(incident);
 };
 
 const renderIncident = (incident) => {
   const status = normalizeStatus(incident.status);
   const [symbolColor, symbol] = getIncidentSymbol(status);
-  const incidentDate = getIncidentDate(incident);
+  const incidentDate = getMetadataDate(incident);
   const statusLabel = statusLabels[status] || status;
   const severity = String(incident.severity || "").toLowerCase();
 

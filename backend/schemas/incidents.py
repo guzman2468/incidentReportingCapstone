@@ -45,6 +45,23 @@ class IncidentReporterUpdate(BaseModel):
     severity: IncidentSeverity | None = None
 
 
+class IncidentNoteCreate(BaseModel):
+    """Text submitted by a stakeholder for an incident note."""
+
+    note: str = Field(min_length=1, max_length=2000)
+
+
+class IncidentNote(BaseModel):
+    """A note attached to an incident."""
+
+    id: UUID
+    author_id: UUID
+    author_name: str
+    author_role: str
+    note: str
+    created_at: datetime
+
+
 class IncidentSubmitted(BaseModel):
     """Response returned after a successful incident insert."""
 
@@ -71,3 +88,4 @@ class IncidentSummary(BaseModel):
     assigned_team_id: UUID | None = None
     assigned_provider_name: str | None = None
     assigned_team_name: str | None = None
+    notes: list[IncidentNote] = Field(default_factory=list)

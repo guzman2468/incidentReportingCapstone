@@ -110,10 +110,25 @@
   cursor: not-allowed;
 }
 
+.status-update-error {
+  color: #c94343;
+  font-size: 11px;
+  margin: 6px 0 0;
+}
+
+.status-update-error:empty {
+  display: none;
+}
+
 .assignment-field select:disabled {
   background: #eef1f1;
   color: #4f5e62;
   cursor: not-allowed;
+}
+
+.assignment-field select.input-error {
+  border-color: #c94343;
+  box-shadow: 0 0 0 3px #fbe2e2;
 }
 
 .assignment-confirm {

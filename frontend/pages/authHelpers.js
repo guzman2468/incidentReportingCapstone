@@ -191,6 +191,7 @@
         var role = user.role ? formatRole(user.role) : "User";
         window.currentUser = user;
         window.currentUserDisplayName = fullName;
+        window.dispatchEvent(new Event("current-user-loaded"));
         var userButton = document.getElementById("userButton");
 
         userButton.textContent = initials;

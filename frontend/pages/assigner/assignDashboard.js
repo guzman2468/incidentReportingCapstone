@@ -41,7 +41,7 @@ const rangeInDays = {
 const summaryCardSettings = [
   { column: "past", statusId: "pastSummaryStatus", rangeId: "pastSummaryRange", countId: "pastCount", labelId: "pastSummaryLabel" },
   { column: "active", statusId: "activeSummaryStatus", rangeId: "activeSummaryRange", countId: "activeCount", labelId: "activeSummaryLabel" },
-  { column: "new", rangeId: "newSummaryRange", countId: "newCount", labelId: "newSummaryLabel", fixedStatus: "NEW", fixedLabel: "New" },
+  { column: "new", rangeId: "newSummaryRange", countId: "newCount", labelId: "newSummaryLabel", fixedStatus: "NEW", fixedLabel: "NEW" },
 ];
 
 function isWithinTimeRange(submitted, selectedRange) {
@@ -72,15 +72,29 @@ function getIncidentTimestamp(incident) {
   return incident.updated_at;
 }
 
+function getCardTimestamp(incident) {
+  const activity = window.notificationBell.getIncidentActivity(
+    incident.incident_reference,
+  );
+  return activity?.occurredAt || getIncidentTimestamp(incident);
+}
+
 function getIncidentTimestampLabel(status) {
   return {
     NEW: "Submitted",
-    ASSIGNED: "Assigned",
+    ASSIGNED: "ASSIGNED",
     IN_PROGRESS: "Last updated",
-    RESOLVED: "Resolved",
-    CLOSED: "Closed",
-    CANCELLED: "Cancelled",
+    RESOLVED: "RESOLVED",
+    CLOSED: "CLOSED",
+    CANCELLED: "CANCELLED",
   }[status] || "Last updated";
+}
+
+function getCardTimestampLabel(incident, status) {
+  const activity = window.notificationBell.getIncidentActivity(
+    incident.incident_reference,
+  );
+  return activity?.label || getIncidentTimestampLabel(status);
 }
 
 function escapeHTML(value) {
@@ -110,12 +124,12 @@ function renderIncident(incident) {
   }[statusKey] || "closed";
   const statusLabel =
     {
-      new: "New",
-      assigned: "Assigned",
-      active: "In progress",
-      in_progress: "In progress",
-      resolved: "Resolved",
-      closed: "Closed",
+      new: "NEW",
+      assigned: "ASSIGNED",
+      active: "IN PROGRESS",
+      in_progress: "IN PROGRESS",
+      resolved: "RESOLVED",
+      closed: "CLOSED",
     }[statusKey] || normalizedStatus;
 
   const severityClass = `severity-${String(incident.severity).toLowerCase()}`;
@@ -126,7 +140,7 @@ function renderIncident(incident) {
       aria-label="Open ${escapeHTML(incident.title)}">
       <span class="incident-row-content">
         <strong>${escapeHTML(incident.title)}</strong>
-        <small>${escapeHTML(incident.incident_reference)} · ${getIncidentTimestampLabel(normalizedStatus)} ${escapeHTML(formatDate(getIncidentTimestamp(incident)))}</small>
+        <small>${escapeHTML(incident.incident_reference)} · ${getCardTimestampLabel(incident, normalizedStatus)} ${escapeHTML(formatDate(getCardTimestamp(incident)))}</small>
       </span>
       <span class="row-status">
         <span class="severity-pill ${severityClass}">${escapeHTML(incident.severity)}</span>

@@ -10,7 +10,7 @@
       href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="adminIncidentOverview.css" />
+    <link rel="stylesheet" href="adminIncidentOverview.css?v=notes-layout-2" />
     <link
       rel="stylesheet"
       href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
@@ -168,6 +168,7 @@
                 rows="5"
                 placeholder="Write a note..."
               ></textarea
+              ><p id="noteInputError" class="note-input-error" role="alert"></p
               ><button type="button" class="outline-button" id="addNoteButton">
                 + Add note
               </button>

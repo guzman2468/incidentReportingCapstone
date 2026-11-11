@@ -1,5 +1,6 @@
 """Schemas for Kafka incident events published by the backend."""
 
+from datetime import datetime
 from typing import Annotated, Literal, Union
 from uuid import UUID
 
@@ -13,6 +14,7 @@ IncidentEventType = Literal[
     "IncidentSubmitted",
     "IncidentAssigned",
     "IncidentUpdated",
+    "IncidentNoteAdded",
 ]
 
 IncidentStatus = Literal[
@@ -55,6 +57,16 @@ class IncidentUpdatedEventData(BaseModel):
     severity: IncidentSeverity | None = None
 
 
+class IncidentNoteAddedEventData(BaseModel):
+    """Note data published after a stakeholder adds an incident note."""
+
+    incident_reference: str
+    actor_name: str
+    actor_role: str
+    message: str
+    created_at: datetime
+
+
 class IncidentSubmittedEvent(BaseModel):
     """Kafka event emitted after a new incident is committed."""
 
@@ -85,11 +97,22 @@ class IncidentUpdatedEvent(BaseModel):
     event_data: IncidentUpdatedEventData
 
 
+class IncidentNoteAddedEvent(BaseModel):
+    """Kafka event emitted after an incident note is committed."""
+
+    incident_id: UUID
+    event_type: Literal["IncidentNoteAdded"]
+    actor_id: UUID
+    actor_role: UserRole
+    event_data: IncidentNoteAddedEventData
+
+
 IncidentEvent = Annotated[
     Union[
         IncidentSubmittedEvent,
         IncidentAssignedEvent,
         IncidentUpdatedEvent,
+        IncidentNoteAddedEvent,
     ],
     Field(discriminator="event_type"),
 ]

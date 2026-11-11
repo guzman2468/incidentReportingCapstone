@@ -215,6 +215,28 @@ a {
   line-height: 1.5;
 }
 
+.notification-item .notification-reference,
+.notification-item .notification-message,
+.notification-item .notification-timestamp {
+  display: block;
+}
+
+.notification-item .notification-reference {
+  color: var(--ink);
+  font-weight: 700;
+}
+
+.notification-item .notification-timestamp {
+  color: #718487;
+  font-size: 9px;
+  margin-top: 5px;
+}
+
+.notification-item.note-added {
+  border-left: 3px solid var(--teal);
+  background: #f0fbf8;
+}
+
 .notification-remove {
   position: absolute;
   top: 9px;

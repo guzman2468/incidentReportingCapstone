@@ -12,7 +12,7 @@
     />
     <link
       rel="stylesheet"
-      href="assignIncidentOverview.css?v=standalone-admin-layout-2"
+      href="assignIncidentOverview.css?v=resource-heatmap-map-1"
     />
     <link
       rel="stylesheet"
@@ -175,12 +175,13 @@
                   <div
                     id="incidentMap"
                     role="application"
-                    aria-label="Map showing this incident and nearby incidents"
+                    aria-label="Map showing this incident, nearby incidents, and resource allocation heatmap"
                   ></div>
                 </div>
                 <p class="map-caption">
-                  Teal marks the selected incident; coral marks nearby reports.
-                  Map data © OpenStreetMap contributors.
+                  Half-mile zones show assigned-work load. Zone colors represent load
+                  from 1 through 15+ incidents. Dot colors show incident status. Map
+                  data © OpenStreetMap contributors.
                 </p>
               </div>
             </div>
@@ -252,7 +253,7 @@
     <script src="../realtime.js"></script>
     <script
       type="module"
-      src="assignIncidentOverview.js?v=database-incidents-2"
+      src="assignIncidentOverview.js?v=resource-load-zones-1"
     ></script>
 
     <dialog

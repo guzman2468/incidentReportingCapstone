@@ -33,6 +33,9 @@
       author.textContent = `${formattedAuthorName} (${roleLabel})`;
       const timestamp = document.createElement("small");
       timestamp.textContent = new Intl.DateTimeFormat("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
         hour: "2-digit",
         minute: "2-digit",
         second: "2-digit",

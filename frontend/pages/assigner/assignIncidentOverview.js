@@ -1,6 +1,9 @@
 const params = new URLSearchParams(window.location.search);
 const incidentId = params.get("id");
 let incidents = [];
+const resourceHeatmapRadiusMiles = 25;
+const resourceLoadZoneRadiusMiles = 0.5;
+const activeWorkStatuses = new Set(["assigned", "in_progress"]);
 
 const providerSelect = document.getElementById("providerSelect");
 const teamSelect = document.getElementById("teamSelect");
@@ -45,6 +48,7 @@ if (nearbyCard && formFields) {
 let incident = null;
 let incidentMap = null;
 let mapMarkers = null;
+let resourceHeatLayer = null;
 const nearbyMarkers = new Map();
 
 function escapeHTML(value) {
@@ -58,6 +62,36 @@ function escapeHTML(value) {
         '"': "&quot;",
         "'": "&#39;",
       })[character],
+  );
+}
+
+function getIncidentStatusLabel(status) {
+  const statusKey = String(status ?? "").toLowerCase();
+  return (
+    {
+      new: "NEW",
+      assigned: "ASSIGNED",
+      active: "IN PROGRESS",
+      in_progress: "IN PROGRESS",
+      resolved: "RESOLVED",
+      closed: "CLOSED",
+      cancelled: "CANCELLED",
+    }[statusKey] || String(status ?? "UNKNOWN")
+  ).toUpperCase();
+}
+
+function getIncidentStatusColors(status) {
+  const statusKey = String(status ?? "").toLowerCase();
+  return (
+    {
+      new: { background: "#fff4cc", border: "#ffad00" },
+      assigned: { background: "#f1e6ff", border: "#9b4dff" },
+      in_progress: { background: "#dff7ff", border: "#00aef3" },
+      active: { background: "#dff7ff", border: "#00aef3" },
+      resolved: { background: "#d9ffe9", border: "#00c853" },
+      closed: { background: "#e2e8f0", border: "#64748b" },
+      cancelled: { background: "#ffe2cc", border: "#c45a1c" },
+    }[statusKey] || { background: "#e2e8f0", border: "#475569" }
   );
 }
 
@@ -344,6 +378,101 @@ async function updateCurrentProvider() {
 // Map
 // -------------------------------------
 
+function buildResourceHeatmapPoints(latitude, longitude) {
+  const activeIncidents = incidents
+    .filter((candidate) => activeWorkStatuses.has(candidate.status))
+    .map((candidate) => {
+      const candidateLatitude = Number(candidate.latitude);
+      const candidateLongitude = Number(candidate.longitude);
+      const hasCoordinates =
+        Number.isFinite(candidateLatitude) &&
+        Number.isFinite(candidateLongitude) &&
+        Math.abs(candidateLatitude) <= 90 &&
+        Math.abs(candidateLongitude) <= 180;
+
+      if (!hasCoordinates) return null;
+
+      const distanceFromSelectedIncident = distanceInMiles(
+        latitude,
+        longitude,
+        candidateLatitude,
+        candidateLongitude,
+      );
+
+      return distanceFromSelectedIncident <= resourceHeatmapRadiusMiles
+        ? { latitude: candidateLatitude, longitude: candidateLongitude }
+        : null;
+    })
+    .filter(Boolean);
+
+  const remainingIncidents = [...activeIncidents];
+  const loadZones = [];
+
+  while (remainingIncidents.length) {
+    const seedIncident = remainingIncidents.shift();
+    const zoneIncidents = [seedIncident];
+
+    for (let index = remainingIncidents.length - 1; index >= 0; index -= 1) {
+      const candidateIncident = remainingIncidents[index];
+      const distance = distanceInMiles(
+        seedIncident.latitude,
+        seedIncident.longitude,
+        candidateIncident.latitude,
+        candidateIncident.longitude,
+      );
+
+      if (distance <= resourceLoadZoneRadiusMiles) {
+        zoneIncidents.push(candidateIncident);
+        remainingIncidents.splice(index, 1);
+      }
+    }
+
+    loadZones.push({
+      latitude:
+        zoneIncidents.reduce((sum, item) => sum + item.latitude, 0) /
+        zoneIncidents.length,
+      longitude:
+        zoneIncidents.reduce((sum, item) => sum + item.longitude, 0) /
+        zoneIncidents.length,
+      load: Math.min(zoneIncidents.length, 15),
+    });
+  }
+
+  return loadZones;
+}
+
+function getResourceLoadColor(load) {
+  if (load <= 3) return "#6d28d9";
+  if (load <= 5) return "#1d4ed8";
+  if (load <= 7) return "#15803d";
+  if (load <= 9) return "#ca8a04";
+  if (load <= 11) return "#c2410c";
+  if (load <= 14) return "#b91c1c";
+  return "#111111";
+}
+
+function updateResourceHeatLayer(latitude, longitude) {
+  if (typeof L === "undefined") {
+    return;
+  }
+
+  if (!resourceHeatLayer) {
+    resourceHeatLayer = L.layerGroup().addTo(incidentMap);
+  }
+
+  resourceHeatLayer.clearLayers();
+  buildResourceHeatmapPoints(latitude, longitude).forEach((zone) => {
+    L.circle([zone.latitude, zone.longitude], {
+      radius: resourceLoadZoneRadiusMiles * 1609.344,
+      color: getResourceLoadColor(zone.load),
+      opacity: 0,
+      fillColor: getResourceLoadColor(zone.load),
+      fillOpacity: zone.load >= 15 ? 0.3 : 0.42,
+      interactive: false,
+    }).addTo(resourceHeatLayer);
+  });
+}
+
 function updateMap(nearby = []) {
   const mapElement = document.getElementById("incidentMap");
   const latitude = Number(incident.latitude);
@@ -390,6 +519,9 @@ function updateMap(nearby = []) {
 
   mapMarkers.clearLayers();
   nearbyMarkers.clear();
+  updateResourceHeatLayer(latitude, longitude);
+
+  const selectedIncidentColors = getIncidentStatusColors(incident.status);
 
   const radiusMiles = Number(document.getElementById("radiusSelect").value);
   const radiusCircle = L.circle([latitude, longitude], {
@@ -401,31 +533,32 @@ function updateMap(nearby = []) {
   }).addTo(mapMarkers);
 
   L.circleMarker([latitude, longitude], {
-    radius: 8,
+    radius: 10,
     color: "#ffffff",
-    weight: 2,
-    fillColor: "#087f83",
+    weight: 3,
+    fillColor: selectedIncidentColors.border,
     fillOpacity: 1,
   })
     .bindPopup(
-      `<strong>${escapeHTML(incident.id)} · ${escapeHTML(incident.title)}</strong><br>` +
+      `<strong>${escapeHTML(incident.id)} · ${escapeHTML(incident.title)} · ${escapeHTML(getIncidentStatusLabel(incident.status))}</strong><br>` +
         `${escapeHTML(incident.county)} County · Selected incident`,
     )
     .addTo(mapMarkers);
 
   nearby.forEach((other) => {
+    const otherIncidentColors = getIncidentStatusColors(other.status);
     const nearbyMarker = L.circleMarker(
       [Number(other.latitude), Number(other.longitude)],
       {
-      radius: 6,
+      radius: 8,
       color: "#ffffff",
-      weight: 2,
-      fillColor: "#ee806d",
+      weight: 3,
+      fillColor: otherIncidentColors.border,
       fillOpacity: 1,
       },
     )
       .bindPopup(
-        `<strong>${escapeHTML(other.id)} · ${escapeHTML(other.title)}</strong><br>` +
+        `<strong>${escapeHTML(other.id)} · ${escapeHTML(other.title)} · ${escapeHTML(getIncidentStatusLabel(other.status))}</strong><br>` +
           `${escapeHTML(other.location)}`,
       )
       .addTo(mapMarkers);

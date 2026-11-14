@@ -1,5 +1,5 @@
 const params = new URLSearchParams(window.location.search);
-const incidentId = params.get("id");
+const incidentId = params.get("id")?.toUpperCase();
 let incidents = [];
 const resourceHeatmapRadiusMiles = 25;
 const resourceLoadZoneRadiusMiles = 0.5;
@@ -145,23 +145,51 @@ function normalizeIncident(rawIncident) {
   };
 }
 
+async function loadNearbyIncidents() {
+  const latitude = Number(incident?.latitude);
+  const longitude = Number(incident?.longitude);
+  const hasCoordinates =
+    Number.isFinite(latitude) &&
+    Number.isFinite(longitude) &&
+    Math.abs(latitude) <= 90 &&
+    Math.abs(longitude) <= 180;
+
+  if (!hasCoordinates) {
+    incidents = [];
+    return;
+  }
+
+  const query = new URLSearchParams({
+    latitude: String(latitude),
+    longitude: String(longitude),
+    radius_miles: String(resourceHeatmapRadiusMiles),
+  });
+  const response = await fetch(`/api/incidents/assigner/nearby?${query}`, {
+    cache: "no-store",
+  });
+  if (!response.ok) throw new Error("Unable to load nearby incidents.");
+
+  incidents = (await response.json())
+    .map(normalizeIncident)
+    .filter((candidate) => candidate.id !== incident.id);
+}
+
 // -------------------------------------
 // Load and display the selected incident
 // -------------------------------------
 
 async function displayIncident() {
-  const response = await fetch("/api/incidents/assigner", {
-    cache: "no-store",
-  });
+  const [response] = await Promise.all([
+    fetch(
+      `/api/incidents/assigner/${encodeURIComponent(incidentId || "")}`,
+      { cache: "no-store" },
+    ),
+    loadAidProviders(),
+  ]);
   if (!response.ok) throw new Error("Unable to load incident.");
 
-  const loadedIncidents = await response.json();
-  incidents = loadedIncidents.map(normalizeIncident);
-  const loadedIncident = incidents.find(
-    (item) => item.incident_reference === incidentId,
-  );
-
-  incident = loadedIncident || null;
+  incident = normalizeIncident(await response.json());
+  incidents = [];
 
   if (!incident) {
     document.querySelector(".overview-wrap").innerHTML = `
@@ -219,9 +247,14 @@ async function displayIncident() {
     `readonly-field severity-value severity-${String(severity).toLowerCase()}`;
 
   updateStatusBadge();
-  await loadAidProviders();
   updateAvailableProviders();
-  await updateCurrentProvider();
+  await Promise.all([
+    updateCurrentProvider(),
+    loadNearbyIncidents().catch((error) => {
+      console.error("Unable to load nearby incidents.", error);
+      incidents = [];
+    }),
+  ]);
   updateNearbyIncidents();
 }
 
@@ -667,7 +700,7 @@ function updateNearbyIncidents() {
           ${escapeHTML(other.id)} · ${other.distance.toFixed(1)} miles away
         </small>
         <small>
-          ${escapeHTML(other.severity)} · ${escapeHTML(other.status.toUpperCase())}
+          ${escapeHTML(other.status.toUpperCase())}
         </small>
       </span>
     </button>
@@ -843,6 +876,7 @@ if (!incidentId) {
 
 connectIncidentRealtime({
   onEvent: (event) => {
+    window.notificationBell.recordEvent(event);
     if (event.incident_reference === incidentId) {
       if (event.event_type === "IncidentNoteAdded") {
         window.refreshIncidentNotes(incidentId).catch((error) =>

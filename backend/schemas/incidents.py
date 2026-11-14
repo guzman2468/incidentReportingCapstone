@@ -89,3 +89,14 @@ class IncidentSummary(BaseModel):
     assigned_provider_name: str | None = None
     assigned_team_name: str | None = None
     notes: list[IncidentNote] = Field(default_factory=list)
+
+
+class IncidentMapMarker(BaseModel):
+    """Minimal incident data needed to render nearby map markers."""
+
+    incident_reference: str
+    title: str
+    status: str
+    location: str
+    latitude: float
+    longitude: float

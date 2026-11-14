@@ -433,6 +433,7 @@ if (followUpButton) {
 
 connectIncidentRealtime({
   onEvent: (event) => {
+    window.notificationBell.recordEvent(event);
     if (event.incident_reference === incidentReference) {
       if (event.event_type === "IncidentNoteAdded") {
         window.refreshIncidentNotes(incidentReference).catch((error) =>

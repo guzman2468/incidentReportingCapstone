@@ -1,3 +1,4 @@
+import math
 import re
 from uuid import uuid4
 
@@ -184,6 +185,84 @@ GET_ASSIGNER_INCIDENTS_QUERY = text(
     LEFT JOIN public.aid_provider_teams
         ON aid_provider_teams.id = incidents.assigned_team_id
     ORDER BY incidents.updated_at DESC
+    """
+)
+
+GET_ASSIGNER_INCIDENT_QUERY = text(
+    """
+    SELECT
+        incidents.id,
+        incidents.incident_number,
+        incidents.title,
+        incidents.description,
+        incidents.severity,
+        incidents.location,
+        incidents.status,
+        incidents.created_at,
+        incidents.updated_at,
+        incidents.assigned_at,
+        incidents.resolved_at,
+        incidents.closed_at,
+        incidents.cancelled_at,
+        incidents.assigned_aid_provider_id,
+        incidents.assigned_team_id,
+        aid_providers.name AS assigned_provider_name,
+        aid_provider_teams.name AS assigned_team_name
+    FROM public.incidents
+    LEFT JOIN public.aid_providers
+        ON aid_providers.id = incidents.assigned_aid_provider_id
+    LEFT JOIN public.aid_provider_teams
+        ON aid_provider_teams.id = incidents.assigned_team_id
+    WHERE incidents.incident_number = :incident_number
+    """
+)
+
+GET_NEARBY_INCIDENTS_QUERY = text(
+    """
+    WITH coordinate_parts AS (
+        SELECT
+            incidents.incident_number,
+            incidents.title,
+            incidents.status,
+            incidents.location,
+            regexp_match(
+                incidents.location,
+                '^\\s*([0-9]+(?:\\.[0-9]+)?)°\\s*([NS])\\s*,\\s*([0-9]+(?:\\.[0-9]+)?)°\\s*([EW])\\s*$'
+            ) AS parts
+        FROM public.incidents
+        WHERE incidents.location ~* '^\\s*[0-9]+(?:\\.[0-9]+)?°\\s*[NS]\\s*,\\s*[0-9]+(?:\\.[0-9]+)?°\\s*[EW]\\s*$'
+          AND (
+              :assigned_work_only = false
+              OR incidents.status IN ('ASSIGNED', 'IN_PROGRESS')
+          )
+    ),
+    located_incidents AS (
+        SELECT
+            incident_number,
+            title,
+            status,
+            location,
+            CASE
+                WHEN upper(parts[2]) = 'S' THEN -CAST(parts[1] AS double precision)
+                ELSE CAST(parts[1] AS double precision)
+            END AS latitude,
+            CASE
+                WHEN upper(parts[4]) = 'W' THEN -CAST(parts[3] AS double precision)
+                ELSE CAST(parts[3] AS double precision)
+            END AS longitude
+        FROM coordinate_parts
+    )
+    SELECT
+        incident_number,
+        title,
+        status,
+        location,
+        latitude,
+        longitude
+    FROM located_incidents
+    WHERE latitude BETWEEN :minimum_latitude AND :maximum_latitude
+      AND longitude BETWEEN :minimum_longitude AND :maximum_longitude
+    ORDER BY incident_number DESC
     """
 )
 
@@ -481,7 +560,7 @@ def _attach_notes(
     db: Session,
     rows: list[dict[str, object]],
 ) -> list[dict[str, object]]:
-    """Attach persisted notes to each incident returned by an overview query."""
+    """Attach persisted notes to selected incident detail responses."""
 
     for row in rows:
         row["notes"] = [
@@ -692,16 +771,71 @@ def get_reporter_incidents(
         GET_REPORTER_INCIDENTS_QUERY,
         {"email": email},
     ).mappings().all()
-    incidents = [_add_incident_reference(dict(row)) for row in rows]
-    return _attach_notes(db, incidents)
+    return [_add_incident_reference(dict(row)) for row in rows]
 
 
 def get_assigner_incidents(db: Session) -> list[dict[str, object]]:
     """Return incidents available to the assigner workspace."""
 
     rows = db.execute(GET_ASSIGNER_INCIDENTS_QUERY).mappings().all()
-    incidents = [_add_incident_reference(dict(row)) for row in rows]
-    return _attach_notes(db, incidents)
+    return [_add_incident_reference(dict(row)) for row in rows]
+
+
+def get_assigner_incident(
+    db: Session,
+    incident_reference: str,
+) -> dict[str, object] | None:
+    """Return one incident visible to the authenticated assigner."""
+
+    reference_match = INCIDENT_REFERENCE_PATTERN.fullmatch(incident_reference)
+    if reference_match is None:
+        return None
+
+    row = db.execute(
+        GET_ASSIGNER_INCIDENT_QUERY,
+        {"incident_number": int(reference_match.group(1))},
+    ).mappings().one_or_none()
+    if not row:
+        return None
+
+    incident = _add_incident_reference(dict(row))
+    return _attach_notes(db, [incident])[0]
+
+
+def get_nearby_incidents(
+    db: Session,
+    latitude: float,
+    longitude: float,
+    radius_miles: float,
+    assigned_work_only: bool,
+) -> list[dict[str, object]]:
+    """Return minimal, coordinate-valid incidents in a bounded map window."""
+
+    latitude_delta = radius_miles / 69.172
+    longitude_delta = radius_miles / max(
+        69.172 * abs(math.cos(math.radians(latitude))),
+        0.01,
+    )
+    rows = db.execute(
+        GET_NEARBY_INCIDENTS_QUERY,
+        {
+            "latitude": latitude,
+            "longitude": longitude,
+            "radius_miles": radius_miles,
+            "minimum_latitude": max(-90, latitude - latitude_delta),
+            "maximum_latitude": min(90, latitude + latitude_delta),
+            "minimum_longitude": max(-180, longitude - longitude_delta),
+            "maximum_longitude": min(180, longitude + longitude_delta),
+            "assigned_work_only": assigned_work_only,
+        },
+    ).mappings().all()
+    return [
+        {
+            **dict(row),
+            "incident_reference": f"INC-{int(row['incident_number']):05d}",
+        }
+        for row in rows
+    ]
 
 
 def get_assigned_incidents(
@@ -714,8 +848,7 @@ def get_assigned_incidents(
         GET_ASSIGNED_INCIDENTS_QUERY,
         {"email": email},
     ).mappings().all()
-    incidents = [_add_incident_reference(dict(row)) for row in rows]
-    return _attach_notes(db, incidents)
+    return [_add_incident_reference(dict(row)) for row in rows]
 
 
 def get_assigned_incident(

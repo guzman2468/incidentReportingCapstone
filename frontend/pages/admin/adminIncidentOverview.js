@@ -194,7 +194,7 @@ const updateNearbyIncidents = () => {
     <span class="nearby-info">
       <strong>${escapeHTML(item.title)}</strong>
       <small>${escapeHTML(item.incident_reference)} · ${item.distance.toFixed(1)} MILES AWAY</small>
-      <small>${escapeHTML(item.severity)} · ${escapeHTML(String(item.status || "").toUpperCase())}</small>
+      <small>${escapeHTML(String(item.status || "").toUpperCase())}</small>
     </span></button>`,
     )
     .join("");
@@ -275,16 +275,44 @@ const renderIncident = () => {
   updateNearbyIncidents();
 };
 
+const loadNearbyIncidents = async () => {
+  if (!selectedCoordinates) {
+    adminIncidents = [];
+    return;
+  }
+
+  const query = new URLSearchParams({
+    latitude: String(selectedCoordinates.latitude),
+    longitude: String(selectedCoordinates.longitude),
+    radius_miles: "25",
+  });
+  const response = await fetch(`/api/incidents/admin/nearby?${query}`, {
+    cache: "no-store",
+  });
+  if (!response.ok) throw new Error("Unable to load nearby incidents.");
+
+  adminIncidents = (await response.json()).filter(
+    (candidate) => candidate.incident_reference !== selectedIncident.incident_reference,
+  );
+};
+
 const loadAdminIncident = async () => {
   try {
-    const response = await fetch("/api/incidents/admin", {
-      cache: "no-store",
-    });
+    const response = await fetch(
+      `/api/incidents/admin/${encodeURIComponent(incidentId || "")}`,
+      { cache: "no-store" },
+    );
     if (!response.ok) throw new Error("Unable to load incident.");
-    adminIncidents = await response.json();
-    selectedIncident = adminIncidents.find((item) => item.incident_reference === incidentId);
-    if (!selectedIncident) throw new Error("Incident not found.");
+    selectedIncident = await response.json();
+    adminIncidents = [];
     renderIncident();
+    try {
+      await loadNearbyIncidents();
+    } catch (error) {
+      console.error("Unable to load nearby incidents.", error);
+      adminIncidents = [];
+    }
+    updateNearbyIncidents();
   } catch (error) {
     console.error("Unable to load admin incident.", error);
     document.getElementById("titleField").textContent = "UNABLE TO LOAD INCIDENT";
@@ -295,6 +323,7 @@ await loadAdminIncident();
 
 connectIncidentRealtime({
   onEvent: (event) => {
+    window.notificationBell.recordEvent(event);
     if (event.incident_reference === incidentId) {
       if (event.event_type === "IncidentNoteAdded") {
         window.refreshIncidentNotes(incidentId).catch((error) =>

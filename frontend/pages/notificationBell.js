@@ -6,7 +6,10 @@
   };
 
   function getStorageKey() {
-    return `incidentNotifications:v2:${window.location.pathname}`;
+    const workspaceMatch = /\/(admin|assigner|aptm|reporter)\//.exec(
+      /\/(admin|assigner|aptm|reporter)\//,
+    );
+    return `incidentNotifications:v2:${workspaceMatch?.[1] || "shared"}`;
   }
 
   function loadNotifications() {
@@ -190,32 +193,13 @@
       )
       .find((notification) => notification.cardLabel);
 
-    const incident = state.incidents.get(incidentReference);
-    const latestNote = [...(incident?.notes || [])].sort(
-      (firstNote, secondNote) =>
-        new Date(secondNote.created_at) - new Date(firstNote.created_at),
-    )[0];
-
     const notificationActivity = latestNotification
       ? {
           label: latestNotification.cardLabel,
           occurredAt: latestNotification.occurredAt,
         }
       : null;
-    const noteActivity = latestNote
-      ? {
-          label: "Note Added at",
-          occurredAt: latestNote.created_at,
-        }
-      : null;
-
-    if (!notificationActivity) return noteActivity;
-    if (!noteActivity) return notificationActivity;
-
-    return new Date(noteActivity.occurredAt) >
-      new Date(notificationActivity.occurredAt)
-      ? noteActivity
-      : notificationActivity;
+    return notificationActivity;
   }
 
   function closeDropdown() {

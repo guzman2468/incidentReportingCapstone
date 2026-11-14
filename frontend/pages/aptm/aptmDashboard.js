@@ -497,17 +497,19 @@ clearPastIncidentMockData();
 connectResolvedSummary();
 updatePastCount();
 
-try {
-  await loadCurrentTeamName();
-} catch (error) {
-  console.error(error);
+const [teamResult, incidentsResult] = await Promise.allSettled([
+  loadCurrentTeamName(),
+  loadAssignedIncidents(),
+]);
+
+if (teamResult.status === "rejected") {
+  console.error(teamResult.reason);
 }
 
-try {
-  await loadAssignedIncidents();
-} catch (error) {
-  console.error(error);
-  document.getElementById("activeEmptyState").textContent = error.message;
+if (incidentsResult.status === "rejected") {
+  console.error(incidentsResult.reason);
+  document.getElementById("activeEmptyState").textContent =
+    incidentsResult.reason.message;
 }
 
 // -----------------------------

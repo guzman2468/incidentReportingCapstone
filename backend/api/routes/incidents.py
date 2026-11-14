@@ -1,6 +1,6 @@
 """Incident submission API routes."""
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
 from backend.api.routes.users import get_active_profile, require_session
@@ -14,6 +14,7 @@ from backend.schemas.incidents import (
     IncidentSummary,
     IncidentNote,
     IncidentNoteCreate,
+    IncidentMapMarker,
 )
 from backend.services.incidents import (
     InvalidIncidentAssignment,
@@ -32,6 +33,8 @@ from backend.services.incidents import (
 )
 from backend.services.incidents import (
     get_assigner_incidents,
+    get_assigner_incident,
+    get_nearby_incidents,
     get_reporter_incident,
     get_reporter_incidents,
 )
@@ -141,6 +144,43 @@ def list_assigner_incidents(
     return get_assigner_incidents(db)
 
 
+@router.get("/assigner/nearby", response_model=list[IncidentMapMarker])
+def list_assigner_nearby_incidents(
+    latitude: float = Query(ge=-90, le=90),
+    longitude: float = Query(ge=-180, le=180),
+    radius_miles: float = Query(default=25, gt=0, le=25),
+    _email: str = Depends(require_assigner),
+    db: Session = Depends(get_db),
+) -> list[IncidentMapMarker]:
+    """Return active-work incidents needed for the assigner map."""
+
+    return get_nearby_incidents(
+        db,
+        latitude,
+        longitude,
+        radius_miles,
+        assigned_work_only=True,
+    )
+
+
+@router.get("/assigner/{incident_reference}", response_model=IncidentSummary)
+def get_assigner_incident_details(
+    incident_reference: str,
+    _email: str = Depends(require_assigner),
+    db: Session = Depends(get_db),
+) -> IncidentSummary:
+    """Return one incident for the authenticated assigner."""
+
+    incident = get_assigner_incident(db, incident_reference)
+    if incident is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=INCIDENT_NOT_FOUND_DETAIL,
+        )
+
+    return incident
+
+
 @router.get("/admin", response_model=list[IncidentSummary])
 def list_admin_incidents(
     _email: str = Depends(require_admin),
@@ -149,6 +189,43 @@ def list_admin_incidents(
     """Return every incident for the authenticated administrator."""
 
     return get_assigner_incidents(db)
+
+
+@router.get("/admin/nearby", response_model=list[IncidentMapMarker])
+def list_admin_nearby_incidents(
+    latitude: float = Query(ge=-90, le=90),
+    longitude: float = Query(ge=-180, le=180),
+    radius_miles: float = Query(default=25, gt=0, le=25),
+    _email: str = Depends(require_admin),
+    db: Session = Depends(get_db),
+) -> list[IncidentMapMarker]:
+    """Return coordinate-valid incidents needed for the administrator map."""
+
+    return get_nearby_incidents(
+        db,
+        latitude,
+        longitude,
+        radius_miles,
+        assigned_work_only=False,
+    )
+
+
+@router.get("/admin/{incident_reference}", response_model=IncidentSummary)
+def get_admin_incident_details(
+    incident_reference: str,
+    _email: str = Depends(require_admin),
+    db: Session = Depends(get_db),
+) -> IncidentSummary:
+    """Return one incident for the authenticated administrator."""
+
+    incident = get_assigner_incident(db, incident_reference)
+    if incident is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=INCIDENT_NOT_FOUND_DETAIL,
+        )
+
+    return incident
 
 
 @router.post("/assign")

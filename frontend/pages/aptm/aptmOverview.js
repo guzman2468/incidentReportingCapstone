@@ -29,7 +29,6 @@ const normalizeIncidentReference = (value) => {
   return incidentReferencePattern.test(candidate) ? candidate : null;
 };
 const initialIncidentReference = normalizeIncidentReference(params.get("reference"));
-const linkedIncidentTitle = params.get("title");
 const linkedIncidentMeta = params.get("meta");
 let incidentReference = initialIncidentReference;
 let currentIncidentStatus = null;
@@ -179,22 +178,6 @@ async function loadIncident() {
   if (!incidentReference && linkedIncidentMeta) {
     const referenceMatch = /INC-\d{5}/i.exec(linkedIncidentMeta);
     incidentReference = normalizeIncidentReference(referenceMatch?.[0]);
-  }
-
-  if (!incidentReference && linkedIncidentTitle) {
-    const assignedIncidentsResponse = await fetch(
-      "/api/incidents/assigned-to-me",
-      { cache: "no-store" },
-    );
-    if (assignedIncidentsResponse.ok) {
-      const assignedIncidents = await assignedIncidentsResponse.json();
-      const matchingIncident = assignedIncidents.find(
-        (incident) => incident.title === linkedIncidentTitle,
-      );
-      incidentReference = normalizeIncidentReference(
-        matchingIncident?.incident_reference,
-      );
-    }
   }
 
   if (!incidentReference) {
@@ -369,6 +352,7 @@ document
 
 connectIncidentRealtime({
   onEvent: (event) => {
+    window.notificationBell.recordEvent(event);
     if (event.incident_reference === incidentReference) {
       if (event.event_type === "IncidentNoteAdded") {
         window.refreshIncidentNotes(incidentReference).catch((error) =>

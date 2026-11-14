@@ -11,6 +11,7 @@
       rel="stylesheet"
     />
     <link rel="stylesheet" href="aptmOverview.css" />
+    <link rel="stylesheet" href="../notificationBell.css" />
   </head>
   <body>
     <main class="overview-page">
@@ -18,6 +19,16 @@
         <a class="back-link" href="aptmDashboard.html"
           >← <span>Dashboard</span></a
         >
+        <div class="notification-menu">
+          <button type="button" class="notification-button" id="notificationButton" aria-expanded="false" aria-label="Open incident notifications">
+            <svg class="notification-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4" /></svg><span class="notification-count" id="notificationCount" hidden>0</span>
+          </button>
+          <div class="notification-dropdown" id="notificationDropdown" hidden>
+            <div class="notification-heading">Notifications</div>
+            <div class="notification-list" id="notificationList"></div>
+            <p class="notification-empty" id="notificationEmpty">No new incident updates.</p>
+          </div>
+        </div>
         <div class="user-menu">
           <button
             type="button"
@@ -214,6 +225,7 @@
     </dialog>
     <script src="../authHelpers.js"></script>
     <script src="../realtime.js"></script>
-    <script type="module" src="aptmOverview.js?v=status-update-api-5"></script>
+    <script src="../notificationBell.js?v=notification-bell-6"></script>
+    <script type="module" src="aptmOverview.js?v=detail-incident-load-1"></script>
   </body>
 </html>

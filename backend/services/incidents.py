@@ -915,6 +915,7 @@ def assign_incident(
         if incident["status"] == "CANCELLED":
             raise InvalidIncidentAssignment(
                 "Cancelled incidents are read-only."
+            )
         if (
             incident["status"] != "NEW"
             or incident["assigned_team_id"] is not None

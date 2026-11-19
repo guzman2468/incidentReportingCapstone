@@ -350,6 +350,9 @@ ASSIGN_INCIDENT_QUERY = text(
         assigned_at = now(),
         updated_at = now()
     WHERE incident_number = :incident_number
+      AND status = 'NEW'
+      AND assigned_team_id IS NULL
+      AND assigned_aid_provider_id IS NULL
       AND EXISTS (
           SELECT 1
           FROM public.aid_provider_teams
@@ -461,6 +464,7 @@ GET_INCIDENT_ASSIGNMENT_CONTEXT_QUERY = text(
     """
     SELECT
         id,
+        status,
         assigned_aid_provider_id,
         assigned_team_id,
         status
@@ -690,6 +694,9 @@ class InvalidIncidentStatusTransition(Exception):
 
 class InvalidReporterIncidentCancellation(Exception):
     """Raised when a reporter cannot cancel an incident in its current state."""
+    
+class IncidentAssignmentConflict(Exception):
+    """Raised when an incident has already been assigned concurrently."""
 
 
 def _add_incident_reference(row: dict[str, object]) -> dict[str, object]:
@@ -908,6 +915,14 @@ def assign_incident(
         if incident["status"] == "CANCELLED":
             raise InvalidIncidentAssignment(
                 "Cancelled incidents are read-only."
+            )
+        if (
+            incident["status"] != "NEW"
+            or incident["assigned_team_id"] is not None
+            or incident["assigned_aid_provider_id"] is not None
+        ):
+            raise IncidentAssignmentConflict(
+                "This incident has already been assigned. No changes were saved."
             )
 
         result = db.execute(

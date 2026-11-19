@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 
 from backend.core.security import (
     SESSION_COOKIE,
+    SESSION_COOKIE_SECURE,
     SESSION_MAX_AGE,
     create_session_token,
     get_session_email,
@@ -40,7 +41,7 @@ def set_session_cookie(response: Response, email: str) -> None:
         max_age=SESSION_MAX_AGE,
         httponly=True,
         samesite="lax",
-        secure=False,
+        secure=SESSION_COOKIE_SECURE,
     )
 
 
@@ -153,5 +154,10 @@ def update_password(
 
 @router.post("/logout")
 def logout_user(response: Response) -> dict[str, str]:
-    response.delete_cookie(key=SESSION_COOKIE)
+    response.delete_cookie(
+        key=SESSION_COOKIE,
+        secure=SESSION_COOKIE_SECURE,
+        httponly=True,
+        samesite="lax",
+    )
     return {"message": "Logged out"}

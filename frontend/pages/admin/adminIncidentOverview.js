@@ -24,7 +24,15 @@ document.addEventListener("click", (event) => {
 // -----------------------------
 // Read the selected incident reference from the admin dashboard URL.
 const params = new URLSearchParams(window.location.search);
-const incidentId = params.get("id")?.toUpperCase();
+const incidentReferenceMatch = /^INC-(\d{5})$/.exec(
+  params.get("id")?.toUpperCase() || "",
+);
+const incidentNumber = incidentReferenceMatch
+  ? Number(incidentReferenceMatch[1])
+  : null;
+const incidentId = Number.isInteger(incidentNumber)
+  ? `INC-${String(incidentNumber).padStart(5, "0")}`
+  : null;
 let selectedIncident = null;
 let adminIncidents = [];
 let selectedCoordinates = null;

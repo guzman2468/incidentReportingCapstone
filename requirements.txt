@@ -4,3 +4,5 @@ sqlalchemy==2.0.54
 psycopg[binary]==3.3.6
 python-dotenv==1.2.3
 kafka-python==3.0.11
+pytest>=8.3,<9
+httpx2>=2,<3

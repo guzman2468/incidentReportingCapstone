@@ -17,6 +17,7 @@ from backend.schemas.incidents import (
     IncidentMapMarker,
 )
 from backend.services.incidents import (
+    IncidentAssignmentConflict,
     InvalidIncidentAssignment,
     InvalidIncidentStatusTransition,
     InvalidReporterIncidentCancellation,
@@ -107,7 +108,7 @@ def require_team_member(
     return email
 
 
-@router.post("", response_model=IncidentSubmitted, status_code=status.HTTP_201_CREATED)
+@router.post("", status_code=status.HTTP_201_CREATED)
 def submit_incident(
     incident_data: IncidentCreate,
     email: str = Depends(require_reporter),
@@ -124,7 +125,7 @@ def submit_incident(
         ) from error
 
 
-@router.get("/mine", response_model=list[IncidentSummary])
+@router.get("/mine")
 def list_my_incidents(
     email: str = Depends(require_reporter),
     db: Session = Depends(get_db),
@@ -134,7 +135,7 @@ def list_my_incidents(
     return get_reporter_incidents(db, email)
 
 
-@router.get("/assigner", response_model=list[IncidentSummary])
+@router.get("/assigner")
 def list_assigner_incidents(
     _email: str = Depends(require_assigner),
     db: Session = Depends(get_db),
@@ -144,7 +145,7 @@ def list_assigner_incidents(
     return get_assigner_incidents(db)
 
 
-@router.get("/assigner/nearby", response_model=list[IncidentMapMarker])
+@router.get("/assigner/nearby")
 def list_assigner_nearby_incidents(
     latitude: float = Query(ge=-90, le=90),
     longitude: float = Query(ge=-180, le=180),
@@ -163,7 +164,7 @@ def list_assigner_nearby_incidents(
     )
 
 
-@router.get("/assigner/{incident_reference}", response_model=IncidentSummary)
+@router.get("/assigner/{incident_reference}")
 def get_assigner_incident_details(
     incident_reference: str,
     _email: str = Depends(require_assigner),
@@ -181,7 +182,7 @@ def get_assigner_incident_details(
     return incident
 
 
-@router.get("/admin", response_model=list[IncidentSummary])
+@router.get("/admin")
 def list_admin_incidents(
     _email: str = Depends(require_admin),
     db: Session = Depends(get_db),
@@ -191,7 +192,7 @@ def list_admin_incidents(
     return get_assigner_incidents(db)
 
 
-@router.get("/admin/nearby", response_model=list[IncidentMapMarker])
+@router.get("/admin/nearby")
 def list_admin_nearby_incidents(
     latitude: float = Query(ge=-90, le=90),
     longitude: float = Query(ge=-180, le=180),
@@ -210,7 +211,7 @@ def list_admin_nearby_incidents(
     )
 
 
-@router.get("/admin/{incident_reference}", response_model=IncidentSummary)
+@router.get("/admin/{incident_reference}")
 def get_admin_incident_details(
     incident_reference: str,
     _email: str = Depends(require_admin),
@@ -244,6 +245,11 @@ def assign_incident_to_team(
             str(assignment.aid_provider_id),
             str(assignment.team_id),
         )
+    except IncidentAssignmentConflict as error:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=str(error),
+        ) from error
     except InvalidIncidentAssignment as error:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -253,7 +259,7 @@ def assign_incident_to_team(
     return {"success": True}
 
 
-@router.get("/assigned-to-me", response_model=list[IncidentSummary])
+@router.get("/assigned-to-me")
 def list_assigned_incidents(
     email: str = Depends(require_team_member),
     db: Session = Depends(get_db),
@@ -263,7 +269,7 @@ def list_assigned_incidents(
     return get_assigned_incidents(db, email)
 
 
-@router.get("/assigned-to-me/{incident_reference}", response_model=IncidentSummary)
+@router.get("/assigned-to-me/{incident_reference}")
 def get_assigned_incident_details(
     incident_reference: str,
     email: str = Depends(require_team_member),
@@ -311,7 +317,7 @@ def update_incident_status(
     return {"success": True}
 
 
-@router.get("/reference/{incident_reference}", response_model=IncidentSummary)
+@router.get("/reference/{incident_reference}")
 def get_my_incident(
     incident_reference: str,
     email: str = Depends(require_reporter),
@@ -374,7 +380,6 @@ def cancel_my_incident(
 
 @router.post(
     "/reference/{incident_reference}/notes",
-    response_model=IncidentNote,
     status_code=status.HTTP_201_CREATED,
 )
 def create_incident_note(
@@ -401,7 +406,6 @@ def create_incident_note(
 
 @router.get(
     "/reference/{incident_reference}/notes",
-    response_model=list[IncidentNote],
 )
 def list_incident_notes(
     incident_reference: str,

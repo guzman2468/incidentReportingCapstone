@@ -16,7 +16,17 @@ SESSION_MAX_AGE = 60 * 60 * 8
 _session_secret = os.getenv("SESSION_SECRET")
 if not _session_secret:
     raise RuntimeError("SESSION_SECRET is not set")
+
 SESSION_SECRET = _session_secret.encode("utf-8")
+
+# Use false for local HTTP development; set true in Azure production behind HTTPS.
+_session_cookie_secure_setting = os.getenv(
+    "SESSION_COOKIE_SECURE",
+    "false",
+).strip().lower()
+if _session_cookie_secure_setting not in {"true", "false"}:
+    raise RuntimeError("SESSION_COOKIE_SECURE must be true or false")
+SESSION_COOKIE_SECURE = _session_cookie_secure_setting == "true"
 
 
 def hash_password(password: str) -> str:

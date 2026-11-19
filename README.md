@@ -115,6 +115,49 @@ python -m pytest backend\tests\test_incident_endpoints.py
 python -m pytest backend\tests\test_incident_endpoints.py::test_assignment_conflict_returns_clear_message
 ```
 
+Mac/Linux:
+
+```bash
+python -m pytest backend/tests/test_authentication_endpoints.py
+python -m pytest backend/tests/test_incident_endpoints.py
+python -m pytest backend/tests/test_incident_endpoints.py::test_assignment_conflict_returns_clear_message
+```
+
+## Local coverage report
+
+Install the dependencies first so `pytest-cov` is available:
+
+Mac/Linux:
+
+```bash
+./setup.sh
+source .venv/bin/activate
+```
+
+Windows:
+
+```bat
+setup.bat
+.venv\Scripts\activate.bat
+```
+
+Run the full test suite with terminal, XML, and HTML coverage reports:
+
+Mac/Linux:
+
+```bash
+python -m pytest --cov=backend --cov-report=term-missing --cov-report=xml:coverage.xml --cov-report=html:htmlcov
+```
+
+Windows:
+
+```bat
+python -m pytest --cov=backend --cov-report=term-missing --cov-report=xml:coverage.xml --cov-report=html:htmlcov
+```
+
+Open `htmlcov/index.html` in a browser to view the file-by-file report. The generated
+`coverage.xml`, `.coverage`, and `htmlcov/` files are ignored by Git.
+
 ## Release Notes (10-25-2026)
 To run the app, you must follow the instructions in this README.
 

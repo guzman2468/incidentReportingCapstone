@@ -95,6 +95,25 @@ The stop scripts remove the containers without deleting the persistent Kafka vol
 main is master branch, raise PR's here intermittently. 
 Create feature/ branches off of develop and raise PR's to merge feature/ branches to develop, not main.
 
+## Backend endpoint tests
+
+The backend test suite uses FastAPI's `TestClient` for authentication, incident,
+and assignment endpoint coverage. It does not start Kafka or require Docker.
+
+Run the tests from the project root:
+
+```bat
+.venv\Scripts\activate.bat
+python -m pytest
+```
+
+Run one test file or one test while developing:
+
+```bat
+python -m pytest backend\tests\test_authentication_endpoints.py
+python -m pytest backend\tests\test_incident_endpoints.py
+python -m pytest backend\tests\test_incident_endpoints.py::test_assignment_conflict_returns_clear_message
+```
 
 ## Release Notes (10-25-2026)
 To run the app, you must follow the instructions in this README.

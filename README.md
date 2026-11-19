@@ -115,6 +115,14 @@ python -m pytest backend\tests\test_incident_endpoints.py
 python -m pytest backend\tests\test_incident_endpoints.py::test_assignment_conflict_returns_clear_message
 ```
 
+Mac/Linux:
+
+```bash
+python -m pytest backend/tests/test_authentication_endpoints.py
+python -m pytest backend/tests/test_incident_endpoints.py
+python -m pytest backend/tests/test_incident_endpoints.py::test_assignment_conflict_returns_clear_message
+```
+
 ## Release Notes (10-25-2026)
 To run the app, you must follow the instructions in this README.
 

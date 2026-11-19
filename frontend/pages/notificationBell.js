@@ -7,7 +7,7 @@
 
   function getStorageKey() {
     const workspaceMatch = /\/(admin|assigner|aptm|reporter)\//.exec(
-      /\/(admin|assigner|aptm|reporter)\//,
+      window.location.pathname,
     );
     return `incidentNotifications:v2:${workspaceMatch?.[1] || "shared"}`;
   }

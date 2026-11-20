@@ -384,9 +384,26 @@ const addReportField = (doc, label, value, x, y, width) => {
   return y + 16 + lines.length * 14 + 18;
 };
 
-const generateIncidentReport = () => {
+const generateIncidentReport = async () => {
   if (!window.jspdf?.jsPDF) {
     window.alert("The PDF generator is still loading. Please try again.");
+    return;
+  }
+
+  let incidentNotes;
+  try {
+    const response = await fetch(
+      `/api/incidents/reference/${encodeURIComponent(incidentId)}/notes`,
+      { cache: "no-store" },
+    );
+    if (!response.ok) throw new Error("Unable to load incident notes.");
+    incidentNotes = await response.json();
+    if (!Array.isArray(incidentNotes)) {
+      throw new Error("Incident notes response was invalid.");
+    }
+  } catch (error) {
+    console.error("Unable to load incident notes for report.", error);
+    window.alert("Unable to load all incident notes. Please try again.");
     return;
   }
 
@@ -477,13 +494,26 @@ const generateIncidentReport = () => {
     contentWidth,
   );
 
+  if (y > doc.internal.pageSize.getHeight() - 80) {
+    doc.addPage();
+    y = 58;
+  }
   doc.setFont("helvetica", "bold");
   doc.setFontSize(12);
   doc.setTextColor(24, 43, 53);
   doc.text("NOTES", margin, y);
   y += 20;
 
-  const notes = [...document.querySelectorAll("#notesList .note-item")];
+  const notes = incidentNotes
+    .map((note, index) => ({ note, index }))
+    .sort((left, right) => {
+      const leftTime = Date.parse(left.note.created_at);
+      const rightTime = Date.parse(right.note.created_at);
+      if (Number.isNaN(leftTime) || Number.isNaN(rightTime)) {
+        return left.index - right.index;
+      }
+      return leftTime - rightTime || left.index - right.index;
+    });
   if (!notes.length) {
     y = addReportField(
       doc,
@@ -494,14 +524,56 @@ const generateIncidentReport = () => {
       contentWidth,
     );
   } else {
-    notes.forEach((note) => {
-      const author = note.querySelector("strong")?.textContent.trim() || "Note";
-      const text = note.querySelector("p")?.textContent.trim() || "";
-      y = addReportField(doc, author, text, margin, y, contentWidth);
+    notes.forEach(({ note }) => {
+      const timestamp = new Date(note.created_at);
+      const formattedTimestamp = Number.isNaN(timestamp.getTime())
+        ? "Unknown timestamp"
+        : new Intl.DateTimeFormat("en-US", {
+            month: "short",
+            day: "numeric",
+            year: "numeric",
+            hour: "numeric",
+            minute: "2-digit",
+            second: "2-digit",
+            hour12: true,
+          }).format(timestamp);
+      const author = String(note.author_name || "Note").trim();
+      const role = note.author_role ? ` (${note.author_role})` : "";
       if (y > doc.internal.pageSize.getHeight() - 80) {
         doc.addPage();
         y = 58;
       }
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(10);
+      doc.setTextColor(65, 86, 94);
+      doc.text(`${author}${role} · ${formattedTimestamp}`, margin, y);
+
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(11);
+      doc.setTextColor(24, 43, 53);
+      const noteLines = doc.splitTextToSize(note.note, contentWidth);
+      y += 16;
+      let lineIndex = 0;
+      while (lineIndex < noteLines.length) {
+        const availableLines = Math.floor(
+          (doc.internal.pageSize.getHeight() - 48 - y) / 14,
+        );
+        if (availableLines <= 0) {
+          doc.addPage();
+          y = 58;
+          continue;
+        }
+
+        const pageLines = noteLines.slice(lineIndex, lineIndex + availableLines);
+        doc.text(pageLines, margin, y);
+        y += pageLines.length * 14;
+        lineIndex += pageLines.length;
+        if (lineIndex < noteLines.length) {
+          doc.addPage();
+          y = 58;
+        }
+      }
+      y += 18;
     });
   }
 

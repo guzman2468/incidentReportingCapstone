@@ -65,6 +65,31 @@ const escapeHTML = (value) =>
       })[character],
   );
 
+const getIncidentStatusColors = (status) => {
+  const statusKey = String(status ?? "").toLowerCase();
+  return (
+    {
+      new: { background: "#fff4cc", border: "#ffad00" },
+      assigned: { background: "#f1e6ff", border: "#9b4dff" },
+      in_progress: { background: "#dff7ff", border: "#00aef3" },
+      active: { background: "#dff7ff", border: "#00aef3" },
+      resolved: { background: "#d9ffe9", border: "#00c853" },
+      closed: { background: "#e2e8f0", border: "#64748b" },
+      cancelled: { background: "#ffe2cc", border: "#c45a1c" },
+    }[statusKey] || { background: "#e2e8f0", border: "#475569" }
+  );
+};
+
+const formatAssignmentLabel = (name, description) => {
+  const assignmentName = String(name ?? "").trim();
+  if (!assignmentName) return "NOT ASSIGNED";
+
+  const assignmentDescription = String(description ?? "").trim();
+  return assignmentDescription
+    ? `${assignmentName}: ${assignmentDescription}`
+    : assignmentName;
+};
+
 const distanceInMiles = (lat1, lon1, lat2, lon2) => {
   const earthRadius = 3958.8;
   const radians = (degrees) => (degrees * Math.PI) / 180;
@@ -135,6 +160,7 @@ const updateMap = (nearby) => {
 
   mapMarkers.clearLayers();
   nearbyMarkers.clear();
+  const selectedIncidentColors = getIncidentStatusColors(selectedIncident.status);
   const radiusMiles = Number(document.getElementById("radiusSelect").value);
   const radiusCircle = L.circle([latitude, longitude], {
     radius: radiusMiles * 1609.344,
@@ -146,29 +172,32 @@ const updateMap = (nearby) => {
 
   L.circleMarker([latitude, longitude], {
     radius: 8,
-    color: "#fff",
+    color: "#ffffff",
     weight: 2,
-    fillColor: "#087f83",
+    fillColor: selectedIncidentColors.border,
     fillOpacity: 1,
   })
     .bindPopup(
-      `<strong>${escapeHTML(selectedIncident.incident_reference)} · ${escapeHTML(selectedIncident.title)}</strong><br>SELECTED INCIDENT`,
+      `<strong>${escapeHTML(selectedIncident.incident_reference)} · ${escapeHTML(selectedIncident.title)}</strong><br>` +
+        `${escapeHTML(String(selectedIncident.status || "").replaceAll("_", " "))} · SELECTED INCIDENT`,
     )
     .addTo(mapMarkers);
 
   nearby.forEach((item) => {
+    const nearbyIncidentColors = getIncidentStatusColors(item.status);
     const nearbyMarker = L.circleMarker(
       [item.coordinates.latitude, item.coordinates.longitude],
       {
       radius: 6,
-      color: "#fff",
+      color: "#ffffff",
       weight: 2,
-      fillColor: "#ee806d",
+      fillColor: nearbyIncidentColors.border,
       fillOpacity: 1,
       },
     )
       .bindPopup(
-        `<strong>${escapeHTML(item.incident_reference)} · ${escapeHTML(item.title)}</strong><br>${item.distance.toFixed(1)} MILES AWAY`,
+        `<strong>${escapeHTML(item.incident_reference)} · ${escapeHTML(item.title)}</strong><br>` +
+          `${escapeHTML(String(item.status || "").replaceAll("_", " "))} · ${item.distance.toFixed(1)} MILES AWAY`,
       )
       .addTo(mapMarkers);
 
@@ -242,6 +271,16 @@ const renderIncident = () => {
 
   document.getElementById("titleField").textContent = selectedIncident.title;
   document.getElementById("descriptionField").textContent = selectedIncident.description;
+  document.getElementById("assignedProviderField").textContent =
+    formatAssignmentLabel(
+      selectedIncident.assigned_provider_name,
+      selectedIncident.assigned_provider_description,
+    );
+  document.getElementById("assignedTeamField").textContent =
+    formatAssignmentLabel(
+      selectedIncident.assigned_team_name,
+      selectedIncident.assigned_team_description,
+    );
   const severityField = document.getElementById("severityField");
   severityField.textContent = selectedIncident.severity;
   severityField.className = `readonly-field severity-value severity-${String(selectedIncident.severity).toLowerCase()}`;
@@ -297,7 +336,7 @@ const loadNearbyIncidents = async () => {
   const response = await fetch(`/api/incidents/admin/nearby?${query}`, {
     cache: "no-store",
   });
-  if (!response.ok) throw new Error("Unable to load nearby incidents.");
+  if (!response.ok) throw new TypeError("Unable to load nearby incidents.");
 
   adminIncidents = (await response.json()).filter(
     (candidate) => candidate.incident_reference !== selectedIncident.incident_reference,
@@ -310,7 +349,7 @@ const loadAdminIncident = async () => {
       `/api/incidents/admin/${encodeURIComponent(incidentId || "")}`,
       { cache: "no-store" },
     );
-    if (!response.ok) throw new Error("Unable to load incident.");
+    if (!response.ok) throw new TypeError("Unable to load incident.");
     selectedIncident = await response.json();
     adminIncidents = [];
     renderIncident();
@@ -384,9 +423,26 @@ const addReportField = (doc, label, value, x, y, width) => {
   return y + 16 + lines.length * 14 + 18;
 };
 
-const generateIncidentReport = () => {
+const generateIncidentReport = async () => {
   if (!window.jspdf?.jsPDF) {
     window.alert("The PDF generator is still loading. Please try again.");
+    return;
+  }
+
+  let incidentNotes;
+  try {
+    const response = await fetch(
+      `/api/incidents/reference/${encodeURIComponent(incidentId)}/notes`,
+      { cache: "no-store" },
+    );
+    if (!response.ok) throw new TypeError("Unable to load incident notes.");
+    incidentNotes = await response.json();
+    if (!Array.isArray(incidentNotes)) {
+      throw new TypeError("Incident notes response was invalid.");
+    }
+  } catch (error) {
+    console.error("Unable to load incident notes for report.", error);
+    window.alert("Unable to load all incident notes. Please try again.");
     return;
   }
 

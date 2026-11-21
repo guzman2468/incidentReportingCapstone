@@ -5,7 +5,6 @@ from uuid import UUID
 
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 from sqlalchemy import text
-from starlette.websockets import WebSocketDisconnected
 
 from backend.core.security import SESSION_COOKIE, get_session_email
 from backend.database import SessionLocal
@@ -67,7 +66,7 @@ async def incident_realtime(websocket: WebSocket) -> None:
     try:
         while True:
             await websocket.receive()
-    except (WebSocketDisconnect, WebSocketDisconnected):
+    except WebSocketDisconnect:
         connection_manager.disconnect(websocket)
     except Exception:
         connection_manager.disconnect(websocket)

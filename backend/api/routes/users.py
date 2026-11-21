@@ -1,6 +1,6 @@
 """User account API routes."""
 
-from fastapi import APIRouter, Cookie, Depends, HTTPException, Response, status
+from fastapi import APIRouter, Cookie, Depends, HTTPException, Request, Response, status
 from sqlalchemy.orm import Session
 
 from backend.core.security import (
@@ -11,6 +11,14 @@ from backend.core.security import (
     get_session_email,
 )
 from backend.database import get_db
+from backend.core.rate_limit import (
+    RATE_LIMIT_ACCOUNT_PROVISIONING,
+    RATE_LIMIT_CREDENTIAL_CHANGE,
+    RATE_LIMIT_LOGIN,
+    RATE_LIMIT_READ,
+    RATE_LIMIT_REGISTRATION,
+    limiter,
+)
 from backend.schemas.users import (
     PasswordChange,
     AdminUserCreate,
@@ -64,7 +72,12 @@ def require_session(session: str | None = Cookie(default=None, alias=SESSION_COO
 
 
 @router.post("/createUser", status_code=status.HTTP_201_CREATED)
-def register_user(user_data: UserCreate, db: Session = Depends(get_db)) -> UserCreated:
+@limiter.limit(RATE_LIMIT_REGISTRATION)
+def register_user(
+    request: Request,
+    user_data: UserCreate,
+    db: Session = Depends(get_db),
+) -> UserCreated:
     try:
         return create_user(
             db,
@@ -80,7 +93,9 @@ def register_user(user_data: UserCreate, db: Session = Depends(get_db)) -> UserC
 
 
 @router.post("/adminCreateUser", status_code=status.HTTP_201_CREATED)
+@limiter.limit(RATE_LIMIT_ACCOUNT_PROVISIONING)
 def admin_create_user(
+    request: Request,
     user_data: AdminUserCreate,
     email: str = Depends(require_session),
     db: Session = Depends(get_db),
@@ -107,7 +122,9 @@ def admin_create_user(
 
 
 @router.post("/login")
+@limiter.limit(RATE_LIMIT_LOGIN)
 def login_user(
+    request: Request,
     login_data: UserLogin,
     response: Response,
     db: Session = Depends(get_db),
@@ -129,7 +146,9 @@ def login_user(
 
 
 @router.get("/currentUser")
+@limiter.limit(RATE_LIMIT_READ)
 def current_user(
+    request: Request,
     email: str = Depends(require_session),
     db: Session = Depends(get_db),
 ) -> UserProfile:
@@ -137,7 +156,9 @@ def current_user(
 
 
 @router.post("/changePassword")
+@limiter.limit(RATE_LIMIT_CREDENTIAL_CHANGE)
 def update_password(
+    request: Request,
     password_data: PasswordChange,
     email: str = Depends(require_session),
     db: Session = Depends(get_db),
@@ -153,7 +174,8 @@ def update_password(
 
 
 @router.post("/logout")
-def logout_user(response: Response) -> dict[str, str]:
+@limiter.limit(RATE_LIMIT_ACCOUNT_PROVISIONING)
+def logout_user(request: Request, response: Response) -> dict[str, str]:
     response.delete_cookie(
         key=SESSION_COOKIE,
         secure=SESSION_COOKIE_SECURE,

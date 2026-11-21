@@ -88,6 +88,8 @@ class IncidentSummary(BaseModel):
     assigned_team_id: UUID | None = None
     assigned_provider_name: str | None = None
     assigned_team_name: str | None = None
+    assigned_provider_description: str | None = None
+    assigned_team_description: str | None = None
     notes: list[IncidentNote] = Field(default_factory=list)
 
 

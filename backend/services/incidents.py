@@ -178,7 +178,9 @@ GET_ASSIGNER_INCIDENTS_QUERY = text(
         incidents.assigned_aid_provider_id,
         incidents.assigned_team_id,
         aid_providers.name AS assigned_provider_name,
-        aid_provider_teams.name AS assigned_team_name
+        aid_provider_teams.name AS assigned_team_name,
+        aid_providers.description AS assigned_provider_description,
+        aid_provider_teams.description AS assigned_team_description
     FROM public.incidents
     LEFT JOIN public.aid_providers
         ON aid_providers.id = incidents.assigned_aid_provider_id
@@ -207,7 +209,9 @@ GET_ASSIGNER_INCIDENT_QUERY = text(
         incidents.assigned_aid_provider_id,
         incidents.assigned_team_id,
         aid_providers.name AS assigned_provider_name,
-        aid_provider_teams.name AS assigned_team_name
+        aid_provider_teams.name AS assigned_team_name,
+        aid_providers.description AS assigned_provider_description,
+        aid_provider_teams.description AS assigned_team_description
     FROM public.incidents
     LEFT JOIN public.aid_providers
         ON aid_providers.id = incidents.assigned_aid_provider_id

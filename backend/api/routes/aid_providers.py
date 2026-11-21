@@ -2,12 +2,17 @@
 
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from backend.api.routes.users import get_active_profile, require_session
 from backend.database import get_db
+from backend.core.rate_limit import (
+    RATE_LIMIT_ACCOUNT_PROVISIONING,
+    RATE_LIMIT_READ,
+    limiter,
+)
 from backend.schemas.aid_providers import (
     AidProvider,
     AidProviderCreate,
@@ -48,7 +53,9 @@ def require_provider_read_access(email: str, db: Session) -> None:
 
 
 @router.get("")
+@limiter.limit(RATE_LIMIT_READ)
 def list_active_aid_providers(
+    request: Request,
     email: str = Depends(require_session),
     db: Session = Depends(get_db),
 ) -> list[AidProvider]:
@@ -57,7 +64,9 @@ def list_active_aid_providers(
 
 
 @router.get("/{aid_provider_id}/teams")
+@limiter.limit(RATE_LIMIT_READ)
 def list_active_aid_provider_teams(
+    request: Request,
     aid_provider_id: UUID,
     email: str = Depends(require_session),
     db: Session = Depends(get_db),
@@ -67,7 +76,9 @@ def list_active_aid_provider_teams(
 
 
 @router.post("", status_code=status.HTTP_201_CREATED)
+@limiter.limit(RATE_LIMIT_ACCOUNT_PROVISIONING)
 def create_provider(
+    request: Request,
     provider_data: AidProviderCreate,
     email: str = Depends(require_session),
     db: Session = Depends(get_db),
@@ -85,7 +96,9 @@ def create_provider(
 
 
 @router.post("/teams", status_code=status.HTTP_201_CREATED)
+@limiter.limit(RATE_LIMIT_ACCOUNT_PROVISIONING)
 def create_provider_team(
+    request: Request,
     team_data: AidProviderTeamCreate,
     email: str = Depends(require_session),
     db: Session = Depends(get_db),
@@ -105,7 +118,9 @@ def create_provider_team(
 
 
 @router.post("/teamMembers", status_code=status.HTTP_201_CREATED)
+@limiter.limit(RATE_LIMIT_ACCOUNT_PROVISIONING)
 def create_team_member_account(
+    request: Request,
     account_data: AidProviderTeamMemberAccountCreate,
     email: str = Depends(require_session),
     db: Session = Depends(get_db),

@@ -1,4 +1,5 @@
 import backend.api.routes.users as users_routes
+from backend.core.rate_limit import limiter
 from backend.services.users import (
     EmailAlreadyRegistered,
     InvalidCredentials,
@@ -44,6 +45,39 @@ def test_login_rejects_invalid_credentials(client, monkeypatch):
 
     assert response.status_code == 401
     assert response.json()["detail"] == "Invalid email or password."
+
+
+def test_login_rate_limit_blocks_sixth_request_from_same_client(client, monkeypatch):
+    monkeypatch.setattr(
+        users_routes,
+        "authenticate_user",
+        lambda _db, _login: {
+            "email": "reporter@example.com",
+            "role": "REPORTER",
+            "must_change_password": False,
+        },
+    )
+    limiter.reset()
+
+    try:
+        responses = []
+        for _ in range(6):
+            responses.append(
+                client.post(
+                    "/api/users/login",
+                    json={
+                        "email": "reporter@example.com",
+                        "password": "Password123!",
+                    },
+                )
+            )
+    finally:
+        limiter.reset()
+
+    successful_responses = responses[:5]
+    blocked_response = responses[-1]
+    assert all(response.status_code == 200 for response in successful_responses)
+    assert blocked_response.status_code == 429
 
 
 def test_current_user_requires_session(client):

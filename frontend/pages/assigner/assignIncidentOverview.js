@@ -343,7 +343,12 @@ async function loadAidProviderTeams(providerId) {
     availableTeams = await response.json();
     teamSelect.replaceChildren(new Option("Select a team", ""));
     availableTeams.forEach((team) => {
-      teamSelect.add(new Option(formatDisplayName(team.name), team.id));
+      const teamName = formatDisplayName(team.name);
+      const teamDescription = String(team.description ?? "").trim();
+      const teamLabel = teamDescription
+        ? `${teamName}: ${teamDescription}`
+        : teamName;
+      teamSelect.add(new Option(teamLabel, team.id));
     });
     teamSelect.disabled = availableTeams.length === 0;
 
@@ -360,7 +365,12 @@ async function loadAidProviderTeams(providerId) {
 function updateAvailableProviders() {
   providerSelect.replaceChildren(new Option("Select an aid provider", ""));
   providers.forEach((provider) => {
-    providerSelect.add(new Option(formatDisplayName(provider.name), provider.id));
+    const providerName = formatDisplayName(provider.name);
+    const providerDescription = String(provider.description ?? "").trim();
+    const providerLabel = providerDescription
+      ? `${providerName}: ${providerDescription}`
+      : providerName;
+    providerSelect.add(new Option(providerLabel, provider.id));
   });
   providerSelect.disabled = !providers.length;
   setProviderError("");

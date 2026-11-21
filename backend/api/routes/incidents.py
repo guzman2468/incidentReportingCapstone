@@ -1,10 +1,17 @@
 """Incident submission API routes."""
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 from sqlalchemy.orm import Session
 
 from backend.api.routes.users import get_active_profile, require_session
 from backend.database import get_db
+from backend.core.rate_limit import (
+    RATE_LIMIT_INCIDENT_MUTATION,
+    RATE_LIMIT_INCIDENT_SUBMISSION,
+    RATE_LIMIT_NOTE_CREATION,
+    RATE_LIMIT_READ,
+    limiter,
+)
 from backend.schemas.incidents import (
     IncidentAssignmentCreate,
     IncidentCreate,
@@ -109,7 +116,9 @@ def require_team_member(
 
 
 @router.post("", status_code=status.HTTP_201_CREATED)
+@limiter.limit(RATE_LIMIT_INCIDENT_SUBMISSION)
 def submit_incident(
+    request: Request,
     incident_data: IncidentCreate,
     email: str = Depends(require_reporter),
     db: Session = Depends(get_db),
@@ -126,7 +135,9 @@ def submit_incident(
 
 
 @router.get("/mine")
+@limiter.limit(RATE_LIMIT_READ)
 def list_my_incidents(
+    request: Request,
     email: str = Depends(require_reporter),
     db: Session = Depends(get_db),
 ) -> list[IncidentSummary]:
@@ -136,7 +147,9 @@ def list_my_incidents(
 
 
 @router.get("/assigner")
+@limiter.limit(RATE_LIMIT_READ)
 def list_assigner_incidents(
+    request: Request,
     _email: str = Depends(require_assigner),
     db: Session = Depends(get_db),
 ) -> list[IncidentSummary]:
@@ -146,7 +159,9 @@ def list_assigner_incidents(
 
 
 @router.get("/assigner/nearby")
+@limiter.limit(RATE_LIMIT_READ)
 def list_assigner_nearby_incidents(
+    request: Request,
     latitude: float = Query(ge=-90, le=90),
     longitude: float = Query(ge=-180, le=180),
     radius_miles: float = Query(default=25, gt=0, le=25),
@@ -165,7 +180,9 @@ def list_assigner_nearby_incidents(
 
 
 @router.get("/assigner/{incident_reference}")
+@limiter.limit(RATE_LIMIT_READ)
 def get_assigner_incident_details(
+    request: Request,
     incident_reference: str,
     _email: str = Depends(require_assigner),
     db: Session = Depends(get_db),
@@ -183,7 +200,9 @@ def get_assigner_incident_details(
 
 
 @router.get("/admin")
+@limiter.limit(RATE_LIMIT_READ)
 def list_admin_incidents(
+    request: Request,
     _email: str = Depends(require_admin),
     db: Session = Depends(get_db),
 ) -> list[IncidentSummary]:
@@ -193,7 +212,9 @@ def list_admin_incidents(
 
 
 @router.get("/admin/nearby")
+@limiter.limit(RATE_LIMIT_READ)
 def list_admin_nearby_incidents(
+    request: Request,
     latitude: float = Query(ge=-90, le=90),
     longitude: float = Query(ge=-180, le=180),
     radius_miles: float = Query(default=25, gt=0, le=25),
@@ -212,7 +233,9 @@ def list_admin_nearby_incidents(
 
 
 @router.get("/admin/{incident_reference}")
+@limiter.limit(RATE_LIMIT_READ)
 def get_admin_incident_details(
+    request: Request,
     incident_reference: str,
     _email: str = Depends(require_admin),
     db: Session = Depends(get_db),
@@ -230,7 +253,9 @@ def get_admin_incident_details(
 
 
 @router.post("/assign")
+@limiter.limit(RATE_LIMIT_INCIDENT_MUTATION)
 def assign_incident_to_team(
+    request: Request,
     assignment: IncidentAssignmentCreate,
     email: str = Depends(require_assigner),
     db: Session = Depends(get_db),
@@ -260,7 +285,9 @@ def assign_incident_to_team(
 
 
 @router.get("/assigned-to-me")
+@limiter.limit(RATE_LIMIT_READ)
 def list_assigned_incidents(
+    request: Request,
     email: str = Depends(require_team_member),
     db: Session = Depends(get_db),
 ) -> list[IncidentSummary]:
@@ -270,7 +297,9 @@ def list_assigned_incidents(
 
 
 @router.get("/assigned-to-me/{incident_reference}")
+@limiter.limit(RATE_LIMIT_READ)
 def get_assigned_incident_details(
+    request: Request,
     incident_reference: str,
     email: str = Depends(require_team_member),
     db: Session = Depends(get_db),
@@ -288,7 +317,9 @@ def get_assigned_incident_details(
 
 
 @router.patch("/assigned-to-me/{incident_reference}/status")
+@limiter.limit(RATE_LIMIT_INCIDENT_MUTATION)
 def update_incident_status(
+    request: Request,
     incident_reference: str,
     status_update: IncidentStatusUpdate,
     email: str = Depends(require_team_member),
@@ -318,7 +349,9 @@ def update_incident_status(
 
 
 @router.get("/reference/{incident_reference}")
+@limiter.limit(RATE_LIMIT_READ)
 def get_my_incident(
+    request: Request,
     incident_reference: str,
     email: str = Depends(require_reporter),
     db: Session = Depends(get_db),
@@ -336,7 +369,9 @@ def get_my_incident(
 
 
 @router.patch("/reference/{incident_reference}")
+@limiter.limit(RATE_LIMIT_INCIDENT_MUTATION)
 def update_my_incident(
+    request: Request,
     incident_reference: str,
     incident_data: IncidentReporterUpdate,
     email: str = Depends(require_reporter),
@@ -360,7 +395,9 @@ def update_my_incident(
 
 
 @router.patch("/reference/{incident_reference}/cancel")
+@limiter.limit(RATE_LIMIT_INCIDENT_MUTATION)
 def cancel_my_incident(
+    request: Request,
     incident_reference: str,
     email: str = Depends(require_reporter),
     db: Session = Depends(get_db),
@@ -382,7 +419,9 @@ def cancel_my_incident(
     "/reference/{incident_reference}/notes",
     status_code=status.HTTP_201_CREATED,
 )
+@limiter.limit(RATE_LIMIT_NOTE_CREATION)
 def create_incident_note(
+    request: Request,
     incident_reference: str,
     note_data: IncidentNoteCreate,
     email: str = Depends(require_session),
@@ -407,7 +446,9 @@ def create_incident_note(
 @router.get(
     "/reference/{incident_reference}/notes",
 )
+@limiter.limit(RATE_LIMIT_READ)
 def list_incident_notes(
+    request: Request,
     incident_reference: str,
     email: str = Depends(require_session),
     db: Session = Depends(get_db),

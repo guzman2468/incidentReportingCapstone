@@ -6,11 +6,14 @@ os.environ.setdefault("SESSION_SECRET", "test-session-secret")
 from fastapi import FastAPI
 import pytest
 from fastapi.testclient import TestClient
+from slowapi import _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
 
 from backend.api.routes.aid_providers import router as aid_providers_router
 from backend.api.routes.incidents import router as incidents_router
 from backend.api.routes.users import router as users_router
 from backend.database import get_db
+from backend.core.rate_limit import limiter
 
 
 class FakeDB:
@@ -20,6 +23,8 @@ class FakeDB:
 @pytest.fixture
 def client():
     app = FastAPI()
+    app.state.limiter = limiter
+    app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
     app.include_router(users_router)
     app.include_router(aid_providers_router)
     app.include_router(incidents_router)

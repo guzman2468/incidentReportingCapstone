@@ -3,10 +3,12 @@ import logging
 from contextlib import asynccontextmanager
 from pathlib import Path
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy import text
+from slowapi import _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
 
 from .core.middleware import protect_role_pages
 from .database import engine
@@ -21,6 +23,7 @@ from .kafka.incident_event_outbox_publisher import (
 from .kafka.incident_event_producer import IncidentEventProducer
 from .realtime.routes import connection_manager
 from .realtime.routes import router as realtime_router
+from .core.rate_limit import RATE_LIMIT_DIAGNOSTIC, limiter
 
 
 logger = logging.getLogger(__name__)
@@ -115,6 +118,8 @@ async def lifespan(_app: FastAPI):
 
 
 app = FastAPI(lifespan=lifespan)
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 app.include_router(users_router)
 app.include_router(aid_providers_router)
 app.include_router(incidents_router)
@@ -130,7 +135,8 @@ def home():
 
 
 @app.get("/db-test")
-def database_test():
+@limiter.limit(RATE_LIMIT_DIAGNOSTIC)
+def database_test(request: Request):
     with engine.connect() as connection:
         result = connection.execute(
             text("SELECT current_database()")

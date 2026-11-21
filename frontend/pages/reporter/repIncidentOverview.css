@@ -853,10 +853,23 @@ a {
   }
 }
 
-@media (max-width: 900px) {
+@media (max-width: 1100px) {
   .overview-layout {
     align-items: start;
     grid-template-columns: minmax(0, 1fr);
+  }
+
+  .incident-meta {
+    flex-wrap: wrap;
+    gap: 16px 28px;
+  }
+
+  .incident-meta span {
+    min-width: 100px;
+  }
+
+  .incident-meta strong {
+    overflow-wrap: anywhere;
   }
 
   .overview-notes {

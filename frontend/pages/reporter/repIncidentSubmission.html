@@ -163,6 +163,24 @@
         </form>
       </section>
     </main>
+    <div class="confirm-backdrop" id="submitConfirmBackdrop" hidden>
+      <dialog
+        class="confirm-dialog"
+        id="submitConfirm"
+        aria-labelledby="submitConfirmTitle"
+      >
+        <h2 id="submitConfirmTitle">Submit incident?</h2>
+        <p>Are you sure you want to submit this incident?</p>
+        <div class="confirm-actions">
+          <button type="button" class="secondary-button" id="cancelIncidentSubmit">
+            Cancel
+          </button>
+          <button type="button" class="primary-button" id="confirmIncidentSubmit">
+            Submit incident
+          </button>
+        </div>
+      </dialog>
+    </div>
     <div class="confirm-backdrop" id="cancelConfirmBackdrop" hidden>
       <dialog
         class="confirm-dialog"
@@ -215,6 +233,6 @@
     <script src="../realtime.js"></script>
     <script src="../notificationBell.js?v=notification-bell-6"></script>
     <script src="../notificationRealtime.js"></script>
-    <script src="repIncidentSubmission.js"></script>
+    <script src="repIncidentSubmission.js?v=misc05-confirm-1"></script>
   </body>
 </html>

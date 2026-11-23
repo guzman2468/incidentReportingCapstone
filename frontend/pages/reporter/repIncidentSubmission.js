@@ -32,6 +32,38 @@ const successConfirmBackdrop = document.getElementById(
 );
 const errorConfirm = document.getElementById("errorConfirm");
 const errorConfirmBackdrop = document.getElementById("errorConfirmBackdrop");
+const submitConfirm = document.getElementById("submitConfirm");
+const submitConfirmBackdrop = document.getElementById("submitConfirmBackdrop");
+
+const closeSubmitConfirm = () => {
+  if (submitConfirm.open) submitConfirm.close();
+  submitConfirmBackdrop.hidden = true;
+};
+
+submitConfirm.addEventListener("close", () => {
+  submitConfirmBackdrop.hidden = true;
+});
+
+const cancelSubmitConfirm = () => {
+  pendingSubmission = null;
+  closeSubmitConfirm();
+  submitButton.focus();
+};
+
+document
+  .getElementById("cancelIncidentSubmit")
+  .addEventListener("click", cancelSubmitConfirm);
+
+submitConfirm.addEventListener("click", (event) => {
+  const bounds = submitConfirm.getBoundingClientRect();
+  const clickedOutside =
+    event.clientX < bounds.left ||
+    event.clientX > bounds.right ||
+    event.clientY < bounds.top ||
+    event.clientY > bounds.bottom;
+
+  if (clickedOutside) cancelSubmitConfirm();
+});
 
 const closeCancelConfirm = () => {
   cancelConfirm.close();
@@ -76,6 +108,7 @@ cancelConfirm.addEventListener("click", (event) => {
 // Escape closes the confirmation dialog.
 document.addEventListener("keydown", (event) => {
   if (event.key === "Escape" && cancelConfirm.open) closeCancelConfirm();
+  if (event.key === "Escape" && submitConfirm.open) cancelSubmitConfirm();
   if (event.key === "Escape" && successConfirm.open) closeSuccessConfirm();
   if (event.key === "Escape" && errorConfirm.open) closeErrorConfirm();
 });
@@ -174,7 +207,47 @@ const showSuccessMessage = () => {
   successConfirm.showModal();
 };
 
-form.addEventListener("submit", async (event) => {
+let pendingSubmission = null;
+
+const submitIncident = async () => {
+  if (!pendingSubmission) return;
+
+  closeSubmitConfirm();
+  submitButton.disabled = true;
+  submitButton.textContent = "Submitting...";
+
+  try {
+    const response = await fetch("/api/incidents", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(pendingSubmission),
+    });
+
+    const result = await response.json();
+    if (!response.ok) {
+      throw new Error(result.detail || "Incident submission failed.");
+    }
+
+    showSuccessMessage();
+    form.reset();
+    coordinates.value = "";
+    requiredFields.forEach((field) => setFieldError(field, ""));
+    mapCard.hidden = true;
+  } catch (error) {
+    console.error("Incident submission failed.", error);
+    showSubmissionError();
+  } finally {
+    pendingSubmission = null;
+    submitButton.disabled = false;
+    submitButton.innerHTML = "Submit report <span>→</span>";
+  }
+};
+
+document
+  .getElementById("confirmIncidentSubmit")
+  .addEventListener("click", submitIncident);
+
+form.addEventListener("submit", (event) => {
   event.preventDefault();
 
   const invalidFields = [...requiredFields].filter(
@@ -194,34 +267,10 @@ form.addEventListener("submit", async (event) => {
     severity: formData.get("severity"),
     location,
   };
-
-  submitButton.disabled = true;
-  submitButton.textContent = "Submitting...";
-
-  try {
-    const response = await fetch("/api/incidents", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(submission),
-    });
-
-    const result = await response.json();
-    if (!response.ok) {
-      throw new Error(result.detail || "Incident submission failed.");
-    }
-
-    showSuccessMessage();
-    form.reset();
-    coordinates.value = "";
-    requiredFields.forEach((field) => setFieldError(field, ""));
-    mapCard.hidden = true;
-  } catch (error) {
-    console.error("Incident submission failed.", error);
-    showSubmissionError();
-  } finally {
-    submitButton.disabled = false;
-    submitButton.innerHTML = "Submit report <span>→</span>";
-  }
+  pendingSubmission = submission;
+  submitConfirmBackdrop.hidden = false;
+  submitConfirm.showModal();
+  document.getElementById("cancelIncidentSubmit").focus();
 });
 
 // -----------------------------

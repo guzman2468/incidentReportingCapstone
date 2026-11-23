@@ -282,5 +282,23 @@
         </button>
       </div>
     </dialog>
+    <div class="confirm-backdrop" id="assignmentConfirmDialogBackdrop" hidden>
+      <dialog
+        class="confirm-dialog"
+        id="assignmentConfirmDialog"
+        aria-labelledby="assignmentConfirmDialogTitle"
+      >
+        <h2 id="assignmentConfirmDialogTitle">Assign incident?</h2>
+        <p id="assignmentConfirmDialogText"></p>
+        <div class="confirm-actions">
+          <button type="button" class="secondary-button" id="cancelAssignmentConfirm">
+            Cancel
+          </button>
+          <button type="button" class="primary-button" id="confirmAssignment">
+            Assign incident
+          </button>
+        </div>
+      </dialog>
+    </div>
   </body>
 </html>

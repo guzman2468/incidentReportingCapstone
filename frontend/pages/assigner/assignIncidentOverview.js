@@ -763,7 +763,56 @@ teamSelect.addEventListener("change", () => {
 // Provider assignment
 // -------------------------------------
 
-assignButton.addEventListener("click", async () => {
+const assignmentConfirmDialog = document.getElementById("assignmentConfirmDialog");
+const assignmentConfirmDialogBackdrop = document.getElementById(
+  "assignmentConfirmDialogBackdrop",
+);
+const confirmAssignment = document.getElementById("confirmAssignment");
+const cancelAssignmentConfirm = document.getElementById(
+  "cancelAssignmentConfirm",
+);
+let pendingAssignment = null;
+
+function closeAssignmentConfirmDialog() {
+  if (assignmentConfirmDialog.open) assignmentConfirmDialog.close();
+  assignmentConfirmDialogBackdrop.hidden = true;
+  assignButton.focus();
+}
+
+cancelAssignmentConfirm.addEventListener(
+  "click",
+  () => {
+    pendingAssignment = null;
+    closeAssignmentConfirmDialog();
+  },
+);
+
+assignmentConfirmDialog.addEventListener("close", () => {
+  assignmentConfirmDialogBackdrop.hidden = true;
+});
+
+assignmentConfirmDialog.addEventListener("click", (event) => {
+  const bounds = assignmentConfirmDialog.getBoundingClientRect();
+  const clickedOutside =
+    event.clientX < bounds.left ||
+    event.clientX > bounds.right ||
+    event.clientY < bounds.top ||
+    event.clientY > bounds.bottom;
+
+  if (clickedOutside) {
+    pendingAssignment = null;
+    closeAssignmentConfirmDialog();
+  }
+});
+
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape" && assignmentConfirmDialog.open) {
+    pendingAssignment = null;
+    closeAssignmentConfirmDialog();
+  }
+});
+
+assignButton.addEventListener("click", () => {
   if (!incident || ["resolved", "closed"].includes(incident.status)) {
     return;
   }
@@ -786,6 +835,22 @@ assignButton.addEventListener("click", async () => {
     teamSelect.focus();
     return;
   }
+
+  pendingAssignment = { selectedProvider, selectedTeam };
+  document.getElementById("assignmentConfirmDialogText").textContent =
+    `Are you sure you want to assign this incident to ` +
+    `${formatDisplayName(selectedProvider.name)} — ` +
+    `${formatDisplayName(selectedTeam.name)}?`;
+  assignmentConfirmDialogBackdrop.hidden = false;
+  assignmentConfirmDialog.showModal();
+  cancelAssignmentConfirm.focus();
+});
+
+confirmAssignment.addEventListener("click", async () => {
+  if (!pendingAssignment) return;
+
+  const { selectedProvider, selectedTeam } = pendingAssignment;
+  closeAssignmentConfirmDialog();
 
   try {
     assignButton.disabled = true;

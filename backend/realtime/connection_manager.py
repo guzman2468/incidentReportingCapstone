@@ -9,6 +9,7 @@ from uuid import UUID
 from fastapi import WebSocket
 from sqlalchemy import text
 
+from backend.core.rate_limit import MAX_WEBSOCKET_CONNECTIONS_PER_USER
 from backend.database import SessionLocal
 from backend.kafka.incident_event_consumer import IncidentEventRouter
 
@@ -69,16 +70,39 @@ class ConnectionManager(IncidentEventRouter):
 
     def __init__(self) -> None:
         self._connections: dict[WebSocket, ConnectedUser] = {}
+        self._pending_accepts: dict[UUID, int] = {}
+
+    def count_user_connections(self, user_id: UUID) -> int:
+        """Count a user's open connections plus handshakes still being accepted."""
+
+        open_connections = sum(
+            1 for user in self._connections.values() if user.user_id == user_id
+        )
+        return open_connections + self._pending_accepts.get(user_id, 0)
 
     async def connect(
         self,
         websocket: WebSocket,
         user: ConnectedUser,
-    ) -> None:
-        """Accept and register an authenticated WebSocket connection."""
+    ) -> bool:
+        """Accept and register a connection unless the user is at the connection cap."""
 
-        await websocket.accept()
-        self._connections[websocket] = user
+        if self.count_user_connections(user.user_id) >= MAX_WEBSOCKET_CONNECTIONS_PER_USER:
+            return False
+
+        # Reserve the slot before awaiting so simultaneous handshakes cannot exceed the cap.
+        self._pending_accepts[user.user_id] = self._pending_accepts.get(user.user_id, 0) + 1
+        try:
+            await websocket.accept()
+            self._connections[websocket] = user
+        finally:
+            remaining = self._pending_accepts[user.user_id] - 1
+            if remaining:
+                self._pending_accepts[user.user_id] = remaining
+            else:
+                del self._pending_accepts[user.user_id]
+
+        return True
 
     def disconnect(self, websocket: WebSocket) -> None:
         """Remove a connection after disconnect or an application error."""

@@ -73,6 +73,7 @@ async def incident_realtime(websocket: WebSocket) -> None:
         await websocket.close(code=1008, reason="Authentication required")
         return
 
+    # connect now returns a bool to ensure the limit imposed on connections is not exceeded
     if not await connection_manager.connect(websocket, user):
         await websocket.close(code=1013, reason="Too many open connections")
         return

@@ -175,4 +175,11 @@ Setup steps are the same sitll, but you now must install and sign into Docker De
 
 The features that are currently working are up to Milestone 4 in the project plan (kafka messaging, real time updates).
 
+Please use the **main** branch to view the working version of the project up until this point
+
+## Release Notes (11-25-2026)
+As of this point, all CORE features of the app are implemented. Anything else that would be added is just for quality of life and optional. The focus will primarliy be shifted to the documentation portion of the capstone, and prepping for the poster presentation.
+
+The app is deployed on Azure, but will be shut off until demo day to prevent unneeded charges on compute. Please use the setup steps described in the 11-10 release notes to local test.
+
 Please use the **main** branch to view the working version of the project up until this point.
